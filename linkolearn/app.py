@@ -17,6 +17,10 @@ from flask_admin.menu import MenuLink
 
 from modules.box__default.settings.helpers import get_setting
 from modules.box__default.settings.models import Settings
+from modules.box__linkolearn.linkolearn.models import Path
+from modules.box__linkolearn.linkolearn.models import Section
+from modules.box__linkolearn.linkolearn.models import Link
+
 from config import app_config
 
 from init import db
@@ -117,6 +121,9 @@ def create_app(config_name):
         index_view=MyAdminIndexView(),
     )
     admin.add_view(DefaultModelView(Settings, db.session))
+    admin.add_view(DefaultModelView(Path, db.session))
+    admin.add_view(DefaultModelView(Section, db.session))
+    admin.add_view(DefaultModelView(Link, db.session))
     admin.add_link(
         MenuLink(name="Logout", category="", url="/auth/logout?next=/admin")
     )

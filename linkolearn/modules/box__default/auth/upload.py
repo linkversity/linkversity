@@ -7,7 +7,7 @@ SEP_CHAR = "#"
 SEP_NUM = 23
 
 
-def add_admin(email, password):
+def add_admin(email, password, username):
     with app.app_context():
         user = User()
         user.email = email
@@ -25,5 +25,5 @@ def upload():
         print(SEP_CHAR * SEP_NUM, end="\n\n")
         print("Adding Admin ...")
         add_admin(
-            config["admin_user"]["email"], config["admin_user"]["password"]
+            config["admin_user"]["email"], config["admin_user"]["password"], config["admin_user"]["username"]
         )

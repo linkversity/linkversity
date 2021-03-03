@@ -1,0 +1,180 @@
+{%set active_page='new'%}
+{%extends 'linkolearn/templates/base.html'%}
+{%block head%}
+<title>Learn By Links</title>
+<style type="text/css">
+  label{
+    font-weight: bold;
+  }
+</style>
+{%endblock%}
+{%block body%}
+<div class="container">  
+  <h3>Create new path</h3>
+  <form>
+    <label for="path-name" class="form-label">Path Title</label>
+    <input type="text" id="path-name" class="form-control">
+    <label for="path-link" class="form-label">Path Link</label>
+    <div class="row g-3 align-items-center">
+      <div class="col-auto pe-0 me-0">
+        <span for="" class="col-form-label">https://linkolearn.com/{{current_user.username}}/</span>
+      </div>
+      <div class="col-auto">
+        <input type="text" id="path-link" class="form-control"> e.g mastering-advanced-english
+      </div>
+    </div>
+  </nav>
+
+    <h4>Sections</h4>
+    <div class="">
+      <button 
+        class="btn btn-success rounded-circle d-inline-block p-0" 
+        style="width: 40px; height: 40px"
+        type="button"
+        id="add-section-btn">
+        <i 
+          class="fa fa-plus" 
+          class="m-0" 
+          style="font-size: 15px; vertical-align: middle; line-height: 25px"></i>
+      </button>
+      <span>Add Section</span>
+    </div>
+    <br>
+    <div id="sections">
+
+    </div>
+
+    <button 
+      class="btn btn-primary" 
+      type="button"
+      id="submit-button"
+      >submit</button>
+  </form>
+  
+</div>
+
+<script type="text/javascript">
+  function section(section_id) {
+    return `
+<div id="section-${section_id}" class="section card mb-2 shadow-sm">
+  <div class="card-header">
+    <span class="badge bg-danger">
+      <button 
+        id="close-${section_id}" 
+        type="button" 
+        class="btn-close btn-close-section" 
+        aria-label="Close"></button>
+  </div>
+  <div class="card-body">
+    <label class="form-label">Section name</label>
+    <input id="section-title-${section_id}" type="text"  class="form-control section-title">
+    <label class="form-label">Links</label>
+    <textarea class="form-control section-links" rows="10" placeholder="http://www.x.com&#10;http://www.y.com"></textarea>
+  </div>
+</div>
+`
+  }
+  var min_sections = 1;
+  var current_section_id = min_sections;
+  var sections_div = $('#sections');
+  var add_section_btn = $('#add-section-btn');
+  var rem_section_btn = $('#rem-section-btn');
+
+  // Initialise
+  sections_div.append( section(current_section_id) );
+  current_section_id += 1;
+
+  // On add section button click
+  add_section_btn.click(function() {
+    sections_div.append( section(current_section_id) );
+    current_section_id += 1;
+  });
+
+
+  /*
+  REMOVE BUTTON
+    if not equal min_section
+      if confirmed delete
+        hide and remove element
+  */
+  $(document).on('click','.btn-close-section',function(e) {
+    var id_to_del = $(this).attr("id").split('-')[1];
+    var section_title = $('#section-title-' + id_to_del).val();
+    if (id_to_del != min_sections){
+      var to_delete = confirm("Do you want to delete the section with title: "+section_title);
+      var delete_target = $(this).parent().parent().parent();
+      if (to_delete){
+        var id_to_del = parseInt(id_to_del);
+        
+          delete_target.hide('slow', function(){ 
+            delete_target.remove();
+          });
+        
+      }
+    }
+  });
+
+
+  /*
+  POST DATA
+    fetch title value
+    fetch link value
+    loop over sections
+      add json info to array
+    add data to post 
+    post
+    if errors
+      alert errors
+    else
+      redirect to newly created page
+  */
+
+  $("#submit-button").click(function(){
+    var json_submit = {};
+
+    var path_title = $('#path-name').val();
+    var path_link = $('#path-link').val();
+
+    json_submit['path_title'] = path_title;
+    json_submit['path_link'] = path_link;
+    json_submit['sections'] = [];
+
+    $( ".section" ).each(function( index ) {
+      var section = {};
+      var section_title = $( this ).find( ".section-title" ).val();
+      var section_links = $( this ).find( ".section-links" ).val();
+      section['section_title'] = section_title;
+      section['section_links'] = section_links;
+      json_submit['sections'].push(section);
+    });
+
+    console.log(json_submit);
+
+    // POST
+
+    $.ajax({
+        type: "POST",
+        url: "{{url_for('new.add')}}",
+        data: JSON.stringify(json_submit),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(data){
+            // alert(data);
+            // window.location.reload();
+            window.location.href = data['goto'];
+            return false;
+        },
+        failure: function(errMsg) {
+            alert(errMsg);
+        },
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", "{{csrf_token()}}")
+            }
+        }
+      });
+
+    });
+
+</script>
+{%endblock%}

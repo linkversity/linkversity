@@ -1,0 +1,31 @@
+{%set active_page='home'%}
+{%extends 'linkolearn/templates/base.html'%}
+
+{%block head%}
+<title>Learn By Links</title>
+{%endblock%}
+{%block body%}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+          <form action="{{url_for('auth.register', next=url_for('auth.unconfirmed'))}}" method="post">
+                    {%include 'auth/blocks/register_form.html'%}
+                </form>
+        </div>
+        <div class="col-md-8">
+          <div class="row">
+            <div class="col-md-8">
+              ewfwfg
+            </div>
+            <div class="col-md-4">
+              <img src="{{url_for('static', filename='linkolearn.svg')}}" class="img-fluid" alt="Responsive image">
+            </div>
+            
+          </div>
+          
+        </div>
+        
+    </div>
+</div>
+{%endblock%}

@@ -1,0 +1,48 @@
+{%set active_page='path'%}
+{%extends 'linkolearn/templates/base.html'%}
+{%block head%}
+<title>Learn By Links</title>
+<style type="text/css">
+	 .heart-elem a, a:hover,a:visited, a:focus {
+	    text-decoration:none;
+	}
+	.heart-icon {
+		color: #FFF;
+	}
+</style>
+{%endblock%}
+{%block body%}
+<br>
+<br>
+<div class="container">
+	<div class="text-right">
+		<a href="" class="heart-elem">
+			<div class="btn-group" role="group" aria-label="Basic example">
+			  <button type="button" class="btn btn-primary text-reset "><i class="fa fa-heart heart-icon"></i></button>
+			  <button type="button" class="btn btn-primary text-reset  bg-white text-dark">0</button>
+			</div>
+		</a>
+		
+	</div>
+	<div class="row">
+		<div class="col-9 ">
+			<div>
+				<div>
+					 <button type="button" class="btn btn-primary">
+					
+				</button>
+				</div>
+			</div>
+			<br>
+			<br>
+			<br>
+			<div>
+				
+			</div>
+		</div>
+		<div class="col-3">
+			
+		</div>
+	</div>
+</div>
+{%endblock%}

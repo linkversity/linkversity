@@ -15,12 +15,6 @@ class Image(db.Model):
         db.DateTime, default=datetime.datetime.now(), nullable=False
     )
 
-    def set_hash(self, password):
-        self.password = generate_password_hash(password, method="sha256")
-
-    def check_hash(self, password):
-        return check_password_hash(self.password, password)
-
     def insert(self):
         db.session.add(self)
         db.session.commit()
@@ -46,12 +40,6 @@ class Resource(db.Model):
     created_date = db.Column(
         db.DateTime, default=datetime.datetime.now(), nullable=False
     )
-
-    def set_hash(self, password):
-        self.password = generate_password_hash(password, method="sha256")
-
-    def check_hash(self, password):
-        return check_password_hash(self.password, password)
 
     def insert(self):
         db.session.add(self)

@@ -1,6 +1,6 @@
-Dear {{ user.email }},
+Dear {{ user.username }},
 
-Welcome to Shopyo!
+Welcome to Linkolearn!
 
 To confirm your account please click on the following link:
 
@@ -8,6 +8,6 @@ To confirm your account please click on the following link:
 
 Sincerely,
 
-The Shopyo Team
+The Linkolearn Team
 
 Note: replies to this email address are not monitored.

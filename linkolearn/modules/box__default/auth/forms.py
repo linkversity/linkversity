@@ -1,32 +1,33 @@
 from flask_wtf import FlaskForm
 from sqlalchemy import func
 from wtforms import PasswordField
+from wtforms import StringField
 from wtforms.fields.html5 import EmailField
+
 from wtforms.validators import DataRequired
 from wtforms.validators import Email
 from wtforms.validators import InputRequired
 from wtforms.validators import Length
 from wtforms.validators import EqualTo
 from wtforms.validators import ValidationError
+
 from .models import User
 
 
 class LoginForm(FlaskForm):
-    email = EmailField(
-        "email",
-        [DataRequired(), Email(message=("Not a valid email address."))],
-        render_kw={"class": "form-control", "autocomplete": "off"},
-    )
+    username = StringField('Username', validators=[DataRequired()],
+        render_kw={"class": "form-control", "autocomplete": "off", 'placeholder': 'Username'})
     password = PasswordField(
         "Password",
         [DataRequired()],
-        render_kw={"class": "form-control", "autocomplete": "off"},
+        render_kw={"class": "form-control", "autocomplete": "off", 'placeholder':'Password'},
     )
 
 
 class RegistrationForm(FlaskForm):
     """ Registration Form """
 
+    username = StringField('Username', validators=[DataRequired()])
     email = EmailField(
         "email_label",
         [DataRequired(), Email(message=("Not a valid email address."))],

@@ -6,7 +6,10 @@
     {% block pagehead %}{% endblock %}
 </head>
 <body class=" shopyo-main-area">
-    {% include "base/nav_base.html" %}
+    {%if _exclude_nav == True%}
+    {%else%}
+    	{% include "base/nav_base.html" %}
+    {%endif%}
     {% include 'base/blocks/flashed_messages.html'%}
 
 	<div class="container">

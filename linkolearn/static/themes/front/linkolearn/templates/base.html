@@ -1,0 +1,162 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="keywords" content="linkolearn, learn links, open source, courses" />
+<meta name="description" content="Create courses using links" />
+<link rel="icon" href="{{url_for('static', filename='linkolearn.png')}}">  
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+crossorigin="anonymous"></script>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
+
+<script type="text/javascript">
+/// some script
+$(function () {
+      'use strict'
+
+    $("[data-trigger]").on("click", function(){
+        var trigger_id =  $(this).attr('data-trigger');
+        $(trigger_id).toggleClass("show");
+        $('body').toggleClass("offcanvas-active");
+    });
+
+    // close if press ESC button 
+    $(document).on('keydown', function(event) {
+        if(event.keyCode === 27) {
+           $(".navbar-collapse").removeClass("show");
+           $("body").removeClass("overlay-active");
+        }
+    });
+
+    // close button 
+    $(".btn-close").click(function(e){
+        $(".navbar-collapse").removeClass("show");
+        $("body").removeClass("offcanvas-active");
+    }); 
+
+
+})
+</script>
+
+<style type="text/css">
+
+body.offcanvas-active{
+    overflow:hidden;
+}
+.offcanvas-header{ display:none; }
+
+@media (max-width: 992px) {
+  .offcanvas-header{ display:block; }
+  .navbar-collapse {
+    position: fixed;
+    top:0; 
+    bottom: 0;
+    left: 100%;
+    width: 100%;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    overflow-y: auto;
+    visibility: hidden;
+    background-color: black;
+    transition: visibility .2s ease-in-out, transform .2s ease-in-out;
+  }
+  .navbar-collapse.show {
+    visibility: visible;
+    transform: translateX(-100%);
+  }
+}
+
+</style>
+<style type="text/css">
+    #flashed-messages{
+        padding: 5px;
+        position: fixed;
+        right: 5px;
+        top: 5px;
+        z-index: 10;
+        height: 300px;
+        overflow-y: scroll;
+
+      }
+      #flashed-messages::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE and Edge */
+      #flashed-messages{
+        -ms-overflow-style: none;
+      }
+
+</style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/journal/bootstrap.min.css" integrity="sha384-QDSPDoVOoSWz2ypaRUidLmLYl4RyoBWI44iA5agn6jHegBxZkNqgm2eHb6yZ5bYs" crossorigin="anonymous">
+
+{%block head%}{%endblock%}
+</head>
+<body>
+  {%include 'base/blocks/flashed_messages.html'%}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="z-index: 1500">
+  <a class="navbar-brand" href="#">LINKOLEARN</a>
+  <button class="navbar-toggler" type="button" data-trigger="#main_nav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="navbar-collapse" id="main_nav">
+
+<div class="offcanvas-header mt-3">  
+    <button class="btn btn-outline-danger btn-close float-right"> </button>
+    <h5 class="py-2 text-white">LINKOLEARN</h5>
+</div>
+
+<ul class="navbar-nav">
+    <li 
+      class="nav-item {{'active' if active_page == 'home'}}"
+      > 
+      <a 
+        class="nav-link" 
+        href="{{ url_for('www.index') }}">Home </a> </li>
+    <li class="nav-item"><a class="nav-link" href="#"> About </a></li>
+    <li class="nav-item"><a class="nav-link" href="#"> Services </a></li>
+    <li class="nav-item dropdown">
+        <a class="nav-link  dropdown-toggle" href="#" data-toggle="dropdown">  More items  </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#"> Submenu item 1</a></li>
+          <li><a class="dropdown-item" href="#"> Submenu item 2 </a></li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="navbar-nav ml-auto">
+    {%if current_user.is_authenticated and current_user.is_email_confirmed%}
+      <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('www.user_profile', username=current_user.username)}}"> Profile </a></li>
+    {%else%}
+      <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('auth.login')}}"> Login </a></li>
+    {%endif%}
+    <li class="nav-item {{'active' if active_page == 'new'}}"><a class="nav-link" href="{{url_for('new.index')}}"> <i class="fa fa-plus"></i> </a></li>
+    <!--
+    <div class="dropdown dropstart">
+      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fa fa-plus"></i>
+      </button>
+      <ul class="dropdown-menu " aria-labelledby="dropdownMenuButton1">
+        <li><a class="dropdown-item" href="#">Action</a></li>
+        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" href="#">Something else here</a></li>
+      </ul>
+    </div>
+    -->
+</ul>
+  </div> <!-- navbar-collapse.// -->
+</nav>
+
+  {%block body%}{%endblock%}
+
+
+</body>
+</html>

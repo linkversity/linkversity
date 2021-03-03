@@ -44,33 +44,54 @@ def register():
 
     context = {}
     reg_form = RegistrationForm()
+    if request.method == 'POST':
+        if reg_form.validate_on_submit():
+            email = reg_form.email.data
+            password = reg_form.password.data
+            username = reg_form.username.data
+            user = User.create(
+                email=email, 
+                password=password,
+                username=username
+                )
+            login_user(user)
 
-    if reg_form.validate_on_submit():
-        email = reg_form.email.data
-        password = reg_form.password.data
-        user = User.create(email=email, password=password)
-        login_user(user)
+            is_disabled = False
 
-        is_disabled = False
+            if "EMAIL_CONFIRMATION_DISABLED" in current_app.config:
+                is_disabled = current_app.config["EMAIL_CONFIRMATION_DISABLED"]
 
-        if "EMAIL_CONFIRMATION_DISABLED" in current_app.config:
-            is_disabled = current_app.config["EMAIL_CONFIRMATION_DISABLED"]
+            if is_disabled is True:
+                user.is_email_confirmed = True
+                user.email_confirm_date = datetime.datetime.now()
+                user.update()
+                if "next" not in request.form:
+                    next_url = url_for("auth.login", next='/')
 
-        if is_disabled is True:
-            user.is_email_confirmed = True
-            user.email_confirm_date = datetime.datetime.now()
-            user.update()
-        else:
-            token = user.generate_confirmation_token()
-            template = "auth/emails/activate_user"
-            subject = "Please confirm your email"
-            context.update({"token": token, "user": user})
-            send_async_email(email, subject, template, **context)
-            flash(
-                notify_success("A confirmation email has been sent via email.")
-            )
+                else:
+                    if request.form["next"] == "":
+                        next_url = url_for("auth.login", next='/')
+                    else:
+                        next_url = get_safe_redirect(request.form["next"])
+            else:
+                token = user.generate_confirmation_token()
+                template = "auth/emails/activate_user"
+                subject = "Please confirm your email"
+                context.update({"token": token, "user": user})
+                send_async_email(email, subject, template, **context)
+                flash(
+                    notify_success("A confirmation email has been sent via email.")
+                )
 
-        return redirect(url_for("dashboard.index"))
+                if "next" not in request.form:
+                    next_url = url_for("auth.unconfirmed", next='/')
+
+                else:
+                    if request.form["next"] == "":
+                        next_url = url_for("auth.unconfirmed", next='/')
+                    else:
+                        next_url = get_safe_redirect(request.form["next"])
+                return redirect(next_url)
 
     context["form"] = reg_form
     return render_template("auth/register.html", **context)
@@ -82,11 +103,11 @@ def confirm(token):
 
     if current_user.is_email_confirmed:
         flash(notify_warning("Account already confirmed."))
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("www.user_profile", username=current_user.username))
 
     if current_user.confirm_token(token):
         flash(notify_success("You have confirmed your account. Thanks!"))
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("www.user_profile", username=current_user.username))
 
     flash(notify_warning("The confirmation link is invalid/expired."))
     return redirect(url_for("auth.unconfirmed"))
@@ -97,7 +118,7 @@ def confirm(token):
 def resend():
 
     if current_user.is_email_confirmed:
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("www.user_profile", username=current_user.username))
 
     token = current_user.generate_confirmation_token()
     template = "auth/emails/activate_user"
@@ -112,9 +133,13 @@ def resend():
 @login_required
 def unconfirmed():
     if current_user.is_email_confirmed:
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("www.user_profile", username=current_user.username))
     flash(notify_warning("Please confirm your account!"))
-    return render_template("auth/unconfirmed.html")
+    context = {}
+    context.update({
+        '_exclude_nav': True
+        })
+    return render_template("auth/unconfirmed.html", **context)
 
 
 @auth_blueprint.route("/login", methods=["GET", "POST"])
@@ -123,24 +148,27 @@ def login():
     login_form = LoginForm()
     context["form"] = login_form
     if login_form.validate_on_submit():
-        email = login_form.email.data
+        username = login_form.username.data
         password = login_form.password.data
         user = User.query.filter(
-            func.lower(User.email) == func.lower(email)
+            func.lower(User.username) == func.lower(username)
         ).first()
         if user is None or not user.check_password(password):
             flash(notify_danger("please check your user id and password"))
             return redirect(url_for("auth.login"))
         login_user(user)
         if "next" not in request.form:
-            next_url = url_for("dashboard.index")
+            next_url = url_for("www.user_profile", username=current_user.username)
 
         else:
             if request.form["next"] == "":
-                next_url = url_for("dashboard.index")
+                next_url = url_for("www.user_profile", username=current_user.username)
             else:
                 next_url = get_safe_redirect(request.form["next"])
         return redirect(next_url)
+    context.update({
+        '_exclude_nav': True
+        })
     return render_template("auth/login.html", **context)
 
 
@@ -151,10 +179,10 @@ def logout():
     flash(notify_success("Successfully logged out"))
 
     if "next" not in request.args:
-        next_url = url_for("dashboard.index")
+        next_url = url_for("www.index")
     else:
         if request.args.get("next") == "":
-            next_url = url_for("dashboard.index")
+            next_url = url_for("www.index")
         else:
             next_url = get_safe_redirect(request.args.get("next"))
     return redirect(next_url)

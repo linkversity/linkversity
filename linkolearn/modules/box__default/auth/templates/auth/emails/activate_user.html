@@ -1,6 +1,6 @@
-<p>Dear {{ user.email }},</p>
+<p>Dear {{ user.username }},</p>
 
-<p>Welcome to <b>Shopyo</b>!</p>
+<p>Welcome to <b>Linkolearn</b>!</p>
 
 <p>
     To confirm your account please <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">click here</a>.
@@ -11,6 +11,6 @@
 
 <p>Sincerely,</p>
 
-<p>The Shopyo Team</p>
+<p>The Linkolearn Team</p>
 
 <p><small>Note: replies to this email address are not monitored.</small></p>

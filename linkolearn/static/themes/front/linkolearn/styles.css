@@ -1,0 +1,26 @@
+
+    html {
+     scroll-behavior: smooth;
+        }
+    .suggest {
+
+    }
+
+    .suggest span {
+        padding-left: 5px;
+        padding-right: 5px;
+        margin: 5px;
+        min-width: 50px;
+    }
+
+    a{
+        text-decoration: inherit;
+        color: inherit;
+    }
+    a:hover{
+        text-decoration: inherit;
+        color: inherit;
+    }
+
+
+
