@@ -18,7 +18,8 @@ from flask_login import current_user
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
-
+from modules.box__linkolearn.linkolearn.models import BookmarkList
+from modules.box__linkolearn.linkolearn.models import LikeList
 
 mhelp = ModuleHelp(__file__, __name__)
 globals()[mhelp.blueprint_str] = mhelp.blueprint
@@ -28,7 +29,7 @@ module_blueprint = globals()[mhelp.blueprint_str]
 @module_blueprint.route("/")
 @login_required
 def index():
-    return render_template('linkolearn/templates/new.html')
+    return render_template('linkolearn_theme/templates/new.html')
 
 
 @module_blueprint.route("/add", methods=['POST'])
@@ -40,6 +41,8 @@ def add():
     sections = json_submit['sections']
 
     path = Path()
+    path.like_list = LikeList()
+    path.bookmark_list = BookmarkList()
     path.title = path_title
     path.slug = path_link
 

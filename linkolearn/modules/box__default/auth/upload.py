@@ -11,6 +11,7 @@ def add_admin(email, password, username):
     with app.app_context():
         user = User()
         user.email = email
+        user.username = username
         user.password = password
         user.is_admin = True
         user.is_email_confirmed = True

@@ -79,6 +79,7 @@ class User(UserMixin, PkModel):
     )
     is_email_confirmed = db.Column(db.Boolean(), nullable=False, default=False)
     email_confirm_date = db.Column(db.DateTime)
+    emoji_class = db.Column(db.String(100), default='em-airplane')
 
     paths = db.relationship('Path', backref='path_user', lazy=True)
 

@@ -1,5 +1,5 @@
 {%set active_page='new'%}
-{%extends 'linkolearn/templates/base.html'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
 {%block head%}
 <title>Learn By Links</title>
 <style type="text/css">
@@ -10,17 +10,17 @@
 {%endblock%}
 {%block body%}
 <div class="container">  
-  <h3>Create new path</h3>
+  <h3>Edit path</h3>
   <form>
     <label for="path-name" class="form-label">Path Title</label>
-    <input type="text" id="path-name" class="form-control">
+    <input type="text" id="path-name" class="form-control" value="{{path.title}}">
     <label for="path-link" class="form-label">Path Link</label>
     <div class="row g-3 align-items-center">
       <div class="col-auto pe-0 me-0">
         <span for="" class="col-form-label">https://linkolearn.com/{{current_user.username}}/</span>
       </div>
       <div class="col-auto">
-        <input type="text" id="path-link" class="form-control"> e.g mastering-advanced-english
+        <input type="text" id="path-link" class="form-control" value="{{path.slug}}"> e.g mastering-advanced-english
       </div>
     </div>
   </nav>
@@ -41,7 +41,26 @@
     </div>
     <br>
     <div id="sections">
-
+      {%set last_id = namespace(last_id=0)%}
+      {%for section in path.sections%}
+        <div id="section-{{section.id}}" class="section card mb-2 shadow-sm">
+          <div class="card-header">
+            <span class="badge bg-danger">
+              <button 
+                id="close-{{section.id}}" 
+                type="button" 
+                class="btn-close btn-close-section" 
+                aria-label="Close"></button>
+          </div>
+          <div class="card-body">
+            <label class="form-label">Section name</label>
+            <input id="section-title-{{section.id}}" type="text"  class="form-control section-title" value="{{ section.title }}">
+            <label class="form-label">Links</label>
+            <textarea class="form-control section-links" rows="10">{{sectionlinks2str(section.links) | safe}}</textarea>
+          </div>
+        </div>
+        {%set last_id.last_id = section.id%}
+      {%endfor%}
     </div>
 
     <button 
@@ -74,15 +93,15 @@
 </div>
 `
   }
-  var min_sections = 1;
-  var current_section_id = min_sections;
+  var min_sections = {{path.sections[0].id}};
+  var current_section_id = {{path.sections[-1].id}}+1;
   var sections_div = $('#sections');
   var add_section_btn = $('#add-section-btn');
   var rem_section_btn = $('#rem-section-btn');
 
   // Initialise
-  sections_div.append( section(current_section_id) );
-  current_section_id += 1;
+  // sections_div.append( section(current_section_id) );
+  // current_section_id += 1;
 
   // On add section button click
   add_section_btn.click(function() {
@@ -154,13 +173,16 @@
 
     $.ajax({
         type: "POST",
-        url: "{{url_for('new.add')}}",
+        url: "{{url_for('linkolearn.edit_path', path_id=path.id)}}",
         data: JSON.stringify(json_submit),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(data){
             // alert(data);
             // window.location.reload();
+            if('error'in data){
+              alert('Permission error!')
+            }
             window.location.href = data['goto'];
             return false;
         },

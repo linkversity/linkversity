@@ -48,7 +48,7 @@ def index():
 
     # return str(module_blueprint.template_folder)
 
-    return render_template("linkolearn/index.html")
+    return render_template("linkolearn_theme/index.html")
 
 
 @module_blueprint.route("/<username>")
@@ -56,7 +56,7 @@ def user_profile(username):
     context = {}
     user = User.query.filter(User.username == username).first_or_404()
     context.update({'user': user})
-    return render_template("linkolearn/templates/profile.html", **context)
+    return render_template("linkolearn_theme/templates/profile.html", **context)
 
 
 @module_blueprint.route("/<username>/<path_slug>")
@@ -65,4 +65,4 @@ def path(username, path_slug):
     user = User.query.filter(User.username == username).first_or_404()
     path = Path.query.filter(Path.slug == path_slug).first_or_404()
     context.update({'user': user, 'path': path})
-    return render_template("linkolearn/templates/path.html", **context)
+    return render_template("linkolearn_theme/templates/path.html", **context)

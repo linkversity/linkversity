@@ -134,11 +134,14 @@ body.offcanvas-active{
 
 <ul class="navbar-nav ml-auto">
     {%if current_user.is_authenticated and current_user.is_email_confirmed%}
+      <li class="nav-item {{'active' if active_page == 'settings'}}"><a class="nav-link" href="{{ url_for('linkolearn.settings') }}"> <i class="fa fa-wrench"></i> </a></li>
       <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('www.user_profile', username=current_user.username)}}"> Profile </a></li>
+      <li class="nav-item {{'active' if active_page == 'new'}}"><a class="nav-link" href="{{url_for('new.index')}}"> <i class="fa fa-plus"></i> </a></li>
+      
+      <li class="nav-item"><a class="nav-link" href="{{url_for('auth.logout')}}"> <i class="fa fa-sign-out-alt"></i> </a></li>
     {%else%}
       <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('auth.login')}}"> Login </a></li>
     {%endif%}
-    <li class="nav-item {{'active' if active_page == 'new'}}"><a class="nav-link" href="{{url_for('new.index')}}"> <i class="fa fa-plus"></i> </a></li>
     <!--
     <div class="dropdown dropstart">
       <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
