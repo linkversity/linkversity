@@ -81,6 +81,24 @@ def toggle_bookmark(path_id):
         return redirect(url_for('www.index'))
 
 
+@module_blueprint.route("/visibility/<path_id>", methods=["GET"])
+@login_required
+def toggle_visibility(path_id):
+    path = Path.query.get(path_id)
+    if path.is_visible == True:
+        path.is_visible = False
+    elif path.is_visible == False:
+        path.is_visible = True
+    path.update()
+    if 'next' in request.args:
+        if request.args.get('next') != '':
+            return redirect(get_safe_redirect(request.args.get('next')))
+        else:
+            return redirect(url_for('www.index'))
+    else:
+        return redirect(url_for('www.index'))
+
+
 @module_blueprint.route("/settings", methods=["GET"])
 @login_required
 def settings():
@@ -141,6 +159,7 @@ def change_emoji():
 def sectionlinks2str(section_links):
     return '&#10;'.join([_.url for _ in section_links])
 
+
 @module_blueprint.route("/settings/p/<path_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_path(path_id):
@@ -178,3 +197,9 @@ def edit_path(path_id):
 
         next_url = url_for('www.path', username=current_user.username, path_slug=path.slug)
         return jsonify({'goto': next_url})
+
+
+@module_blueprint.route("/bookmarks", methods=["GET", "POST"])
+@login_required
+def bookmarks():
+    return render_template('linkolearn_theme/templates/bookmarks.html')

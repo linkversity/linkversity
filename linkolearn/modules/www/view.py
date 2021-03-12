@@ -1,21 +1,22 @@
 import json
 import os
 
-# from flask import url_for
-# from flask import redirect
-# from flask import flash
+from flask import url_for
+from flask import redirect
+from flask import flash
 # from flask import request
 from flask import Blueprint
 from flask import render_template
 
 #
-# from shopyo.api.html import notify_success
+from shopyo.api.html import notify
 # from shopyo.api.forms import flash_errors
 # from shopyo.api.enhance import get_active_theme_dir
 # from shopyo.api.enhance import get_setting
 
 # from modules.box__ecommerce.shop.helpers import get_cart_data
 
+from flask_login import current_user
 
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__default.auth.models import User
@@ -47,8 +48,20 @@ def index():
     # module_blueprint.template_folder = active_theme_dir
 
     # return str(module_blueprint.template_folder)
+    def get_last_5():
+        paths = Path.query.all()
+        paths = [p for p in paths if p.is_visible]
+        if len(paths) >= 5:
+            return paths[-6:-1]
+        else:
+            len_paths = len(paths) +1
+            return paths[:len_paths]
 
-    return render_template("linkolearn_theme/index.html")
+    context = {
+        'get_last_5': get_last_5
+    }
+
+    return render_template("linkolearn_theme/index.html", **context)
 
 
 @module_blueprint.route("/<username>")
@@ -61,8 +74,20 @@ def user_profile(username):
 
 @module_blueprint.route("/<username>/<path_slug>")
 def path(username, path_slug):
+    path = Path.query.filter(Path.slug == path_slug).first_or_404()
+    if (not path.is_visible):
+        if (current_user.is_authenticated):
+            if(path.path_user == current_user):
+                pass
+            else:
+                flash(notify("Path not public!", alert_type='warning'))
+                return redirect(url_for('www.index'))
+        else:
+            flash(notify("Path not public!", alert_type='warning'))
+            return redirect(url_for('www.index'))
+
     context = {}
     user = User.query.filter(User.username == username).first_or_404()
-    path = Path.query.filter(Path.slug == path_slug).first_or_404()
+    
     context.update({'user': user, 'path': path})
     return render_template("linkolearn_theme/templates/path.html", **context)

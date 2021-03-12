@@ -13,6 +13,7 @@ class Path(PkModel):
     sections = db.relationship("Section", backref="section_path", lazy=True, cascade="all, delete-orphan")
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    is_visible = db.Column(db.Boolean, default=True)
 
     like_list = db.relationship(
         "LikeList", backref="like_list_path", lazy=True, uselist=False

@@ -121,6 +121,7 @@ body.offcanvas-active{
       <a 
         class="nav-link" 
         href="{{ url_for('www.index') }}">Home </a> </li>
+    <!--
     <li class="nav-item"><a class="nav-link" href="#"> About </a></li>
     <li class="nav-item"><a class="nav-link" href="#"> Services </a></li>
     <li class="nav-item dropdown">
@@ -130,12 +131,17 @@ body.offcanvas-active{
           <li><a class="dropdown-item" href="#"> Submenu item 2 </a></li>
         </ul>
     </li>
+  -->
 </ul>
 
 <ul class="navbar-nav ml-auto">
     {%if current_user.is_authenticated and current_user.is_email_confirmed%}
+    <li class="nav-item {{'active' if active_page == 'bookmarks'}}"><a class="nav-link" href="{{ url_for('linkolearn.bookmarks') }}"> <i class="fa fa-bookmark"></i> </a></li>
+
       <li class="nav-item {{'active' if active_page == 'settings'}}"><a class="nav-link" href="{{ url_for('linkolearn.settings') }}"> <i class="fa fa-wrench"></i> </a></li>
+
       <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('www.user_profile', username=current_user.username)}}"> Profile </a></li>
+
       <li class="nav-item {{'active' if active_page == 'new'}}"><a class="nav-link" href="{{url_for('new.index')}}"> <i class="fa fa-plus"></i> </a></li>
       
       <li class="nav-item"><a class="nav-link" href="{{url_for('auth.logout')}}"> <i class="fa fa-sign-out-alt"></i> </a></li>
