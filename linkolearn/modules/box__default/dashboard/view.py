@@ -5,9 +5,11 @@ from flask import Blueprint
 from flask import current_app
 from flask import flash
 from flask import render_template
+from flask import redirect
 from modules.box__default.auth.decorators import check_confirmed
 
 from flask_login import login_required
+from flask_login import current_user
 
 from shopyo.api.html import notify_success
 
@@ -19,6 +21,11 @@ dashboard_blueprint = Blueprint(
 )
 all_info = {}
 
+@dashboard_blueprint.after_request
+def after_request_func(response):
+    if not current_user.is_admin:
+        return redirect('/')
+    return response
 
 @dashboard_blueprint.route("/")
 @login_required

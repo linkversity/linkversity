@@ -58,7 +58,7 @@ class MyAdminIndexView(AdminIndexView):
 
     @expose("/")
     def index(self):
-        if not current_user.is_authenticated and current_user.is_admin:
+        if (not current_user.is_authenticated and not current_user.is_admin):
             return redirect(url_for("auth.login"))
         return super(MyAdminIndexView, self).index()
 

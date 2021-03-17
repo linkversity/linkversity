@@ -14,6 +14,8 @@ from flask import url_for
 from flask import flash
 
 from flask_login import login_required
+from flask_login import current_user
+
 from sqlalchemy import exists
 
 # from config import Config
@@ -39,6 +41,11 @@ appadmin_blueprint = Blueprint(
     url_prefix=module_info["url_prefix"],
 )
 
+@appadmin_blueprint.after_request
+def after_request_func(response):
+    if not current_user.is_admin:
+        return redirect('/')
+    return response
 
 @appadmin_blueprint.route("/")
 @login_required
