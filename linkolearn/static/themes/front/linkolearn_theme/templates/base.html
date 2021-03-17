@@ -96,8 +96,28 @@ body.offcanvas-active{
       }
 
 </style>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/journal/bootstrap.min.css" integrity="sha384-QDSPDoVOoSWz2ypaRUidLmLYl4RyoBWI44iA5agn6jHegBxZkNqgm2eHb6yZ5bYs" crossorigin="anonymous">
 
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/journal/bootstrap.min.css" integrity="sha384-QDSPDoVOoSWz2ypaRUidLmLYl4RyoBWI44iA5agn6jHegBxZkNqgm2eHb6yZ5bYs" crossorigin="anonymous">
+<style type="text/css">
+  a {
+    word-wrap: break-word;
+  }
+</style>
+<style type="text/css">
+  .footer {
+    font-size: 15px;
+    width:100%;
+    height:40px;
+    position:fixed;
+    bottom:0;
+    left:0;
+  }
+
+  .footer a{
+    display: inline-block;
+  }
+
+</style>
 {%block head%}{%endblock%}
 </head>
 <body>
@@ -166,6 +186,25 @@ body.offcanvas-active{
 
   {%block body%}{%endblock%}
 
-
+<div style="height: 40px;">
+  
+</div>
+<div class="footer bg-dark p-2">
+  <a href="{{ url_for('www.privacy_policy') }}">
+    <p>privacy policy</p>
+  </a> | 
+  <a href="{{ url_for('www.about') }}">
+    <p>about</p>
+  </a> | 
+  <a href="{{ url_for('www.contact') }}">
+    <p>contact</p>
+  </a> | 
+  <a href="https://github.com/linkolearn/linkolearn/issues">
+    <p>report bugs</p>
+  </a> | 
+  <a href="https://github.com/linkolearn/linkolearn">
+    <p>contribute!</p>
+  </a>
+</div>
 </body>
 </html>

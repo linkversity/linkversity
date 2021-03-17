@@ -91,3 +91,17 @@ def path(username, path_slug):
     
     context.update({'user': user, 'path': path})
     return render_template("linkolearn_theme/templates/path.html", **context)
+
+
+@module_blueprint.route("/privacy-policy")
+def privacy_policy():
+    return render_template("linkolearn_theme/templates/info/privacy_policy.html")
+
+
+@module_blueprint.route("/contact")
+def contact():
+    return render_template("linkolearn_theme/templates/info/contact.html")
+
+@module_blueprint.route("/about")
+def about():
+    return render_template("linkolearn_theme/templates/info/about.html")

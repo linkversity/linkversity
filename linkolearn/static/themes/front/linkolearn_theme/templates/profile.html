@@ -31,7 +31,7 @@
 	<div class="row">
 		<div class="col-3 ">
 			<div style="border: 1px solid #eb6864; width: 100px; height: 100px;" class="text-center rounded p-1 text-center shadow">
-				<i class="em {{current_user.emoji_class}} profile-icon p-0 m-0"></i>
+				<i class="em {{user.emoji_class}} profile-icon p-0 m-0"></i>
 			</div>
 			<br>
 			<br>
@@ -84,6 +84,7 @@
 			<br>
 			<div>
 				{%for path in user.paths%}
+				{%if path.is_visible%}
 				<div class="card link p-2 mb-2 shadow-sm">
 					<div class="card-body pt-0 border-bottom-0 p-0 m-0" >
 						<div class="row p-0 m-0" >
@@ -103,6 +104,7 @@
 					</div>
 					
 				</div>
+				{%endif%}
 				{%endfor%}
 			</div>
 		</div>

@@ -9,8 +9,13 @@
 	.stat-icon {
 		color: #FFF;
 	}
+	.links{
+		
+
+	}
 	.links a {
-		border-bottom: 2px solid orange;
+		
+		border-bottom: 1px solid orange;
 	}
 </style>
 {%endblock%}
@@ -74,7 +79,7 @@
 				<h4>{{ section.title }}</h4>
 				<hr>
 				{% for link in section.links %}
-					<p class="links p-0 mb-1"><a href="{{ link.url }}">{{ link.url }}</a></p>
+					<p class="links p-0 mb-1"><a href="{{ link.url }}">⚫ {{ link.url }}</a></p>
 				{% endfor %}
 				<br>
 				<br>
