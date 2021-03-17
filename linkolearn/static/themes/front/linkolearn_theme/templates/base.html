@@ -82,7 +82,7 @@ body.offcanvas-active{
         position: fixed;
         right: 5px;
         top: 5px;
-        z-index: 10;
+        z-index: 100;
         height: 300px;
         overflow-y: scroll;
 
@@ -94,7 +94,9 @@ body.offcanvas-active{
       #flashed-messages{
         -ms-overflow-style: none;
       }
-
+      .shopyo-alert{
+        z-index: 1500;
+      }
 </style>
 
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/journal/bootstrap.min.css" integrity="sha384-QDSPDoVOoSWz2ypaRUidLmLYl4RyoBWI44iA5agn6jHegBxZkNqgm2eHb6yZ5bYs" crossorigin="anonymous">
@@ -130,7 +132,7 @@ body.offcanvas-active{
   <div class="navbar-collapse" id="main_nav">
 
 <div class="offcanvas-header mt-3">  
-    <button class="btn btn-outline-danger btn-close float-right"> </button>
+    <button class="btn btn-outline-danger btn-close float-right btn-primary"> </button>
     <h5 class="py-2 text-white">LINKOLEARN</h5>
 </div>
 

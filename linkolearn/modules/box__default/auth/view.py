@@ -49,6 +49,14 @@ def register():
             email = reg_form.email.data
             password = reg_form.password.data
             username = reg_form.username.data
+            if not username.replace('-', '').isalnum():
+                flash('')
+                flash(notify_warning('Username must have only alphanumeric and - characters'))
+                return redirect(url_for('www.index'))
+            if username.lower() in ['contact', 'about', 'privacy-policy']:
+                flash('')
+                flash(notify_warning('Username must cannot be in reserved keywords'))
+                return redirect(url_for('www.index'))
             user = User.create(
                 email=email, 
                 password=password,
@@ -94,6 +102,9 @@ def register():
                 return redirect(next_url)
 
     context["form"] = reg_form
+    context.update({
+        '_exclude_nav': True
+        })
     return render_template("auth/register.html", **context)
 
 

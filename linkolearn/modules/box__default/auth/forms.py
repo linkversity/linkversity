@@ -27,7 +27,9 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     """ Registration Form """
 
-    username = StringField('Username', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()],
+        render_kw={'placeholder': 'Username alphanumeric and - allowed'
+        })
     email = EmailField(
         "email_label",
         [DataRequired(), Email(message=("Not a valid email address."))],
@@ -44,9 +46,24 @@ class RegistrationForm(FlaskForm):
             ),
             EqualTo("confirm", message="Passwords must match"),
         ],
+        render_kw={
+        'placeholder': 'Password min. 6 chars'
+        }
     )
     confirm = PasswordField(
-        "Repeat Password",
+        "New Password",
+        validators=[
+            InputRequired("Password is required"),
+            Length(
+                min=6,
+                max=25,
+                message="Password must be between 6 and 25 characters",
+            ),
+            EqualTo("confirm", message="Passwords must match"),
+        ],
+        render_kw={
+        'placeholder': 'Reconfirm password'
+        }
     )
 
     def validate_email(self, field):

@@ -5,7 +5,7 @@
         <div class="input-group-prepend">
             <span class="input-group-text"><i class="fa fa-id-card"></i></span>
         </div>
-        {{ register_form.username(class_="form-control", placeholder="Username", autocomplete="off", autofocus=true) }}
+        {{ register_form.username(class_="form-control", autocomplete="off", autofocus=true) }}
     </div>
     <ul class="form-errors">
         {% for error in register_form.username.errors %}
@@ -29,7 +29,7 @@
         <div class="input-group-prepend">
             <span class="input-group-text"><i class="fa fa-key"></i></span>
         </div>
-        {{ register_form.password(class_="form-control", placeholder="Password") }}
+        {{ register_form.password(class_="form-control") }}
     </div>
     <ul class="form-errors">
         {% for error in register_form.password.errors %}
@@ -42,7 +42,7 @@
         <div class="input-group-prepend">
             <span class="input-group-text"><i class="fa fa-key"></i></span>
         </div>
-        {{ register_form.confirm(class_="form-control", placeholder="Confirm Password") }}
+        {{ register_form.confirm(class_="form-control") }}
     </div>
     <ul class="form-errors">
         {% for error in register_form.confirm.errors %}
