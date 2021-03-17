@@ -17,6 +17,7 @@ from shopyo.api.html import notify
 # from modules.box__ecommerce.shop.helpers import get_cart_data
 
 from flask_login import current_user
+from sqlalchemy import func
 
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__default.auth.models import User
@@ -67,7 +68,9 @@ def index():
 @module_blueprint.route("/<username>")
 def user_profile(username):
     context = {}
-    user = User.query.filter(User.username == username).first_or_404()
+    user = User.query.filter(
+        func.lower(User.username) == func.lower(username)
+        ).first_or_404()
     context.update({'user': user})
     return render_template("linkolearn_theme/templates/profile.html", **context)
 
@@ -87,7 +90,9 @@ def path(username, path_slug):
             return redirect(url_for('www.index'))
 
     context = {}
-    user = User.query.filter(User.username == username).first_or_404()
+    user = User.query.filter(
+        func.lower(User.username) == func.lower(username)
+        ).first_or_404()
     
     context.update({'user': user, 'path': path})
     return render_template("linkolearn_theme/templates/path.html", **context)

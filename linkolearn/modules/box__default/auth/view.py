@@ -19,6 +19,8 @@ from shopyo.api.html import notify_success
 from shopyo.api.html import notify_warning
 from shopyo.api.security import get_safe_redirect
 
+from sqlalchemy import func
+
 from .models import User
 from .email import send_async_email
 from .forms import LoginForm
@@ -56,6 +58,20 @@ def register():
             if username.lower() in ['contact', 'about', 'privacy-policy']:
                 flash('')
                 flash(notify_warning('Username must cannot be in reserved keywords'))
+                return redirect(url_for('www.index'))
+            user = User.query.filter(
+                func.lower(User.username) == func.lower(username)
+                ).first()
+            if (not user is None):
+                flash('')
+                flash(notify_warning('Username or email exists'))
+                return redirect(url_for('www.index'))
+            user = User.query.filter(
+                func.lower(User.email) == func.lower(email)
+                ).first()
+            if (not user is None):
+                flash('')
+                flash(notify_warning('Username or email exists'))
                 return redirect(url_for('www.index'))
             user = User.create(
                 email=email, 
