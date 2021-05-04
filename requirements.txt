@@ -1,3 +1,4 @@
 pymysql
 shopyo==3.9.0
 validators==0.18.2
+SQLAlchemy<1.4
