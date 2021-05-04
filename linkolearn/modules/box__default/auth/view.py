@@ -48,7 +48,6 @@ def register():
     reg_form = RegistrationForm()
     if request.method == 'POST':
         if reg_form.validate_on_submit():
-            email = reg_form.email.data
             password = reg_form.password.data
             username = reg_form.username.data
             if not username.replace('-', '').isalnum():
@@ -64,17 +63,9 @@ def register():
                 ).first()
             if (not user is None):
                 flash('')
-                flash(notify_warning('Username or email exists'))
-                return redirect(url_for('www.index'))
-            user = User.query.filter(
-                func.lower(User.email) == func.lower(email)
-                ).first()
-            if (not user is None):
-                flash('')
-                flash(notify_warning('Username or email exists'))
+                flash(notify_warning('Username exists'))
                 return redirect(url_for('www.index'))
             user = User.create(
-                email=email, 
                 password=password,
                 username=username
                 )
@@ -89,84 +80,64 @@ def register():
                 user.is_email_confirmed = True
                 user.email_confirm_date = datetime.datetime.now()
                 user.update()
-                if "next" not in request.form:
-                    next_url = url_for("auth.login", next='/')
+                return redirect(url_for('www.user_profile', username=username))
+        else:
+            return redirect(url_for('www.index'))
+                # if "next" not in request.form:
+                #     next_url = url_for("auth.login", next='/')
 
-                else:
-                    if request.form["next"] == "":
-                        next_url = url_for("auth.login", next='/')
-                    else:
-                        next_url = get_safe_redirect(request.form["next"])
-            else:
-                token = user.generate_confirmation_token()
-                template = "auth/emails/activate_user"
-                subject = "Please confirm your email"
-                context.update({"token": token, "user": user})
-                send_async_email(email, subject, template, **context)
-                flash(
-                    notify_success("A confirmation email has been sent via email.")
-                )
+                # else:
+                #     if request.form["next"] == "":
+                #         next_url = url_for("auth.login", next='/')
+                #     else:
+                #         next_url = get_safe_redirect(request.form["next"])
 
-                if "next" not in request.form:
-                    next_url = url_for("auth.unconfirmed", next='/')
-
-                else:
-                    if request.form["next"] == "":
-                        next_url = url_for("auth.unconfirmed", next='/')
-                    else:
-                        next_url = get_safe_redirect(request.form["next"])
-                return redirect(next_url)
-
-    context["form"] = reg_form
-    context.update({
-        '_exclude_nav': True
-        })
-    return render_template("auth/register.html", **context)
+                # return redirect(next_url)
 
 
-@auth_blueprint.route("/confirm/<token>")
-@login_required
-def confirm(token):
+# @auth_blueprint.route("/confirm/<token>")
+# @login_required
+# def confirm(token):
 
-    if current_user.is_email_confirmed:
-        flash(notify_warning("Account already confirmed."))
-        return redirect(url_for("www.user_profile", username=current_user.username))
+#     if current_user.is_email_confirmed:
+#         flash(notify_warning("Account already confirmed."))
+#         return redirect(url_for("www.user_profile", username=current_user.username))
 
-    if current_user.confirm_token(token):
-        flash(notify_success("You have confirmed your account. Thanks!"))
-        return redirect(url_for("www.user_profile", username=current_user.username))
+#     if current_user.confirm_token(token):
+#         flash(notify_success("You have confirmed your account. Thanks!"))
+#         return redirect(url_for("www.user_profile", username=current_user.username))
 
-    flash(notify_warning("The confirmation link is invalid/expired."))
-    return redirect(url_for("auth.unconfirmed"))
-
-
-@auth_blueprint.route("/resend")
-@login_required
-def resend():
-
-    if current_user.is_email_confirmed:
-        return redirect(url_for("www.user_profile", username=current_user.username))
-
-    token = current_user.generate_confirmation_token()
-    template = "auth/emails/activate_user"
-    subject = "Please confirm your email"
-    context = {"token": token, "user": current_user}
-    send_async_email(current_user.email, subject, template, **context)
-    flash(notify_success("A new confirmation email has been sent."))
-    return redirect(url_for("auth.unconfirmed"))
+#     flash(notify_warning("The confirmation link is invalid/expired."))
+#     return redirect(url_for("auth.unconfirmed"))
 
 
-@auth_blueprint.route("/unconfirmed")
-@login_required
-def unconfirmed():
-    if current_user.is_email_confirmed:
-        return redirect(url_for("www.user_profile", username=current_user.username))
-    flash(notify_warning("Please confirm your account!"))
-    context = {}
-    context.update({
-        '_exclude_nav': True
-        })
-    return render_template("auth/unconfirmed.html", **context)
+# @auth_blueprint.route("/resend")
+# @login_required
+# def resend():
+
+#     if current_user.is_email_confirmed:
+#         return redirect(url_for("www.user_profile", username=current_user.username))
+
+#     token = current_user.generate_confirmation_token()
+#     template = "auth/emails/activate_user"
+#     subject = "Please confirm your email"
+#     context = {"token": token, "user": current_user}
+#     send_async_email(current_user.email, subject, template, **context)
+#     flash(notify_success("A new confirmation email has been sent."))
+#     return redirect(url_for("auth.unconfirmed"))
+
+
+# @auth_blueprint.route("/unconfirmed")
+# @login_required
+# def unconfirmed():
+#     if current_user.is_email_confirmed:
+#         return redirect(url_for("www.user_profile", username=current_user.username))
+#     flash(notify_warning("Please confirm your account!"))
+#     context = {}
+#     context.update({
+#         '_exclude_nav': True
+#         })
+#     return render_template("auth/unconfirmed.html", **context)
 
 
 @auth_blueprint.route("/login", methods=["GET", "POST"])

@@ -24,7 +24,7 @@
     <div class="row">
         <div class="col-md-4">
           <div class="p-3">
-            <form action="{{url_for('auth.register', next=url_for('auth.unconfirmed'))}}" method="post">
+            <form action="{{url_for('auth.register')}}" method="post">
                     {%include 'auth/blocks/register_form.html'%}
                 </form>
           </div>
@@ -38,8 +38,9 @@
                  Linkolearn allows people to create courses from contents around the internet. <br>
                  Want to send preparation materials to someone? Take a few minutes, gather your links and send the person the course's content.<br><br>
                  It is particularly useful for the Education sector and OpenSource projects to get contributors started quickly.<br><br>
-                 It can also be used as a research bookmark manager!
+                 It can also be used as a research bookmark manager!<br><br>
                </i>
+               Emails no longer needed!
              </div>
             </div>
             <div class="col-md-4">

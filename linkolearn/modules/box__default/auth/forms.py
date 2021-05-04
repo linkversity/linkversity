@@ -30,10 +30,6 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()],
         render_kw={'placeholder': 'Username alphanumeric and - allowed'
         })
-    email = EmailField(
-        "email_label",
-        [DataRequired(), Email(message=("Not a valid email address."))],
-    )
 
     password = PasswordField(
         "New Password",

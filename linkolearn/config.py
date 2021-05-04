@@ -22,16 +22,16 @@ class ProductionConfig(BaseConfig):
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
     # control email confirmation for user registration
-    EMAIL_CONFIRMATION_DISABLED = False
+    EMAIL_CONFIRMATION_DISABLED = True
 
     # flask-mailman configs
-    MAIL_SERVER = "smtp.googlemail.com"
-    MAIL_PORT = 465
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
+    # MAIL_SERVER = "smtp.googlemail.com"
+    # MAIL_PORT = 465
+    # MAIL_USE_TLS = False
+    # MAIL_USE_SSL = True
+    # MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    # MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    # MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
 
     # database configs
     SQLALCHEMY_DATABASE_URI = (
@@ -49,16 +49,16 @@ class DevelopmentConfig(BaseConfig):
     SECRET_KEY = "secret"
 
     # control email confirmation for user registration
-    EMAIL_CONFIRMATION_DISABLED = False
+    EMAIL_CONFIRMATION_DISABLED = True
 
     # flask-mailman configs
-    MAIL_SERVER = "localhost"
-    MAIL_PORT = 1025
-    MAIL_USE_TLS = False
-    MAIL_USE_SSL = False
-    MAIL_USERNAME = ""
-    MAIL_PASSWORD = ""
-    MAIL_DEFAULT_SENDER = "ma@mail.com"
+    # MAIL_SERVER = "localhost"
+    # MAIL_PORT = 1025
+    # MAIL_USE_TLS = False
+    # MAIL_USE_SSL = False
+    # MAIL_USERNAME = ""
+    # MAIL_PASSWORD = ""
+    # MAIL_DEFAULT_SENDER = "ma@mail.com"
 
     # database configs
     SQLALCHEMY_DATABASE_URI = "sqlite:///shopyo.db"
