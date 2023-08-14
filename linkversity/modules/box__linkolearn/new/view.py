@@ -60,4 +60,5 @@ def add():
     path.save()
 
     next_url = url_for('www.path', username=current_user.username, path_slug=path.slug)
+    # next_url = f"{current_user.username}/{path.slug}"
     return jsonify({'goto': next_url})

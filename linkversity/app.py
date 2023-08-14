@@ -14,6 +14,7 @@ from flask_admin.contrib import sqla as flask_admin_sqla
 from flask_admin import AdminIndexView
 from flask_admin import expose
 from flask_admin.menu import MenuLink
+from shopyo.api.debug import is_yo_debug
 
 from modules.box__default.settings.helpers import get_setting
 from modules.box__default.settings.models import Settings
@@ -139,66 +140,12 @@ def create_app(config_name):
             return send_from_directory(module_static, filename=filename)
 
     available_everywhere_entities = {
-        
+
     }
+    global_configs = {}
 
-    #
-    # load blueprints
-    #
-    for folder in os.listdir(os.path.join(base_path, "modules")):
-        if folder.startswith("__"):  # ignore __pycache__
-            continue
 
-        if folder.startswith("box__"):
-            # boxes
-            for sub_folder in os.listdir(
-                os.path.join(base_path, "modules", folder)
-            ):
-                if sub_folder.startswith("__"):  # ignore __pycache__
-                    continue
-                elif sub_folder.endswith(".json"):  # box_info.json
-                    continue
-                try:
-                    sys_mod = importlib.import_module(
-                        "modules.{}.{}.view".format(folder, sub_folder)
-                    )
-                    app.register_blueprint(
-                        getattr(sys_mod, "{}_blueprint".format(sub_folder))
-                    )
-                except AttributeError as e:
-                    print(
-                        " x Blueprint skipped:",
-                        "modules.{}.{}.view".format(folder, sub_folder, folder),
-                    )
-                try:
-                    mod_global = importlib.import_module(
-                        "modules.{}.{}.global".format(folder, sub_folder)
-                    )
-                    available_everywhere_entities.update(
-                        mod_global.available_everywhere
-                    )
-                except ImportError:
-                    pass
-
-        else:
-            # apps
-            try:
-                mod = importlib.import_module("modules.{}.view".format(folder))
-                app.register_blueprint(
-                    getattr(mod, "{}_blueprint".format(folder))
-                )
-            except AttributeError as e:
-                print("[ ] Blueprint skipped:", e)
-            try:
-                mod_global = importlib.import_module(
-                    "modules.{}.global".format(folder)
-                )
-                available_everywhere_entities.update(
-                    mod_global.available_everywhere
-                )
-            except ImportError as e:
-                # print(e)
-                pass
+    load_blueprints(app, config_name, available_everywhere_entities, global_configs)
 
     #
     # custom templates folder
@@ -237,6 +184,98 @@ def create_app(config_name):
     # end of func
     return app
 
+
+def load_blueprints(app, config_name, global_template_variables, global_configs):
+    """
+    - Registers blueprints
+    - Adds global template objects from modules
+    - Adds global configs from modules
+    """
+    for folder in os.listdir(os.path.join(base_path, "modules")):
+        if folder.startswith("__"):  # ignore __pycache__
+            continue
+
+        if folder.startswith("box__"):
+            # boxes
+            for sub_folder in os.listdir(os.path.join(base_path, "modules", folder)):
+                if sub_folder.startswith("__"):  # ignore __pycache__
+                    continue
+                elif sub_folder.endswith(".json"):  # box_info.json
+                    continue
+                try:
+                    sys_mod = importlib.import_module(
+                        f"modules.{folder}.{sub_folder}.view"
+                    )
+                    app.register_blueprint(getattr(sys_mod, f"{sub_folder}_blueprint"))
+                except AttributeError:
+                    pass
+                try:
+                    mod_global = importlib.import_module(
+                        f"modules.{folder}.{sub_folder}.global"
+                    )
+                    print(mod_global.available_everywhere)
+                    global_template_variables.update(mod_global.available_everywhere)
+                except ImportError as e:
+                    if is_yo_debug():
+                        print("[ ] skipped", e)
+
+                except AttributeError as e:
+                    if is_yo_debug():
+                        print("[ ] skipped", e)
+
+                # load configs
+                try:
+                    mod_global = importlib.import_module(
+                        f"modules.{folder}.{sub_folder}.global"
+                    )
+                    if config_name in mod_global.configs:
+                        global_configs.update(mod_global.configs.get(config_name))
+                except ImportError as e:
+                    if is_yo_debug():
+                        print("[ ] skipped", e)
+
+                except AttributeError as e:
+                    # click.echo('info: config not found in global')
+                    if is_yo_debug():
+                        print("[ ] skipped", e)
+        else:
+            # apps
+            try:
+                mod = importlib.import_module(f"modules.{folder}.view")
+                app.register_blueprint(getattr(mod, f"{folder}_blueprint"))
+            except AttributeError as e:
+                if is_yo_debug():
+                    print("[ ] skipped", e)
+
+            # global's available everywhere template vars
+            try:
+                mod_global = importlib.import_module(f"modules.{folder}.global")
+                print(mod_global, mod_global.available_everywhere)
+                global_template_variables.update(mod_global.available_everywhere)
+            except ImportError as e:
+                # print(f"[ ] {e}")
+                if is_yo_debug():
+                    print("[ ] skipped", e)
+
+            except AttributeError as e:
+                if is_yo_debug():
+                    print("[ ] skipped", e)
+
+            # load configs
+            try:
+                mod_global = importlib.import_module(f"modules.{folder}.global")
+                if config_name in mod_global.configs:
+                    global_configs.update(mod_global.configs.get(config_name))
+            except ImportError as e:
+                # print(f"[ ] {e}")
+                if is_yo_debug():
+                    print("[ ] skipped", e)
+            except AttributeError as e:
+                # click.echo('info: config not found in global')
+                if is_yo_debug():
+                    print("[ ] skipped", e)
+
+    app.config.update(**global_configs)
 
 with open(os.path.join(base_path, "config.json")) as f:
     config_json = json.load(f)
