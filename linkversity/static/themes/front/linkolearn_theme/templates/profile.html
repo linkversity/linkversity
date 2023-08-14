@@ -1,0 +1,113 @@
+{%set active_page='profile'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
+{%block head%}
+<title>Learn By Links</title>
+<link href="https://emoji-css.afeld.me/emoji.css" rel="stylesheet">
+<style type="text/css">
+	.profile-icon{
+		font-size: 50px;
+	}
+	.info-icon i{
+		color: #6a737d;
+	}
+	.link-outer a{
+		color: #0366d6;
+		font-size: 30px;
+	}
+	.link .heart-icon {
+		line-height: 50px;
+		font-size: 20px;
+		color: #6a737d;
+	}
+	.liked{
+		color: #22b24c !important;
+	}
+</style>
+{%endblock%}
+{%block body%}
+<br>
+<br>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-3 ">
+			<div style="border: 1px solid #eb6864; width: 100px; height: 100px;" class="text-center rounded p-1 text-center shadow">
+				<i class="em {{user.emoji_class}} profile-icon p-0 m-0"></i>
+			</div>
+			<br>
+			<br>
+			<div>
+				<h5>{{user.first_name if user.first_name else 'First Name'}} <br> {{user.last_name if user.last_name else 'Last Name'}}</h5>
+				<h6>{{user.username}}</h6>
+			</div>
+			<!--
+			<p>About</p>
+			<div>
+				<div>
+					<div class="info-icon">
+						<i class="fa fa-envelope"></i>
+					</div>
+					<div>
+						
+					</div>
+				</div>
+				<div>
+					<div class="info-icon">
+						<i class="fa fa-link"></i>
+					</div>
+					<div>
+						
+					</div>
+				</div>
+				<div>
+					<div class="info-icon">
+						<i class="fab fa-twitter"></i>
+					</div>
+					<div>
+						
+					</div>
+				</div>
+			</div>-->
+		</div>
+		<div class="col-9">
+			<div>
+				<div>
+					 <button type="button" class="btn btn-primary">
+					  Paths <span class="badge bg-secondary">{{len(user.paths)}}</span>
+					</button>
+					<button type="button" class="btn btn-primary">
+					  Likes <span class="badge bg-secondary">{{len(user.user_like_lists)}}</span>
+					</button>
+				</div>
+			</div>
+			<br>
+			<br>
+			<br>
+			<div>
+				{%for path in user.paths%}
+				{%if path.is_visible%}
+				<div class="card link p-2 mb-2 shadow-sm">
+					<div class="card-body pt-0 border-bottom-0 p-0 m-0" >
+						<div class="row p-0 m-0" >
+							<div class="col-11 p-0 m-0">
+								<p class="m-0 link-outer p-0 m-0">
+									<b><a href="{{path.get_url()}}" class="p-0 m-0">{{ path.title }}</a></b>
+								</p>
+							</div>
+							<div class="col-1 p-0 m-0">
+								<div class="card-footer bg-white p-0 border-top-0">
+									<a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=url_for('www.user_profile', username=path.path_user.username)) }}"><i 
+										class="fa fa-heart heart-icon {{ 'liked' if current_user in path.like_list.users else '' }}"></i></a>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					
+				</div>
+				{%endif%}
+				{%endfor%}
+			</div>
+		</div>
+	</div>
+</div>
+{%endblock%}

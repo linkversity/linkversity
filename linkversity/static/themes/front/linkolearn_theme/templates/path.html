@@ -1,0 +1,93 @@
+{%set active_page='path'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
+{%block head%}
+<title>Learn By Links</title>
+<style type="text/css">
+	 .stat-elem a, a:hover,a:visited, a:focus {
+	    text-decoration:none;
+	}
+	.stat-icon {
+		color: #FFF;
+	}
+	.links{
+		
+
+	}
+	.links a {
+		
+		border-bottom: 1px solid orange;
+	}
+</style>
+{%endblock%}
+{%block body%}
+<br>
+<br>
+<div class="container">
+	<div class="text-right">
+		{%if current_user == path.path_user%}
+		<a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}">
+			<button class="btn btn-danger">
+				<i class="fa fa-pencil-alt"></i>
+			</button>
+		</a>
+			{%if path.is_visible%}
+			<a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}">
+				<button class="btn btn-success">
+					<i class="fa fa-globe-africa"></i>
+				</button>
+			</a>
+			{%else%}
+			<a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}">
+				<button class="btn btn-info">
+					<i class="fa fa-globe-africa"></i>
+				</button>
+			</a>
+			{%endif%}
+		{%endif%}
+		<a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=path.get_url()) }}" class="stat-elem">
+			<div class="btn-group" role="group" aria-label="Basic example">
+			  <button type="button" class="btn {{ 'btn-success' if current_user in path.like_list.users else 'btn-info'}} text-reset "><i class="fa fa-heart stat-icon"></i></button>
+			  <button type="button" class="btn {{ 'btn-success' if current_user in path.like_list.users else 'btn-info'}} text-reset  bg-white text-dark">{{ len(path.like_list.users) }}</button>
+			</div>
+		</a>
+		<a href="{{ url_for('linkolearn.toggle_bookmark', path_id=path.id, next=path.get_url()) }}" class="stat-elem">
+			<div class="btn-group" role="group" aria-label="Basic example">
+			  <button type="button" class="btn {{ 'btn-success' if current_user in path.bookmark_list.users else 'btn-info'}} text-reset "><i class="fa fa-bookmark stat-icon"></i></button>
+			  <button type="button" class="btn {{ 'btn-success' if current_user in path.bookmark_list.users else 'btn-info'}} text-reset  bg-white text-dark">{{ len(path.bookmark_list.users) }}</button>
+			</div>
+		</a>
+		
+	</div>
+	<div class="row">
+		<div class="col-9 ">
+			<div>
+				<div>
+					{% set username = path.path_user.username %}
+					 <h3><a href="{{ url_for('www.user_profile', username=username) }}">{{ username }}</a> / {{ path.slug }}</h3>
+					
+				</div>
+			</div>
+			<br>
+			<br>
+			<br>
+			<div>
+				<h2>{{ path.title }}</h2>
+			</div>
+			<br>
+			<br>
+			{% for section in path.sections %}
+				<h4>{{ section.title }}</h4>
+				<hr>
+				{% for link in section.links %}
+					<p class="links p-0 mb-1"><a href="{{ link.url }}">⚫ {{ link.url }}</a></p>
+				{% endfor %}
+				<br>
+				<br>
+			{% endfor %}
+		</div>
+		<div class="col-3">
+
+		</div>
+	</div>
+</div>
+{%endblock%}

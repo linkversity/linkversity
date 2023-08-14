@@ -1,0 +1,12 @@
+{
+        "display_string": "Linkolearn",
+        "module_name":"linkolearn",
+        "type": "show",
+        "fa-icon": "fa fa-store",
+        "url_prefix": "/linkolearn",
+        "author": {
+            "name":"",
+            "website":"",
+            "mail":""
+        }
+}

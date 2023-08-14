@@ -1,0 +1,35 @@
+{
+    "osdotsystem":[
+        {
+            "title":"Discover Mauritius",
+            "slug":"discover-mauritius",
+            "sections":[
+                {
+                    "title":"Islands Around Mauritius",
+                    "links":[
+                        "https://en.wikipedia.org/wiki/Rodrigues",
+                        "https://en.wikipedia.org/wiki/Agaléga",
+                        "https://en.wikipedia.org/wiki/St._Brandon"
+                    ]
+                },
+                {
+                    "title":"Foods From Mauritius",
+                    "links":[
+                        "https://mauritian-cuisine.com/chicken/chicken-briyani/",
+                        "https://mauritian-cuisine.com/sweets-and-dessert/chana-dal-tekwa/",
+                        "https://mauritian-cuisine.com/salade/chutney-de-pommes-damour/",
+                        "https://www.youtube.com/watch?v=bh_ut1k2s58",
+                        "https://www.lesdodosdalsace.com/2017/12/04/rit-frit-le-riz-cantonnais-mauricien/"
+                    ]
+                },
+                {
+                    "title":"Some Interesting Places",
+                    "links":[
+                        "https://caselaparks.com",
+                        "http://mallofmauritius.com"
+                    ]
+                }
+            ]
+        }
+    ]
+}
