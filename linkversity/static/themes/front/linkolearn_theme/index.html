@@ -1,0 +1,87 @@
+{%set active_page='home'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
+
+{%block head%}
+<title>Learn By Links</title>
+<style type="text/css">
+  .link-outer a{
+    color: #0366d6;
+    font-size: 30px;
+  }
+  .link .heart-icon {
+    line-height: 50px;
+    font-size: 20px;
+    color: #6a737d;
+  }
+  .liked{
+    color: #22b24c !important;
+  }
+</style>
+{%endblock%}
+{%block body%}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+          <div class="p-3">
+            <form action="{{url_for('auth.register')}}" method="post">
+                    {%include 'auth/blocks/register_form.html'%}
+                </form>
+          </div>
+          
+        </div>
+        <div class="col-md-8">
+          <div class="row">
+            <div class="col-md-8">
+             <div class="p-5">
+              <h1>Linkolearn allows people to create courses from contents around the internet. </h1>
+               <i>
+                 
+                 Want to send preparation materials to someone? Take a few minutes, gather your links and send the person the course's content.<br><br>
+                 It is particularly useful for the Education sector and OpenSource projects to get contributors started quickly.<br><br>
+                 It can also be used as a research bookmark manager!<br><br>
+               </i>
+               Emails no longer needed!
+             </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-5">
+                <img src="{{url_for('static', filename='linkolearn.svg')}}" class="img-fluid" alt="Responsive image">
+              </div>
+              
+            </div>
+            
+          </div>
+          
+        </div>
+        
+    </div>
+    <hr>
+    <div class="container">
+      <h2>Latest Courses</h2><br>
+      <div>
+        {%for path in get_last_5()%}
+          <div class="card link p-2 mb-2 shadow-sm">
+          <div class="card-body pt-0 border-bottom-0 p-0 m-0" >
+            <div class="row p-0 m-0" >
+              <div class="col-11 p-0 m-0">
+                <p class="m-0 link-outer p-0 m-0">
+                  <b><a href="{{path.get_url()}}" class="p-0 m-0">{{ path.title }}</a></b>
+                </p>
+              </div>
+              <div class="col-1 p-0 m-0">
+                <div class="card-footer bg-white p-0 border-top-0">
+                  <a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=url_for('www.index')) }}"><i 
+                    class="fa fa-heart heart-icon {{ 'liked' if current_user in path.like_list.users else '' }}"></i></a>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          
+        </div>
+        {%endfor%}
+      </div>
+    </div>
+</div>
+{%endblock%}

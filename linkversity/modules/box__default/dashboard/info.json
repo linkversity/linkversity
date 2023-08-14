@@ -1,0 +1,7 @@
+{
+	"display_string": "",
+	"type": "hidden",
+	"fa-icon": "fas fa-clock",
+	"module_name": "dashboard",
+	"url_prefix": "/dashboard"
+}

@@ -1,0 +1,12 @@
+{
+        "display_string": "New",
+        "module_name":"new",
+        "type": "show",
+        "fa-icon": "fa fa-store",
+        "url_prefix": "/new",
+        "author": {
+            "name":"",
+            "website":"",
+            "mail":""
+        }
+}

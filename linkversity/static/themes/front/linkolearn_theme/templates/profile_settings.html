@@ -1,0 +1,61 @@
+{%set active_page='settings'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
+{%block head%}
+<title>Learn By Links</title>
+<link href="https://emoji-css.afeld.me/emoji.css" rel="stylesheet">
+{%endblock%}
+{%block body%}
+<br>
+<br>
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+            <div class="d-flex align-items-start">
+                <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Profile</button>
+                    <button class="nav-link" id="v-pills-emoji-tab" data-bs-toggle="pill" data-bs-target="#v-pills-emoji" type="button" role="tab" aria-controls="v-pills-emoji" aria-selected="false">Emoji</button>
+                    <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">Settings</button>
+                </div>
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    	<form method="POST" action="{{ url_for('linkolearn.change_password') }}">
+                        {%for field in password_form%}
+                            {%if field.id not in ['csrf_token']%}
+                                {{field.label}}<br>
+                            {%endif%}
+                            {{field}}<br>
+                        {%endfor%}
+                        <button class="btn btn-primary">submit</button>
+                      </form>
+                      <br>
+                      <form method="POST" action="{{ url_for('linkolearn.change_name') }}">
+                        {%for field in name_form%}
+                            {%if field.id not in ['csrf_token']%}
+                                {{field.label}}<br>
+                            {%endif%}
+                            {{field}}<br>
+                        {%endfor%}
+                        <button class="btn btn-primary">submit</button>
+                      </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="v-pills-emoji" role="tabpanel" aria-labelledby="v-pills-emoji-tab">
+                      <form action="{{ url_for('linkolearn.change_emoji') }}" method="POST">
+                      {%for emoji in emoji_classes%}
+                        <input type="radio" name="emoji_class" value="{{emoji.class_name | safe}}" {{'checked' if loop.index==1}}>
+                        <i class="em {{emoji.class_name | safe}}"></i>
+                      {%endfor%}
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <br><br>
+                      <button class="btn btn-primary">save</button>
+                      </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab">...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}
