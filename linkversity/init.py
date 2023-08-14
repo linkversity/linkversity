@@ -23,3 +23,12 @@ root_path = os.path.dirname(os.path.abspath(__file__))  # don't remove
 static_path = os.path.join(root_path, "static")  # don't remove
 modules_path = os.path.join(root_path, "modules")  # don't remove
 themes_path = os.path.join(static_path, "themes")  # don't remove
+
+installed_packages = []
+
+def load_extensions(app):
+    migrate.init_app(app, db)
+    db.init_app(app)
+    ma.init_app(app)
+    mail.init_app(app)
+    login_manager.init_app(app)

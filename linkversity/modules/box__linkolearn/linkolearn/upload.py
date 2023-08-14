@@ -20,7 +20,7 @@ with open(json_path) as f:
     userdata = json.load(f)
 
 
-data = userdata['osdotsystem']
+data = userdata['osdotsystem'][0]
 
 def upload_default_users():
     with app.app_context():
@@ -38,11 +38,11 @@ def upload_default_users():
             title=data['title'],
             slug=data['slug'],
             )
-        for section in data['sections']:
+        for section_ in data['sections']:
             section = Section(
-                title = section['title']
+                title = section_['title']
                 )
-            for url in section['links']:
+            for url in section_['links']:
                 link = Link(url=url)
                 section.links.append(link)
             path.sections.append(section)
