@@ -1,6 +1,7 @@
 {
 	"display_string": "Admin",
 	"type": "show",
+	"module_name": "appadmin",
 	"fa-icon": "fas fa-user-lock",
 	"url_prefix": "/appadmin",
 	"author": {

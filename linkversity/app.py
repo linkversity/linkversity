@@ -138,7 +138,9 @@ def create_app(config_name):
             module_static = os.path.join(modules_path, boxormodule, "static")
             return send_from_directory(module_static, filename=filename)
 
-    available_everywhere_entities = {}
+    available_everywhere_entities = {
+        
+    }
 
     #
     # load blueprints
