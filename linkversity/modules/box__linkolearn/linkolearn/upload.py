@@ -67,3 +67,5 @@ def upload_emoji_css():
 def upload():
     print('Uploading paths')
     upload_default_users()
+    print('uploading emojis')
+    upload_emoji_css()
