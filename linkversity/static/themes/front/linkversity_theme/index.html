@@ -1,5 +1,5 @@
 {%set active_page='home'%}
-{%extends 'linkolearn_theme/templates/base.html'%}
+{%extends 'linkversity_theme/templates/base.html'%}
 
 {%block head%}
 <title>Learn By Links</title>
@@ -17,7 +17,8 @@
     color: #22b24c !important;
   }
   .highlight{
-    background-color: rgba(255, 255, 0, 0.959);
+    background-color: yellow;  
+    padding: 5px;
     font-weight: bold;
   }
 </style>
@@ -38,22 +39,23 @@
           <div class="row">
             <div class="col-md-8">
              <div class="p-5">
-              <h1>Linkversity allows people to create courses from links around the internet. </h1>
+              <h1>Linkversity allows people to create courses from contents around the internet. </h1>
                <i>
                  
-                 Want to send preparation materials to someone? Take a few minutes, gather your links and send the person the course's content.<br><br>
-                 It is particularly useful for the <span class="highlight">Education</span> 
-                 sector and <span class="highlight">OpenSource</span> projects to get 
-                 contributors started quickly. It can be used as a 
+                 Want to send preparation materials to someone? Take a few minutes, 
+                 gather your links and send the person the course's content.<br><br>
+                 It is particularly useful for the <span class="highlight">Education</span>
+                  sector and <span class="highlight">OpenSource</span> projects 
+                 to get contributors started quickly by using it as a 
                  <span class="highlight">knowledge base</span>.<br><br>
-                 It can also be used as a research bookmark manager!<br><br>
+                 It can also be used as a research bookspan manager!<br><br>
                </i>
                Emails no longer needed!
              </div>
             </div>
             <div class="col-md-4">
               <div class="p-5">
-                <img src="{{url_for('static', filename='linkolearn.svg')}}" class="img-fluid" alt="Responsive image">
+                <img src="{{url_for('static', filename='linkversity.svg')}}" class="img-fluid" alt="Responsive image">
               </div>
               
             </div>
@@ -78,7 +80,7 @@
               </div>
               <div class="col-1 p-0 m-0">
                 <div class="card-footer bg-white p-0 border-top-0">
-                  <a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=url_for('www.index')) }}"><i 
+                  <a href="{{ url_for('linkversity.toggle_like', path_id=path.id, next=url_for('www.index')) }}"><i 
                     class="fa fa-heart heart-icon {{ 'liked' if current_user in path.like_list.users else '' }}"></i></a>
                 </div>
               </div>

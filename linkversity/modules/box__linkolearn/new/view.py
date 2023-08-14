@@ -36,14 +36,20 @@ def index():
 @login_required
 def add():
     json_submit = request.get_json()
-    path_title = json_submit['path_title']
+    # path_title = json_submit['path_title']
     path_link = json_submit['path_link']
     sections = json_submit['sections']
 
+    if not path_link.strip():
+        return jsonify({'errmsg': "Slug should not be empty"})
+    
+    exists = Path.query.filter(Path.slug == path_link).first()
+    if exists:
+        return jsonify({'errmsg': "Path exists"})
     path = Path()
     path.like_list = LikeList()
     path.bookmark_list = BookmarkList()
-    path.title = path_title
+    path.title = ""
     path.slug = path_link
 
     for sec in sections:

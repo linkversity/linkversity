@@ -12,15 +12,14 @@
 <div class="container">  
   <h3>Create new path</h3>
   <form>
-    <label for="path-name" class="form-label">Path Title</label>
-    <input type="text" id="path-name" class="form-control">
+    <br>
     <label for="path-link" class="form-label">Path Link</label>
     <div class="row g-3 align-items-center">
       <div class="col-auto pe-0 me-0">
         <span for="" class="col-form-label">https://linkolearn.com/{{current_user.username}}/</span>
       </div>
       <div class="col-auto">
-        <input type="text" id="path-link" class="form-control"> e.g mastering-advanced-english
+        <input type="text" id="path-link" class="form-control" required> e.g mastering-advanced-english
       </div>
     </div>
   </nav>
@@ -161,7 +160,12 @@
         success: function(data){
             // alert(data);
             // window.location.reload();
-            window.location.href = data['goto'];
+            if (data.hasOwnProperty("errmsg")){
+              alert(data['errmsg']);
+            }else{
+              window.location.href = data['goto'];
+            }
+            
             return false;
         },
         failure: function(errMsg) {

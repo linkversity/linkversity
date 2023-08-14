@@ -1,5 +1,5 @@
 {%set active_page='new'%}
-{%extends 'linkolearn_theme/templates/base.html'%}
+{%extends 'linkversity_theme/templates/base.html'%}
 {%block head%}
 <title>Learn By Links</title>
 <style type="text/css">
@@ -11,13 +11,13 @@
 {%block body%}
 <div class="container">  
   <h3>Edit path</h3>
-  <form class="form">
-
+  <form>
+    <label for="path-name" class="form-label">Path Title</label>
+    <input type="text" id="path-name" class="form-control" value="{{path.title}}">
     <label for="path-link" class="form-label">Path Link</label>
     <div class="row g-3 align-items-center">
       <div class="col-auto pe-0 me-0">
-
-        <span for="" class="col-form-label">https://linkolearn.com/{{current_user.username}}/</span>
+        <span for="" class="col-form-label">https://linkversity.com/{{current_user.username}}/</span>
       </div>
       <div class="col-auto">
         <input type="text" id="path-link" class="form-control" value="{{path.slug}}"> e.g mastering-advanced-english
@@ -173,7 +173,7 @@
 
     $.ajax({
         type: "POST",
-        url: "{{url_for('linkolearn.edit_path', path_id=path.id)}}",
+        url: "{{url_for('linkversity.edit_path', path_id=path.id)}}",
         data: JSON.stringify(json_submit),
         contentType: "application/json; charset=utf-8",
         dataType: "json",

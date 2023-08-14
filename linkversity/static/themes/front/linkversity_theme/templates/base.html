@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="keywords" content="linkolearn, learn links, open source, courses" />
+<meta name="keywords" content="Linkversity, learn links, open source, courses" />
 <meta name="description" content="Create courses using links" />
-<link rel="icon" href="{{url_for('static', filename='linkolearn.png')}}">  
+<link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">  
 
 
 <!-- jQuery -->
@@ -134,7 +134,7 @@ body.offcanvas-active{
 <body>
   {%include 'base/blocks/flashed_messages.html'%}
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="z-index: 1500">
-  <a class="navbar-brand" href="#">LINKOLEARN</a>
+  <a class="navbar-brand" href="#">Linkversity</a>
   <button class="navbar-toggler" type="button" data-trigger="#main_nav">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -142,7 +142,7 @@ body.offcanvas-active{
 
 <div class="offcanvas-header mt-3">  
     <button class="btn btn-outline-danger btn-close float-right btn-primary"> </button>
-    <h5 class="py-2 text-white">LINKOLEARN</h5>
+    <h5 class="py-2 text-white">Linkversity</h5>
 </div>
 
 <ul class="navbar-nav">
@@ -167,9 +167,9 @@ body.offcanvas-active{
 
 <ul class="navbar-nav ml-auto">
     {%if current_user.is_authenticated and current_user.is_email_confirmed%}
-    <li class="nav-item {{'active' if active_page == 'bookmarks'}}"><a class="nav-link" href="{{ url_for('linkolearn.bookmarks') }}"> <i class="fa fa-bookmark"></i> </a></li>
+    <li class="nav-item {{'active' if active_page == 'bookmarks'}}"><a class="nav-link" href="{{ url_for('linkversity.bookmarks') }}"> <i class="fa fa-bookmark"></i> </a></li>
 
-      <li class="nav-item {{'active' if active_page == 'settings'}}"><a class="nav-link" href="{{ url_for('linkolearn.settings') }}"> <i class="fa fa-wrench"></i> </a></li>
+      <li class="nav-item {{'active' if active_page == 'settings'}}"><a class="nav-link" href="{{ url_for('linkversity.settings') }}"> <i class="fa fa-wrench"></i> </a></li>
 
       <li class="nav-item {{'active' if active_page == 'profile'}}"><a class="nav-link" href="{{url_for('www.user_profile', username=current_user.username)}}"> Profile </a></li>
 
@@ -210,10 +210,10 @@ body.offcanvas-active{
   <a href="{{ url_for('www.contact') }}">
     <p>contact</p>
   </a> | 
-  <a href="https://github.com/linkolearn/linkolearn/issues">
+  <a href="https://github.com/Linkversity/Linkversity/issues">
     <p>report bugs</p>
   </a> | 
-  <a href="https://github.com/linkolearn/linkolearn">
+  <a href="https://github.com/Linkversity/Linkversity">
     <p>it's OpenSource!</p>
   </a>
 </div>

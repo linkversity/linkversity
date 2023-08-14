@@ -21,6 +21,7 @@ from modules.box__default.settings.models import Settings
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
+from modules.box__linkolearn.linkolearn.models import Emoji
 
 from config import app_config
 
@@ -125,6 +126,7 @@ def create_app(config_name):
     admin.add_view(DefaultModelView(Path, db.session))
     admin.add_view(DefaultModelView(Section, db.session))
     admin.add_view(DefaultModelView(Link, db.session))
+    admin.add_view(DefaultModelView(Emoji, db.session))
     admin.add_link(
         MenuLink(name="Logout", category="", url="/auth/logout?next=/admin")
     )
