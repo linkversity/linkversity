@@ -215,7 +215,8 @@ def load_blueprints(app, config_name, global_template_variables, global_configs)
                     mod_global = importlib.import_module(
                         f"modules.{folder}.{sub_folder}.global"
                     )
-                    print(mod_global.available_everywhere)
+                    if is_yo_debug():
+                        print(mod_global.available_everywhere)
                     global_template_variables.update(mod_global.available_everywhere)
                 except ImportError as e:
                     if is_yo_debug():
@@ -252,7 +253,8 @@ def load_blueprints(app, config_name, global_template_variables, global_configs)
             # global's available everywhere template vars
             try:
                 mod_global = importlib.import_module(f"modules.{folder}.global")
-                print(mod_global, mod_global.available_everywhere)
+                if is_yo_debug():
+                    print(mod_global, mod_global.available_everywhere)
                 global_template_variables.update(mod_global.available_everywhere)
             except ImportError as e:
                 # print(f"[ ] {e}")
