@@ -43,7 +43,7 @@ def add():
     if not path_link.strip():
         return jsonify({'errmsg': "Slug should not be empty"})
     
-    exists = Path.query.filter(Path.slug == path_link).first()
+    exists = Path.query.filter(Path.slug == path_link, Path.user_id == current_user.id).first()
     if exists:
         return jsonify({'errmsg': "Path exists"})
     path = Path()

@@ -176,11 +176,11 @@ def edit_path(path_id):
         return render_template('linkolearn_theme/templates/edit.html', **context)
     if request.method == 'POST':
         json_submit = request.get_json()
-        path_title = json_submit['path_title']
+        # path_title = json_submit['path_title']
         path_link = json_submit['path_link']
         sections = json_submit['sections']
         path.sections = []
-        path.title = path_title
+        # path.title = path_title
         path.slug = path_link
 
         for sec in sections:
@@ -188,10 +188,13 @@ def edit_path(path_id):
             sec_title = sec['section_title']
             section.title = sec_title
             sec_links = sec['section_links']
-            if sec_links.strip() != '' and '\n' in sec_links:
+            print(sec_links)
+            if (sec_links.strip() != ''):
                 urls = sec_links.split('\n')
+                print(urls)
                 urls = list((url for url in urls if validators.url(url)))
                 section.links = list((Link(url=url) for url in urls))
+
             path.sections.append(section)
         path.save()
 
