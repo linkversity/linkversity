@@ -57,8 +57,10 @@ def add():
         sec_title = sec['section_title']
         section.title = sec_title
         sec_links = sec['section_links']
-        if sec_links.strip() != '' and '\n' in sec_links:
+        print(sec_links)
+        if (sec_links.strip() != ''):
             urls = sec_links.split('\n')
+            print(urls)
             urls = list((url for url in urls if validators.url(url)))
             section.links = list((Link(url=url) for url in urls))
         path.sections.append(section)
