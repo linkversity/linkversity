@@ -2,3 +2,4 @@ pymysql
 shopyo==4.8.6
 SQLAlchemy==1.4.27
 validators==0.18.2
+flask-reuploaded
