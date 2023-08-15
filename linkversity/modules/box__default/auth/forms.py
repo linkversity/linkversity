@@ -10,6 +10,7 @@ from wtforms.validators import InputRequired
 from wtforms.validators import Length
 from wtforms.validators import EqualTo
 from wtforms.validators import ValidationError
+from flask_wtf.recaptcha import RecaptchaField
 
 from .models import User
 
@@ -46,6 +47,7 @@ class RegistrationForm(FlaskForm):
         'placeholder': 'Password min. 6 chars'
         }
     )
+    recaptcha = RecaptchaField()
     confirm = PasswordField(
         "New Password",
         validators=[
@@ -61,6 +63,7 @@ class RegistrationForm(FlaskForm):
         'placeholder': 'Reconfirm password'
         }
     )
+    
 
     def validate_email(self, field):
         """

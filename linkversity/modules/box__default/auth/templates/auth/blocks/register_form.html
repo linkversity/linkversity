@@ -39,10 +39,17 @@
         {% endfor %}
     </ul>
 </div>
+{{ register_form.recaptcha(class_="form-control") }}
+    <ul class="form-errors">
+        {% for error in register_form.recaptcha.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
 <input
     type="hidden"
     name="next"
     value="{{ request.args.get('next', '') }}"
 />
+
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 <input type="submit" name="" value="register" class="btn btn-info">

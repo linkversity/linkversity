@@ -10,12 +10,12 @@
 		color: #FFF;
 	}
 	.links{
-		
-
+	
 	}
 	.links a {
 		
 		border-bottom: 1px solid orange;
+		color: rgb(59, 95, 255);
 	}
 </style>
 {%endblock%}
@@ -73,7 +73,7 @@
 				<h4>{{ section.title }}</h4>
 				<hr>
 				{% for link in section.links %}
-					<p class="links p-0 mb-1"><a href="{{ link.url }}">⚫ {{ link.url }}</a></p>
+				<p class="links p-0 mb-1"><b>*</b> <a href="{{ link.url }}"> {{ link.url }}</a></p>
 				{% endfor %}
 				<br>
 				<br>
