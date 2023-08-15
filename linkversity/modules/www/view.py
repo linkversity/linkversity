@@ -77,7 +77,8 @@ def user_profile(username):
 
 @module_blueprint.route("/<username>/<path_slug>")
 def path(username, path_slug):
-    path = Path.query.filter(Path.slug == path_slug).first_or_404()
+    user = User.query.filter(User.username == username).first_or_404()
+    path = Path.query.filter(Path.slug == path_slug, Path.user_id == user.id).first_or_404()
     if (not path.is_visible):
         if (current_user.is_authenticated):
             if(path.path_user == current_user):
