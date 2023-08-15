@@ -16,7 +16,7 @@ class Path(PkModel):
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     is_visible = db.Column(db.Boolean, default=True)
-    created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    # created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     like_list = db.relationship(
         "LikeList", backref="like_list_path", lazy=True, uselist=False
