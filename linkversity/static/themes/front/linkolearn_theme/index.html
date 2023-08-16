@@ -3,6 +3,7 @@
 
 {%block head%}
 <title>Learn By Links</title>
+<link href="https://emoji-css.afeld.me/emoji.css" rel="stylesheet">
 <style type="text/css">
   .link-outer a{
     color: #0366d6;
@@ -19,6 +20,11 @@
   .highlight{
     background-color: rgba(255, 255, 0, 0.959);
     font-weight: bold;
+  }
+  .profile-icon{
+    border: 5px solid salmon;
+    width: 100px; height: 100px; padding: 10px;
+    border-radius: 50%;
   }
 </style>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -75,7 +81,13 @@
             <div class="row p-0 m-0" >
               <div class="col-11 p-0 m-0">
                 <p class="m-0 link-outer p-0 m-0">
-                  <b><a href="{{path.get_url()}}" class="p-0 m-0">{{path.path_user.username}} / {{ path.slug }}</a></b>
+                  <b>
+                    <picture >
+                      <i class="em {{path.path_user.emoji_class}}" 
+                      style="width: 40px; height: 40px; border: 1px solid orange; padding: 5px;
+                      border-radius: 50%;"></i>
+                    </picture>&nbsp;
+                    <a href="{{path.get_url()}}" class="p-0 m-0">{{path.path_user.username}} / {{ path.slug }}</a></b>
                 </p>
               </div>
               <div class="col-1 p-0 m-0">
