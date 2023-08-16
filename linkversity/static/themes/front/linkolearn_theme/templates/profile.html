@@ -6,10 +6,20 @@
 <style type="text/css">
 	.profile-icon{
 		font-size: 50px;
+		border: 1px solid orange; 
+		width: 9vw; height: 9vw; 
+		border-radius: 50%;
+	}
+	.profile-name{
+		font-size: 25px;
+	}
+	.profile-repo{
+		font-size: 25px !important;
 	}
 	.info-icon i{
 		color: #6a737d;
 	}
+	
 	.link-outer a{
 		color: #0366d6;
 		font-size: 30px;
@@ -22,6 +32,23 @@
 	.liked{
 		color: #22b24c !important;
 	}
+	.unliked{
+		color: rgb(197, 197, 197);
+	}
+	@media only screen and (max-width: 600px) {
+		.profile-icon{
+			width: 15vw; height: 15vw;
+		}
+		.profile-name{
+			font-size: 10px;
+		}
+		.profile-repo{
+			font-size: 10px !important;
+		}
+		.btn {
+			padding: 5px;
+		}
+	}
 </style>
 {%endblock%}
 {%block body%}
@@ -30,14 +57,18 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-3 ">
-			<div style="border: 1px solid #eb6864; width: 100px; height: 100px;" class="text-center rounded p-1 text-center shadow">
-				<i class="em {{user.emoji_class}} profile-icon p-0 m-0"></i>
+			<div 
+			class="text-center">
+				<i 
+				style=""
+				class="em {{user.emoji_class}} profile-icon p-0 m-0 shadow"></i>
 			</div>
 			<br>
 			<br>
-			<div>
-				<h5>{{user.first_name if user.first_name else 'First Name'}} <br> {{user.last_name if user.last_name else 'Last Name'}}</h5>
-				<h6>{{user.username}}</h6>
+			<div style="padding-left: 1vw;">
+				<p class="profile-name">{{user.first_name if user.first_name else 'First Name'}} <br> 
+					{{user.last_name if user.last_name else 'Last Name'}}</p>
+				<p class="profile-name"><b>{{user.username}}</b></p>
 			</div>
 			<!--
 			<p>About</p>
@@ -72,10 +103,10 @@
 			<div>
 				<div>
 					 <button type="button" class="btn btn-primary">
-					  Paths <span class="badge bg-secondary">{{len(user.paths)}}</span>
+					  <span class="profile-repo">Paths </span> <span class="badge bg-secondary profile-repo">{{len(user.paths)}}</span>
 					</button>
 					<button type="button" class="btn btn-primary">
-					  Likes <span class="badge bg-secondary">{{len(user.user_like_lists)}}</span>
+						<span class="profile-repo">Likes </span>  <span class="badge bg-secondary profile-repo">{{len(user.user_like_lists)}}</span>
 					</button>
 				</div>
 			</div>
@@ -85,23 +116,19 @@
 			<div>
 				{%for path in user.paths%}
 				{%if path.is_visible%}
-				<div class="card link p-2 mb-2 shadow-sm">
-					<div class="card-body pt-0 border-bottom-0 p-0 m-0" >
-						<div class="row p-0 m-0" >
-							<div class="col-11 p-0 m-0">
-								<p class="m-0 link-outer p-0 m-0">
-									<b><a href="{{path.get_url()}}" class="p-0 m-0">{{ path.slug }}</a></b>
-								</p>
-							</div>
-							<div class="col-1 p-0 m-0">
-								<div class="card-footer bg-white p-0 border-top-0">
-									<a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=url_for('www.user_profile', username=path.path_user.username)) }}"><i 
-										class="fa fa-heart heart-icon {{ 'liked' if current_user in path.like_list.users else '' }}"></i></a>
-								</div>
-							</div>
-						</div>
-						
-					</div>
+				<div class="card p-2 link-outer">
+						<b><a 
+							href="{{path.get_url()}}" 
+							class="p-0 m-0 profile-repo">{{ path.slug }}</a>
+							<a 
+							href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=url_for('www.user_profile', username=path.path_user.username)) }}"
+							class="profile-repo link-repo"
+							>
+							<i 
+							class="fa fa-heart heart-icon 
+							{{ 'liked' if current_user in path.like_list.users else 'unliked' }}
+							profile-repo"></i></a>
+						</b>
 					
 				</div>
 				{%endif%}
