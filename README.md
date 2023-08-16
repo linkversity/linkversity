@@ -1,5 +1,6 @@
 
-# LINKVERSITY
+# LINKVERSITY ![Static Badge](https://img.shields.io/badge/fund-opencollective%2Fshopyo%2Flinkversity-green?link=https%3A%2F%2Fopencollective.com%2Fshopyo%2Fprojects%2Flinkversity)
+
 
 Create courses out of links, useful for OpenSource as well as documenting internal knowledge. It's not possible to replicate the knowledge of the web from scratch. Bring in pieces from the web to help people get started very quickly.
 
