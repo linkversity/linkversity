@@ -82,11 +82,15 @@
               <div class="col-11 p-0 m-0">
                 <p class="m-0 link-outer p-0 m-0">
                   <b>
-                    <picture >
-                      <i class="em {{path.path_user.emoji_class}}" 
-                      style="width: 40px; height: 40px; border: 1px solid orange; padding: 5px;
-                      border-radius: 50%;"></i>
-                    </picture>&nbsp;
+                    <a href="{{url_for("www.user_profile", username=path.path_user.username)}}"
+                        style="text-decoration: none;">
+                      <picture >
+                        <i class="em {{path.path_user.emoji_class}}" 
+                        style="width: 40px; height: 40px; border: 1px solid orange; padding: 5px;
+                        border-radius: 50%;"></i>
+                      </picture>
+                    </a>
+                    &nbsp;
                     <a href="{{path.get_url()}}" class="p-0 m-0">{{path.path_user.username}} / {{ path.slug }}</a></b>
                 </p>
               </div>
