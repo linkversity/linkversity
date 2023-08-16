@@ -3,7 +3,7 @@
 
 Create courses out of links, useful for OpenSource as well as documenting internal knowledge. It's not possible to replicate the knowledge of the web from scratch. Bring in pieces from the web to help people get started very quickly.
 
-Demo: contriblearn.com
+Demo: [contriblearn.com](https://contriblearn.com)
 
 Create venv and install requirements
 
@@ -72,6 +72,13 @@ from app import app as application  # noqa
 # whatever app you specify, modify that
 ```
 
+## How the website is organised
 
+All pages are in static/theems/front/linkolearn_theme/
+
+Go there to modify the page you want
+
+modules/box__linkolearn contains all config code
+modules/www contains the code for handling / /username /username/path
 
 Uses the [shopyo](https://github.com/shopyo/shopyo) web framework.
