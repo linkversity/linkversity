@@ -16,6 +16,7 @@ from flask import current_app
 from init import db
 from shopyo.api.models import PkModel
 
+
 role_user_bridge = db.Table(
     "role_user_bridge",
     db.Column(
@@ -80,6 +81,7 @@ class User(UserMixin, PkModel):
     is_email_confirmed = db.Column(db.Boolean(), nullable=False, default=False)
     email_confirm_date = db.Column(db.DateTime)
     emoji_class = db.Column(db.String(100), default='em-airplane')
+    subscription_plan = db.Column(db.Integer, default=0, nullable=True)
 
     paths = db.relationship('Path', backref='path_user', lazy=True)
 
@@ -163,6 +165,16 @@ class User(UserMixin, PkModel):
 
     def get_profile_url(self):
         return f'/{self.username}'
+
+    def upgrade_subscription(self, plan: int):
+        self.subscription_plan = plan
+        db.session.commit()
+    
+    def is_pro(self):
+        return self.subscription_plan == 1
+
+    def is_enterprise(self):
+        return self.subscription_plan == 2
 
 @login_manager.user_loader
 def load_user(user_id):
