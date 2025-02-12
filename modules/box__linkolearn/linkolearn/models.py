@@ -171,3 +171,14 @@ class Emoji(PkModel):
     __tablename__ = "emoji_classes"
 
     class_name = db.Column(db.String(100), nullable=False)
+
+
+
+class ActivationCode(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    plan = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return f'<ActivationCode {self.code} for {self.plan}>'
