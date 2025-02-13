@@ -37,6 +37,7 @@ from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import Emoji 
+from modules.box__linkolearn.linkolearn.models import ActivationCode
 
 from shopyo_admin import DefaultModelView
 
@@ -196,6 +197,7 @@ def setup_flask_admin(app):
     admin.add_view(DefaultModelView(Section, db.session))
     admin.add_view(DefaultModelView(Link, db.session))
     admin.add_view(DefaultModelView(Emoji, db.session))
+    admin.add_view(DefaultModelView(ActivationCode, db.session))
     admin.add_link(MenuLink(name="Logout", category="", url="/auth/logout?next=/admin"))
 
 
