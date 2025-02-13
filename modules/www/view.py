@@ -96,6 +96,8 @@ def path(username, path_slug):
     if (not path.is_visible):
         if (current_user.is_authenticated):
             if(path.path_user == current_user):
+                pass 
+            elif current_user in path.editors:
                 pass
             elif path.is_password_protected:
                 pass
