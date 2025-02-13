@@ -301,6 +301,13 @@ def get_sections(path_id):
 @module_blueprint.route("/add-editor/", methods=['POST'])
 @login_required
 def add_editor():
+    if current_user.subscription_plan is None:
+        current_user.subscription_plan = 0
+
+    if current_user.subscription_plan < 1:
+        flash('You must be premium to add editors')
+        return redirect(path.get_url())
+
     username = request.form.get('username')
     path_id = request.form.get('path_id')
 
@@ -326,7 +333,12 @@ def add_editor():
 @module_blueprint.route("/remove-editor/<username>/<path_id>/", methods=['GET'])
 @login_required
 def remove_editor(username, path_id):
+    if current_user.subscription_plan is None:
+        current_user.subscription_plan = 0
 
+    if current_user.subscription_plan < 1:
+        flash('You must be premium to add editors')
+        return redirect(path.get_url())
 
     path = Path.query.get(path_id)
 
