@@ -15,6 +15,23 @@ from markdown_it import MarkdownIt
 from slugify import slugify as slugify_func
 
 
+
+path_editor_bridge = db.Table(
+    "path_editor_bridge",
+    db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "path_id",
+        db.Integer,
+        db.ForeignKey("paths.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
 class Path(PkModel):
     __tablename__ = "paths"
     
@@ -34,6 +51,26 @@ class Path(PkModel):
     # Relationships
     like_list = db.relationship("LikeList", backref="like_list_path", lazy=True, uselist=False)
     bookmark_list = db.relationship("BookmarkList", backref="bookmark_list_path", lazy=True, uselist=False)
+
+
+    editors = db.relationship(
+        "User",
+        secondary=path_editor_bridge,
+        backref="editable_paths",
+        lazy="dynamic"
+    )
+
+    def add_editor(self, user):
+        if user not in self.editors:
+            self.editors.append(user)
+
+    def remove_editor(self, user):
+        if user in self.editors:
+            self.editors.remove(user)
+
+    def can_edit(self, user):
+        return user == self.path_user or user in self.editors
+
 
     @hybrid_property
     def password(self):

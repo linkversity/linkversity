@@ -226,8 +226,12 @@ def delete_path(path_id):
 @login_required
 def edit_path(path_id):
     path = Path.query.get(path_id)
-    if not path.path_user == current_user:
-        return jsonify({'error': 'x'})
+    if ((not (path.path_user == current_user))):
+        if ((not (current_user in path.editors))):
+            flash("Insufficient permission", 'warning')
+            return redirect(path.get_url())
+
+
     if request.method == 'GET':
         context = {}
         
@@ -268,7 +272,7 @@ def edit_path(path_id):
             path.sections.append(section)
         path.save()
 
-        next_url = url_for('www.path', username=current_user.username, path_slug=path.slug)
+        next_url = path.get_url()
         return jsonify({'goto': next_url})
 
 
@@ -291,3 +295,52 @@ def get_paths():
 def get_sections(path_id):
     sections = Section.query.filter_by(path_id=path_id).all()
     return jsonify([{"id": section.id, "title": section.title} for section in sections])
+
+
+
+@module_blueprint.route("/add-editor/", methods=['POST'])
+@login_required
+def add_editor():
+    username = request.form.get('username')
+    path_id = request.form.get('path_id')
+
+    path = Path.query.get(path_id)
+
+    editor = User.query.filter_by(username=username).first()
+    if not editor:
+        flash('User not found', 'error')
+        return redirect(path.get_url())
+
+    if not (current_user == path.path_user):
+        flash('No permission', 'error')
+        return redirect(path.get_url())
+
+    path.add_editor(editor)
+    db.session.commit()
+
+    flash(f'Added {username} successfully', 'success')
+    return redirect(path.get_url())
+
+
+
+@module_blueprint.route("/remove-editor/<username>/<path_id>/", methods=['GET'])
+@login_required
+def remove_editor(username, path_id):
+
+
+    path = Path.query.get(path_id)
+
+    editor = User.query.filter_by(username=username).first()
+    if not editor:
+        flash('User not found', 'error')
+        return redirect(path.get_url())
+
+    if not (current_user == path.path_user):
+        flash('No permission', 'error')
+        return redirect(path.get_url())
+
+    path.remove_editor(editor)
+    db.session.commit()
+
+    flash(f'Removed {username} successfully', 'success')
+    return redirect(path.get_url())
