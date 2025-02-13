@@ -24,6 +24,7 @@ from sqlalchemy import func
 
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Link
+from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
 from init import db 
@@ -162,3 +163,27 @@ def save_link():
         profile_url = current_user.get_profile_url()
         return f"Link <{url}> saved successfully <a href='{profile_url}'>Return to profile</a>"
     return render_template("linkolearn_theme/templates/save_link.html", **context)
+
+
+@module_blueprint.route("/activate", methods=['GET', 'POST'])
+@login_required
+def activate():
+    context = {'current_user': current_user}
+    if request.method == 'POST':
+        activation_code = request.form.get('code')
+        print(activation_code)
+
+        code_entry = ActivationCode.query.filter_by(code=activation_code).first()
+        
+        if not code_entry:
+            flash('Wrong code', 'error')
+            return redirect(url_for('www.activate'))
+
+
+        current_user.subscription_plan = 1; 
+        db.session.commit()
+
+        flash('Activated', 'success')
+        return redirect(url_for('www.activate'))
+
+    return render_template("linkolearn_theme/templates/activate.html", **context)
