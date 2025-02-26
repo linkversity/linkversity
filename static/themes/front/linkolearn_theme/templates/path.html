@@ -272,7 +272,8 @@
 </div>
 {%endif%}
 <script type="text/javascript">
-document.addEventListener("DOMContentLoaded", function() { { % if current_user == path.path_user % }
+document.addEventListener("DOMContentLoaded", function() { 
+    {% if current_user == path.path_user %}
 
     // Get the password button and input
     const passwordButton = document.querySelector("#pass-but");
@@ -319,62 +320,62 @@ document.addEventListener("DOMContentLoaded", function() { { % if current_user =
             });
     });
 
-    { % endif % }
+    {% endif %}
 
 
-    { % if path.is_password_protected % }
+    {% if path.is_password_protected %}
 
-    { % if has_entered_password == False % }
+        {% if has_entered_password == False %}
 
-    const passwordCheckButton = document.querySelector("#check-pass-but");
-    const passwordCheckInput = document.querySelector("#check-pass-input");
-
-
-
-    passwordCheckButton.addEventListener("click", function(event) {
-
-        event.preventDefault();
-        const password = passwordCheckInput.value.trim();
-        const formDataC = new FormData();
-        formDataC.append("password", password); // Add password field
-        formDataC.append("csrf_token", '{{csrf_token()}}'); // Add CSRF token
-
-        const pathId = "{{path.id}}"; // Assuming path_id is stored as a data attribute
+        const passwordCheckButton = document.querySelector("#check-pass-but");
+        const passwordCheckInput = document.querySelector("#check-pass-input");
 
 
-        // Perform an AJAX POST request
-        fetch(`{{url_for('linkolearn.check_password', path_id=path.id)}}`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": '{{csrf_token()}}'
-                },
-                body: formDataC,
-            })
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error("Failed to check password");
-                }
-            })
-            .then((data) => {
-                if (data.status === "success") {
-                    alert("Password checked successfully!");
-                    // Optionally reload or update UI dynamically
-                    window.location.reload();
-                } else {
-                    alert("Error checking pass");
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                // alert("An error occurred while checking."+password);
-            });
-    });
 
-    { % endif % }
+        passwordCheckButton.addEventListener("click", function(event) {
 
-    { % endif % }
+            event.preventDefault();
+            const password = passwordCheckInput.value.trim();
+            const formDataC = new FormData();
+            formDataC.append("password", password); // Add password field
+            formDataC.append("csrf_token", '{{csrf_token()}}'); // Add CSRF token
+
+            const pathId = "{{path.id}}"; // Assuming path_id is stored as a data attribute
+
+
+            // Perform an AJAX POST request
+            fetch(`{{url_for('linkolearn.check_password', path_id=path.id)}}`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": '{{csrf_token()}}'
+                    },
+                    body: formDataC,
+                })
+                .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Failed to check password");
+                    }
+                })
+                .then((data) => {
+                    if (data.status === "success") {
+                        alert("Password checked successfully!");
+                        // Optionally reload or update UI dynamically
+                        window.location.reload();
+                    } else {
+                        alert("Error checking pass");
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    // alert("An error occurred while checking."+password);
+                });
+        });
+
+        {% endif %}
+
+    {% endif %}
 
     // Function to get CSRF token from cookies
     function getCsrfToken() {
