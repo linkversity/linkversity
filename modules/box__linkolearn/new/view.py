@@ -98,18 +98,27 @@ def upload_document():
         if file:
             # Assuming the document is text-based for now
             # For more complex documents (PDF, DOCX), dedicated parsers would be needed
-            document_content = file.read().decode('utf-8')
+            try:
+                document_content = file.read().decode('utf-8')
+            except UnicodeDecodeError:
+                return jsonify({'errmsg': 'Failed to decode file. Please upload a UTF-8 encoded text, HTML, or Markdown file.'})
             
-            extractor = URLExtractor()
-            urls = extractor.find_urls(document_content)
+            extractor = URLExtract()
+            urls = extractor.find_urls(document_content, only_unique=True)
 
-            path_title = request.form.get('path_title', 'Uploaded Document Path')
+            path_title = request.form.get('path_title')
+            if not path_title or not path_title.strip():
+                path_title = 'Uploaded Document Path'
+            
             path_slug = Path.slugify(path_title)
             
             # Check for existing path with the same slug for the current user
             exists = Path.query.filter(Path.slug == path_slug, Path.user_id == current_user.id).first()
             if exists:
-                return jsonify({'errmsg': "A path with this title already exists. Please choose a different title or edit the existing path."})
+                import random
+                import string
+                random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+                path_slug = f"{path_slug}-{random_str}"
             
             new_path = Path()
             new_path.like_list = LikeList()
@@ -120,17 +129,32 @@ def upload_document():
 
             if urls:
                 section = Section(title="Links from Uploaded Document")
+                valid_urls_found = False
                 for url_str in urls:
-                    if validators.url(url_str):
-                        link = Link(url=url_str)
-                        section.links.append(link)
+                    # extractor might return things that are not exactly full urls with scheme
+                    # validators.url handles this
+                    if url_str.startswith('http'):
+                        if validators.url(url_str):
+                            link = Link(url=url_str)
+                            section.links.append(link)
+                            valid_urls_found = True
+                    else:
+                        # try adding http
+                        if validators.url('http://' + url_str):
+                            link = Link(url='http://' + url_str)
+                            section.links.append(link)
+                            valid_urls_found = True
+                
+                if not valid_urls_found:
+                     return jsonify({'errmsg': 'No valid URLs found in the document.'})
+                
                 new_path.sections.append(section)
             else:
-                return jsonify({'errmsg': 'No valid links found in the document.'})
+                return jsonify({'errmsg': 'No links found in the document.'})
 
             new_path.save()
             
             next_url = url_for('www.path', username=current_user.username, path_slug=new_path.slug)
             return jsonify({'goto': next_url})
     
-    return render_template('linkolearn_theme/templates/new.html')
+    return render_template('linkolearn_theme/templates/upload_document.html')
