@@ -126,3 +126,4 @@ shopyo/static/modules/
 
 # ignore secrets
 config.json
+linkversity.db
