@@ -326,3 +326,17 @@ def inject_global_vars(app, global_template_variables):
         return base_context
 
 app = create_app(os.environ.get('FLASK_ENV', 'production'))
+
+@app.cli.command("update-password")
+@click.argument("username")
+@click.argument("password")
+def update_password(username, password):
+    """Update user password."""
+    with app.app_context():
+        user = User.query.filter_by(username=username).first()
+        if user:
+            user.password = password
+            db.session.commit()
+            print(f"Password for user '{username}' updated successfully.")
+        else:
+            print(f"User '{username}' not found.")
