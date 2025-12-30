@@ -5,20 +5,18 @@
     {% for section in path.sections %}
         <h4 class="text-lg font-semibold text-gray-900">{{ section.title }}</h4>
         <br>
+        <ol class="list-decimal list-inside space-y-1">
         {% for link in section.links %}
+            <li class="links text-sm  break-words">
             {% if link.url.startswith('[') %}
                 {% set extract = path.extract_link(link.url) %}
-                <p class="links p-0 mb-1 text-sm text-blue-600 break-words">
-                    <b class="text-gray-700">*</b>
-                    <a href="{{ extract.href }}" class="hover:text-blue-800"> {{ extract.text }}</a>
-                </p>
+                <a href="{{ extract.href }}" class="text-blue-600 hover:text-inherit"> {{ extract.text }}</a>
             {% else %}
-                <p class="links p-0 mb-1 text-sm text-blue-600 break-words">
-                    <b class="text-gray-700">*</b>
-                    <a href="{{ link.url }}" class="hover:text-blue-800"> {{ link.url }}</a>
-                </p>
+                <a href="{{ link.url }}" class="text-blue-600 hover:text-inherit"> {{ link.url }}</a>
             {% endif %}
+            </li>
         {% endfor %}
+        </ol>
         <br><br>
     {% endfor %}
 {% endmacro %}
