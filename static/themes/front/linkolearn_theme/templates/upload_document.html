@@ -1,0 +1,61 @@
+{% extends 'linkolearn_theme/templates/base.html' %}
+{% block head %}
+<title>Upload Document</title>
+{% endblock %}
+{% block body %}
+<div class="max-w-screen-xl mx-auto px-4 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">Upload Document to Create Path</h2>
+        <form id="upload-document-form" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label for="path_title" class="block text-sm font-medium text-gray-700">Path Title (optional)</label>
+                <input type="text" id="path_title" name="path_title"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                       placeholder="e.g. My Awesome Path">
+            </div>
+            <div>
+                <label for="document" class="block text-sm font-medium text-gray-700">Select Document</label>
+                <input type="file" id="document" name="document" accept=".txt,.html,.md"
+                       class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+                <p class="mt-1 text-sm text-gray-500">Supported formats: .txt, .html, .md</p>
+            </div>
+            <div>
+                <button type="submit"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Upload and Create Path
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $("#upload-document-form").submit(function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            type: "POST",
+            url: "{{ url_for('new.upload_document') }}",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data){
+                if('errmsg' in data){
+                    alert('Error: ' + data['errmsg']);
+                } else if ('goto' in data) {
+                    window.location.href = data['goto'];
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert('AJAX Error: ' + textStatus + ' - ' + errorThrown);
+            },
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}")
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -71,12 +71,19 @@ crossorigin="anonymous"></script>
     </button>
 </form>
 
+<a href="{{ url_for('new.upload_document') }}">
+    <button
+        class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 w-full sm:w-auto"
+        type="button"
+        id="upload-document-button">
+        Upload Document
+    </button>
+</a>
+
             </div>
         </div>
     </div>
 </div>
-
-
 
 <script type="text/javascript">
 function section(section_id) {
