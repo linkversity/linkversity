@@ -25,23 +25,22 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user_id', 'path_id')
     )
-    op.drop_table('users_old')
-    with op.batch_alter_table('bookmark_list_user_bridge', schema=None) as batch_op:
-        batch_op.drop_constraint(None, type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
+    # op.drop_table('users_old')
+    # with op.batch_alter_table('bookmark_list_user_bridge', schema=None) as batch_op:
+    #     # batch_op.drop_constraint(None, type_='foreignkey')
+    #     # batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
 
-    with op.batch_alter_table('like_list_user_bridge', schema=None) as batch_op:
-        batch_op.drop_constraint(None, type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
+    # with op.batch_alter_table('like_list_user_bridge', schema=None) as batch_op:
+    #     # batch_op.drop_constraint(None, type_='foreignkey')
+    #     # batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
 
-    with op.batch_alter_table('paths', schema=None) as batch_op:
-        batch_op.drop_constraint(None, type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
+    # with op.batch_alter_table('paths', schema=None) as batch_op:
+    #     # batch_op.drop_constraint(None, type_='foreignkey')
+    #     # batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'])
 
-    with op.batch_alter_table('role_user_bridge', schema=None) as batch_op:
-        batch_op.drop_constraint(None, type_='foreignkey')
-        batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
-
+    # with op.batch_alter_table('role_user_bridge', schema=None) as batch_op:
+    #     # batch_op.drop_constraint(None, type_='foreignkey')
+    #     # batch_op.create_foreign_key(None, 'users', ['user_id'], ['id'], ondelete='CASCADE')
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.alter_column('username',
                existing_type=sa.TEXT(),
