@@ -3,6 +3,27 @@
 <title>Upload Document</title>
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
 crossorigin="anonymous"></script>
+<style>
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 2s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .hidden {
+        display: none;
+    }
+</style>
 {% endblock %}
 {% block body %}
 <div class="max-w-screen-xl mx-auto px-4 p-8">
@@ -21,11 +42,12 @@ crossorigin="anonymous"></script>
                        class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
                 <p class="mt-1 text-sm text-gray-500">Supported formats: .txt, .html, .md</p>
             </div>
-            <div>
-                <button type="submit"
+            <div class="flex items-center">
+                <button type="submit" id="submit-btn"
                         class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Upload and Create Path
                 </button>
+                <div id="loading-spinner" class="loader hidden"></div>
             </div>
         </form>
     </div>
@@ -35,6 +57,9 @@ crossorigin="anonymous"></script>
     $("#upload-document-form").submit(function(e) {
         e.preventDefault();
         var formData = new FormData(this);
+        
+        $("#submit-btn").prop("disabled", true);
+        $("#loading-spinner").removeClass("hidden");
 
         $.ajax({
             type: "POST",
@@ -45,12 +70,16 @@ crossorigin="anonymous"></script>
             success: function(data){
                 if('errmsg' in data){
                     alert('Error: ' + data['errmsg']);
+                    $("#submit-btn").prop("disabled", false);
+                    $("#loading-spinner").addClass("hidden");
                 } else if ('goto' in data) {
                     window.location.href = data['goto'];
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('AJAX Error: ' + textStatus + ' - ' + errorThrown);
+                $("#submit-btn").prop("disabled", false);
+                $("#loading-spinner").addClass("hidden");
             },
             beforeSend: function(xhr, settings) {
                 if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
