@@ -17,3 +17,5 @@ gunicorn
 markdown-it-py[linkify,plugins]
 python-slugify==8.0.4
 WTForms==3.1.2urlextract==1.8.0
+beautifulsoup4
+requests

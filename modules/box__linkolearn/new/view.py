@@ -9,6 +9,8 @@ from flask import jsonify
 
 import validators
 from urlextract import URLExtract
+import requests
+from bs4 import BeautifulSoup
 
 # from shopyo.api.html import notify_success
 # from shopyo.api.forms import flash_errors
@@ -22,10 +24,38 @@ from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import LikeList
 
-
 mhelp = ModuleHelp(__file__, __name__)
 globals()[mhelp.blueprint_str] = mhelp.blueprint
 module_blueprint = globals()[mhelp.blueprint_str]
+
+
+def scrape_link_metadata(url):
+    try:
+        response = requests.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            title = soup.find('title').text if soup.find('title') else ''
+            
+            description = ''
+            desc_tag = soup.find('meta', attrs={'name': 'description'}) or \
+                       soup.find('meta', attrs={'property': 'og:description'})
+            if desc_tag:
+                description = desc_tag.get('content', '')
+
+            image_url = ''
+            img_tag = soup.find('meta', attrs={'property': 'og:image'}) or \
+                      soup.find('meta', attrs={'name': 'twitter:image'})
+            if img_tag:
+                image_url = img_tag.get('content', '')
+
+            return {
+                'title': title.strip()[:500] if title else '',
+                'description': description.strip() if description else '',
+                'image_url': image_url.strip()[:500] if image_url else ''
+            }
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+    return None
 
 
 @module_blueprint.route("/")
@@ -55,6 +85,8 @@ def add():
     path.title = ""
     path.slug = path_link
 
+    is_pro = current_user.is_pro()
+
     for sec in sections:
         section = Section()
         sec_title = sec['section_title']
@@ -67,14 +99,35 @@ def add():
             urls = []
 
             for u in urls_:
+                u = u.strip()
+                if not u:
+                    continue
+                
+                final_url = None
                 if u.startswith('['):
                     if path.is_valid_markdown_link(u):
-                        urls.append(u)
+                        final_url = u
                 elif validators.url(u):
-                    urls.append(u)
-                else:
-                    pass
-            section.links = list((Link(url=url) for url in urls))
+                    final_url = u
+                elif validators.url('http://' + u):
+                    final_url = 'http://' + u
+                
+                if final_url:
+                    link = Link(url=final_url)
+                    if is_pro:
+                        scrape_url = final_url
+                        if final_url.startswith('['):
+                             extract = path.extract_link(final_url)
+                             scrape_url = extract.get('href')
+                        
+                        if scrape_url:
+                            metadata = scrape_link_metadata(scrape_url)
+                            if metadata:
+                                link.title = metadata['title']
+                                link.description = metadata['description']
+                                link.image_url = metadata['image_url']
+                    section.links.append(link)
+
         path.sections.append(section)
     path.path_user = current_user
     path.save()
@@ -127,23 +180,33 @@ def upload_document():
             new_path.slug = path_slug
             new_path.path_user = current_user
 
+            is_pro = current_user.is_pro()
+
             if urls:
                 section = Section(title="Links from Uploaded Document")
                 valid_urls_found = False
                 for url_str in urls:
                     # extractor might return things that are not exactly full urls with scheme
                     # validators.url handles this
+                    final_url = None
                     if url_str.startswith('http'):
                         if validators.url(url_str):
-                            link = Link(url=url_str)
-                            section.links.append(link)
-                            valid_urls_found = True
+                            final_url = url_str
                     else:
                         # try adding http
                         if validators.url('http://' + url_str):
-                            link = Link(url='http://' + url_str)
-                            section.links.append(link)
-                            valid_urls_found = True
+                            final_url = 'http://' + url_str
+                    
+                    if final_url:
+                        link = Link(url=final_url)
+                        if is_pro:
+                            metadata = scrape_link_metadata(final_url)
+                            if metadata:
+                                link.title = metadata['title']
+                                link.description = metadata['description']
+                                link.image_url = metadata['image_url']
+                        section.links.append(link)
+                        valid_urls_found = True
                 
                 if not valid_urls_found:
                      return jsonify({'errmsg': 'No valid URLs found in the document.'})

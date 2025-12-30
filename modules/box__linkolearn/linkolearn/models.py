@@ -198,6 +198,9 @@ class Link(PkModel):
     __tablename__ = "links"
 
     url = db.Column(db.String(500), nullable=False)
+    title = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    image_url = db.Column(db.String(500), nullable=True)
     section_id = db.Column(
         db.Integer, db.ForeignKey("sections.id"), nullable=False
     )  # noqa: W292
