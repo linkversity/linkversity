@@ -181,6 +181,7 @@ def upload_document():
             new_path.path_user = current_user
 
             is_pro = current_user.is_pro()
+            disable_preview = request.form.get('disable_preview')
 
             if urls:
                 section = Section(title="Links from Uploaded Document")
@@ -199,7 +200,7 @@ def upload_document():
                     
                     if final_url:
                         link = Link(url=final_url)
-                        if is_pro:
+                        if is_pro and not disable_preview:
                             metadata = scrape_link_metadata(final_url)
                             if metadata:
                                 link.title = metadata['title']
