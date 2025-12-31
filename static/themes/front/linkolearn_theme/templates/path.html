@@ -187,6 +187,15 @@
                             <span class="sr-only">Delete Path</span>
                         </button>
                     </a>
+                    {% if current_user.is_pro() %}
+                    <!-- Upload Document Button -->
+                    <a href="{{ url_for('new.upload_document', existing_path_id=path.id) }}" title="Add links from document to this path">
+                        <button type="button" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:outline-none focus:ring-indigo-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-800">
+                            <i class="fa fa-file-upload text-xs"></i>
+                            <span class="sr-only">Add links from document</span>
+                        </button>
+                    </a>
+                    {% endif %}
                         <!-- Toggle Visibility Button -->
                         {% if path.is_visible %}
                         <a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}">

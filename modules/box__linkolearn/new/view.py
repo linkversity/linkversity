@@ -233,4 +233,5 @@ def upload_document():
             return jsonify({'goto': next_url})
     
     user_paths = Path.query.filter_by(user_id=current_user.id).all()
-    return render_template('linkolearn_theme/templates/upload_document.html', user_paths=user_paths)
+    selected_path_id = request.args.get('existing_path_id')
+    return render_template('linkolearn_theme/templates/upload_document.html', user_paths=user_paths, selected_path_id=selected_path_id)

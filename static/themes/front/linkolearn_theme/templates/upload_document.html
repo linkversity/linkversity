@@ -35,11 +35,11 @@ crossorigin="anonymous"></script>
                 <select id="existing_path_id" name="existing_path_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                     <option value="none">Create New Path</option>
                     {% for path in user_paths %}
-                        <option value="{{ path.id }}">{{ path.title }} ({{ path.slug }})</option>
+                        <option value="{{ path.id }}" {% if selected_path_id|string == path.id|string %}selected{% endif %}>{{ path.title }} ({{ path.slug }})</option>
                     {% endfor %}
                 </select>
             </div>
-            <div id="path_title_container">
+            <div id="path_title_container" {% if selected_path_id %}style="display: none;"{% endif %}>
                 <label for="path_title" class="block text-sm font-medium text-gray-700">Path Title</label>
                 <input type="text" id="path_title" name="path_title"
                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
