@@ -2,7 +2,7 @@
 from shopyo.api.module import ModuleHelp
 from flask import render_template
 from flask import url_for
-# from flask import redirect
+from flask import redirect
 # from flask import flash
 from flask import request
 from flask import jsonify
@@ -140,6 +140,9 @@ def add():
 @module_blueprint.route("/upload", methods=['GET', 'POST'])
 @login_required
 def upload_document():
+    if not current_user.is_pro():
+        return redirect(url_for('www.activate'))
+
     if request.method == 'POST':
         if 'document' not in request.files:
             return jsonify({'errmsg': 'No document part'})
