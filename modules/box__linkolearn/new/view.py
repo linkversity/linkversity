@@ -159,66 +159,78 @@ def upload_document():
             extractor = URLExtract()
             urls = extractor.find_urls(document_content, only_unique=True)
 
-            path_title = request.form.get('path_title')
-            if not path_title or not path_title.strip():
-                path_title = 'Uploaded Document Path'
-            
-            path_slug = Path.slugify(path_title)
-            
-            # Check for existing path with the same slug for the current user
-            exists = Path.query.filter(Path.slug == path_slug, Path.user_id == current_user.id).first()
-            if exists:
-                import random
-                import string
-                random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
-                path_slug = f"{path_slug}-{random_str}"
-            
-            new_path = Path()
-            new_path.like_list = LikeList()
-            new_path.bookmark_list = BookmarkList()
-            new_path.title = path_title
-            new_path.slug = path_slug
-            new_path.path_user = current_user
-
             is_pro = current_user.is_pro()
             disable_preview = request.form.get('disable_preview')
 
-            if urls:
-                section = Section(title="Links from Uploaded Document")
-                valid_urls_found = False
-                for url_str in urls:
-                    # extractor might return things that are not exactly full urls with scheme
-                    # validators.url handles this
-                    final_url = None
-                    if url_str.startswith('http'):
-                        if validators.url(url_str):
-                            final_url = url_str
-                    else:
-                        # try adding http
-                        if validators.url('http://' + url_str):
-                            final_url = 'http://' + url_str
-                    
-                    if final_url:
-                        link = Link(url=final_url)
-                        if is_pro and not disable_preview:
-                            metadata = scrape_link_metadata(final_url)
-                            if metadata:
-                                link.title = metadata['title']
-                                link.description = metadata['description']
-                                link.image_url = metadata['image_url']
-                        section.links.append(link)
-                        valid_urls_found = True
-                
-                if not valid_urls_found:
-                     return jsonify({'errmsg': 'No valid URLs found in the document.'})
-                
-                new_path.sections.append(section)
-            else:
+            if not urls:
                 return jsonify({'errmsg': 'No links found in the document.'})
 
-            new_path.save()
+            # Check if updating an existing path
+            existing_path_id = request.form.get('existing_path_id')
+            path_to_save = None
+
+            if existing_path_id and existing_path_id != 'none':
+                existing_path = Path.query.get(existing_path_id)
+                if existing_path and existing_path.user_id == current_user.id:
+                     path_to_save = existing_path
+                else:
+                     return jsonify({'errmsg': 'Invalid path selected.'})
+            else:
+                path_title = request.form.get('path_title')
+                if not path_title or not path_title.strip():
+                    path_title = 'Uploaded Document Path'
+                
+                path_slug = Path.slugify(path_title)
+                
+                # Check for existing path with the same slug for the current user
+                exists = Path.query.filter(Path.slug == path_slug, Path.user_id == current_user.id).first()
+                if exists:
+                    import random
+                    import string
+                    random_str = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+                    path_slug = f"{path_slug}-{random_str}"
+                
+                new_path = Path()
+                new_path.like_list = LikeList()
+                new_path.bookmark_list = BookmarkList()
+                new_path.title = path_title
+                new_path.slug = path_slug
+                new_path.path_user = current_user
+                path_to_save = new_path
+
+            section = Section(title="Links from Uploaded Document")
+            valid_urls_found = False
+            for url_str in urls:
+                # extractor might return things that are not exactly full urls with scheme
+                # validators.url handles this
+                final_url = None
+                if url_str.startswith('http'):
+                    if validators.url(url_str):
+                        final_url = url_str
+                else:
+                    # try adding http
+                    if validators.url('http://' + url_str):
+                        final_url = 'http://' + url_str
+                
+                if final_url:
+                    link = Link(url=final_url)
+                    if is_pro and not disable_preview:
+                        metadata = scrape_link_metadata(final_url)
+                        if metadata:
+                            link.title = metadata['title']
+                            link.description = metadata['description']
+                            link.image_url = metadata['image_url']
+                    section.links.append(link)
+                    valid_urls_found = True
             
-            next_url = url_for('www.path', username=current_user.username, path_slug=new_path.slug)
+            if not valid_urls_found:
+                    return jsonify({'errmsg': 'No valid URLs found in the document.'})
+            
+            path_to_save.sections.append(section)
+            path_to_save.save()
+            
+            next_url = url_for('www.path', username=current_user.username, path_slug=path_to_save.slug)
             return jsonify({'goto': next_url})
     
-    return render_template('linkolearn_theme/templates/upload_document.html')
+    user_paths = Path.query.filter_by(user_id=current_user.id).all()
+    return render_template('linkolearn_theme/templates/upload_document.html', user_paths=user_paths)
