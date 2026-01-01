@@ -104,13 +104,18 @@ def payload():
         team_id = data.get("team", {}).get("id")
         trigger_id = data.get("trigger_id")
 
-        print(f"DEBUG: Payload type: {data.get('type')}, Callback ID: {data.get('callback_id')}")
-
         workspace = SlackWorkspace.query.filter_by(team_id=team_id).first()
-        bot_token = workspace.bot_token if workspace else current_app.config.get('SLACK_BOT_TOKEN')
-
-        if not bot_token:
-            print("DEBUG: No bot token found for this team or in config")
+        if not workspace:
+            # If workspace not found, we can't do anything as a multi-tenant app
+            # For public distribution, the app must be installed via OAuth first
+            return jsonify({
+                "response_action": "errors",
+                "errors": {
+                    "main": "App not installed correctly. Please visit our website to install Linkversity to your workspace."
+                }
+            }), 200
+        
+        bot_token = workspace.bot_token
 
         if data.get("type") == "message_action":
             if data.get("callback_id") == "save_to_linkversity":
