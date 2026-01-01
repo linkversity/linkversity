@@ -34,6 +34,7 @@ class BaseConfig:
     RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
     RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
 
 
 
