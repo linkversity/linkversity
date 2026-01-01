@@ -269,3 +269,65 @@ def options():
             filtered_sections = [s for s in sections if query in s["text"]["text"].lower()]
             return jsonify({"options": filtered_sections[:100]})
     return jsonify({"options": []})
+
+# --- Chrome Extension API ---
+
+@module_blueprint.route("/chrome_ext_auth")
+@login_required
+def chrome_ext_auth():
+    redirect_uri = request.args.get("redirect_uri")
+    if not redirect_uri:
+        return "Missing redirect_uri", 400
+    
+    token = current_user.get_api_token()
+    # Redirect back to Chrome extension with the token
+    return redirect(f"{redirect_uri}?token={token}")
+
+@module_blueprint.route("/api/paths", methods=["GET"])
+@csrf.exempt
+def api_get_paths():
+    token = request.args.get("token")
+    user = User.query.filter_by(api_token=token).first()
+    if not user:
+        return jsonify({"error": "Invalid token"}), 401
+    
+    paths = [{"id": p.id, "title": p.slug} for p in user.paths]
+    return jsonify(paths)
+
+@module_blueprint.route("/api/sections", methods=["GET"])
+@csrf.exempt
+def api_get_sections():
+    token = request.args.get("token")
+    path_id = request.args.get("path_id")
+    user = User.query.filter_by(api_token=token).first()
+    if not user:
+        return jsonify({"error": "Invalid token"}), 401
+    
+    path = Path.query.get(path_id)
+    if not path or path.user_id != user.id:
+        return jsonify({"error": "Path not found"}), 404
+        
+    sections = [{"id": s.id, "title": s.title} for s in path.sections]
+    return jsonify(sections)
+
+@module_blueprint.route("/api/save-link", methods=["POST"])
+@csrf.exempt
+def api_save_link():
+    data = request.get_json()
+    token = data.get("token")
+    url = data.get("url")
+    section_id = data.get("section_id")
+    
+    user = User.query.filter_by(api_token=token).first()
+    if not user:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+        
+    section = Section.query.get(section_id)
+    if not section or section.section_path.user_id != user.id:
+        return jsonify({"success": False, "error": "Section not found"}), 404
+
+    new_link = Link(url=url, section_id=section_id)
+    db.session.add(new_link)
+    db.session.commit()
+    
+    return jsonify({"success": True})
