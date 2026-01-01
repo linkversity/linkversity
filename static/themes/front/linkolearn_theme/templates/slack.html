@@ -11,41 +11,33 @@
             <i class="fab fa-slack mr-3 text-purple-600"></i> Slack Integration
         </h1>
 
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Your API Token</h2>
-            <p class="text-gray-600 mb-4">
-                Use this token to link your Slack account with Linkversity. Copy this token and use it when prompted by the Slack app.
+        <div class="mb-10 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Link your workspace</h2>
+            <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                Connect your Slack workspace to Linkversity to save links directly from your conversations.
             </p>
-            <div class="flex items-center space-x-2">
-                <code id="api-token" class="bg-gray-100 p-3 rounded border border-gray-300 text-purple-700 font-mono text-lg flex-grow">
-                    {{ token }}
-                </code>
-                <button onclick="copyToken()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition duration-200">
-                    <i class="fas fa-copy"></i> Copy
-                </button>
-            </div>
+            <a href="{{ url_for('slack.install') }}" class="inline-flex items-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg transition duration-200 text-lg shadow-lg">
+                <i class="fab fa-slack mr-2 text-2xl"></i> Connect to Slack
+            </a>
         </div>
 
         <div class="border-t border-gray-200 pt-6">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">How to use</h2>
-            <ol class="list-decimal list-inside space-y-3 text-gray-700">
-                <li>Install the Linkversity Slack app in your workspace.</li>
-                <li>In Slack, click the three dots <i class="fas fa-ellipsis-h mx-1 text-gray-400"></i> on any message containing a link.</li>
-                <li>Select <strong>"Save to Linkversity"</strong>.</li>
-                <li>If it's your first time, you'll be asked to provide your API token.</li>
-            </ol>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">How it works</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="p-4">
+                    <div class="text-purple-600 font-bold text-2xl mb-2">1</div>
+                    <p class="text-gray-700">Click the <strong>Connect to Slack</strong> button above and authorize the app.</p>
+                </div>
+                <div class="p-4">
+                    <div class="text-purple-600 font-bold text-2xl mb-2">2</div>
+                    <p class="text-gray-700">Find any message in Slack with a link you want to save.</p>
+                </div>
+                <div class="p-4">
+                    <div class="text-purple-600 font-bold text-2xl mb-2">3</div>
+                    <p class="text-gray-700">Click <strong>More actions (...)</strong> and select <strong>Save to Linkversity</strong>.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-function copyToken() {
-    const tokenText = document.getElementById('api-token').innerText;
-    navigator.clipboard.writeText(tokenText).then(() => {
-        alert('Token copied to clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-    });
-}
-</script>
 {% endblock %}

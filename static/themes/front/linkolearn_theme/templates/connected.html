@@ -1,0 +1,37 @@
+{% extends 'linkolearn_theme/templates/base.html' %}
+
+{% block head %}
+<title>Connected to Slack - {{ APP_NAME }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="max-w-screen-xl mx-auto p-4 mt-10">
+    <div class="bg-white shadow-md rounded-lg p-10 border border-gray-200 text-center">
+        <div class="mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                <i class="fas fa-check text-4xl text-green-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900">Connected to Slack!</h1>
+        </div>
+
+        <p class="text-xl text-gray-600 mb-8">
+            Your Linkversity account has been successfully linked to Slack.
+        </p>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 text-left inline-block max-w-2xl">
+            <h2 class="text-lg font-semibold text-blue-800 mb-2">Next Steps:</h2>
+            <ul class="list-disc list-inside space-y-2 text-blue-900">
+                <li>Go to any message in Slack that contains a link.</li>
+                <li>Click the three dots <i class="fas fa-ellipsis-h mx-1 opacity-50"></i> (More actions).</li>
+                <li>Select <strong>"Save to Linkversity"</strong>.</li>
+            </ul>
+        </div>
+
+        <div>
+            <a href="{{ url_for('www.user_profile', username=current_user.username) }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200">
+                Back to Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

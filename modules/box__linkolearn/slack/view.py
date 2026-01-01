@@ -22,14 +22,9 @@ globals()[mhelp.blueprint_str] = mhelp.blueprint
 module_blueprint = globals()[mhelp.blueprint_str]
 
 @module_blueprint.route("/")
-def index():
-    return "Slack Module"
-
-@module_blueprint.route("/token")
 @login_required
-def get_token():
-    token = current_user.get_api_token()
-    return render_template("linkolearn_theme/templates/slack.html", token=token)
+def index():
+    return render_template("linkolearn_theme/templates/slack.html")
 
 @module_blueprint.route("/install")
 @login_required
@@ -87,10 +82,25 @@ def oauth_callback():
         slack_user.user_id = current_user.id
         slack_user.team_id = team_id
     
-    db.session.commit()
-    return redirect(url_for('slack.get_token'))
-
-@module_blueprint.route("/payload", methods=["POST"])
+        db.session.commit()
+    
+        return redirect(url_for('slack.connected'))
+    
+    
+    
+    @module_blueprint.route("/connected")
+    
+    @login_required
+    
+    def connected():
+    
+        return render_template("linkolearn_theme/templates/connected.html")
+    
+    
+    
+    @module_blueprint.route("/payload", methods=["POST"])
+    
+    
 @csrf.exempt
 def payload():
     try:
