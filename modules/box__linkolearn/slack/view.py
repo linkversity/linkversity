@@ -13,7 +13,7 @@ from shopyo.api.module import ModuleHelp
 from modules.box__default.auth.models import User
 from modules.box__linkolearn.linkolearn.models import Path, Section, Link
 from modules.box__linkolearn.slack.models import SlackUser
-from init import db
+from init import db, csrf
 
 mhelp = ModuleHelp(__file__, __name__)
 globals()[mhelp.blueprint_str] = mhelp.blueprint
@@ -30,6 +30,7 @@ def get_token():
     return render_template("linkolearn_theme/templates/slack.html", token=token)
 
 @module_blueprint.route("/payload", methods=["POST"])
+@csrf.exempt
 def payload():
     try:
         payload_raw = request.form.get("payload")
@@ -152,6 +153,31 @@ def open_token_modal(trigger_id, link_to_save):
     )
     if not resp.json().get('ok'):
         print(f"Slack API Error (views.open): {resp.json()}")
+
+@module_blueprint.route("/options", methods=["POST"])
+@csrf.exempt
+def options():
+    payload_raw = request.form.get("payload")
+    data = json.loads(payload_raw)
+    
+    if data.get("type") == "block_suggestion":
+        slack_user_id = data.get("user", {}).get("id")
+        slack_user = SlackUser.query.filter_by(slack_user_id=slack_user_id).first()
+        if slack_user:
+            sections = []
+            for path in slack_user.user.paths:
+                for section in path.sections:
+                    sections.append({
+                        "text": {"type": "plain_text", "text": f"{path.slug} > {section.title}"},
+                        "value": str(section.id)
+                    })
+            
+            query = data.get("value", "").lower()
+            filtered_sections = [s for s in sections if query in s["text"]["text"].lower()]
+            
+            return jsonify({"options": filtered_sections[:100]})
+
+    return jsonify({"options": []})
 
 def open_save_modal(trigger_id, user, link_to_save):
     bot_token = current_app.config.get('SLACK_BOT_TOKEN')
