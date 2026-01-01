@@ -6,13 +6,15 @@ from flask import request
 from flask import jsonify
 from flask import render_template
 from flask import current_app
+from flask import redirect
+from flask import url_for
 from flask_login import login_required
 from flask_login import current_user
 
 from shopyo.api.module import ModuleHelp
 from modules.box__default.auth.models import User
 from modules.box__linkolearn.linkolearn.models import Path, Section, Link
-from modules.box__linkolearn.slack.models import SlackUser
+from modules.box__linkolearn.slack.models import SlackUser, SlackWorkspace
 from init import db, csrf
 
 mhelp = ModuleHelp(__file__, __name__)
@@ -29,18 +31,84 @@ def get_token():
     token = current_user.get_api_token()
     return render_template("linkolearn_theme/templates/slack.html", token=token)
 
+@module_blueprint.route("/install")
+@login_required
+def install():
+    client_id = current_app.config.get('SLACK_CLIENT_ID')
+    # Use user scope to get the Slack User ID during OAuth
+    scope = "commands,chat:write"
+    user_scope = "identify"
+    redirect_uri = url_for('slack.oauth_callback', _external=True)
+    
+    slack_url = f"https://slack.com/oauth/v2/authorize?client_id={client_id}&scope={scope}&user_scope={user_scope}&redirect_uri={redirect_uri}"
+    return redirect(slack_url)
+
+@module_blueprint.route("/oauth_callback")
+@login_required
+def oauth_callback():
+    code = request.args.get('code')
+    if not code:
+        return "Error: No code provided", 400
+    
+    client_id = current_app.config.get('SLACK_CLIENT_ID')
+    client_secret = current_app.config.get('SLACK_CLIENT_SECRET')
+    redirect_uri = url_for('slack.oauth_callback', _external=True)
+
+    resp = requests.post(
+        "https://slack.com/api/oauth.v2.access",
+        data={
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri
+        }
+    )
+    
+    data = resp.json()
+    if not data.get('ok'):
+        return f"Slack OAuth Error: {data.get('error')}", 400
+
+    team_id = data.get('team', {}).get('id')
+    team_name = data.get('team', {}).get('name')
+    bot_token = data.get('access_token')
+    slack_user_id = data.get('authed_user', {}).get('id')
+
+    # Save/Update Workspace
+    workspace = SlackWorkspace.query.filter_by(team_id=team_id).first()
+    if not workspace:
+        workspace = SlackWorkspace(team_id=team_id, team_name=team_name, bot_token=bot_token)
+        db.session.add(workspace)
+    else:
+        workspace.bot_token = bot_token
+    
+    # Link current Linkversity user to this Slack User
+    slack_user = SlackUser.query.filter_by(slack_user_id=slack_user_id).first()
+    if not slack_user:
+        slack_user = SlackUser(slack_user_id=slack_user_id, user_id=current_user.id, team_id=team_id)
+        db.session.add(slack_user)
+    else:
+        slack_user.user_id = current_user.id
+        slack_user.team_id = team_id
+    
+    db.session.commit()
+
+    return redirect(url_for('slack.get_token'))
+
 @module_blueprint.route("/payload", methods=["POST"])
 @csrf.exempt
 def payload():
     try:
         payload_raw = request.form.get("payload")
         if not payload_raw:
-            print("Slack Error: No payload found in request")
             return jsonify({"error": "No payload"}), 400
         
         data = json.loads(payload_raw)
         slack_user_id = data.get("user", {}).get("id")
+        team_id = data.get("team", {}).get("id")
         trigger_id = data.get("trigger_id")
+
+        workspace = SlackWorkspace.query.filter_by(team_id=team_id).first()
+        bot_token = workspace.bot_token if workspace else current_app.config.get('SLACK_BOT_TOKEN')
 
         if data.get("type") == "message_action":
             if data.get("callback_id") == "save_to_linkversity":
@@ -48,14 +116,13 @@ def payload():
                 
                 message = data.get("message", {})
                 text = message.get("text", "")
-                # Find links like <http://google.com> or <http://google.com|google>
                 links = re.findall(r'<(https?://[^\s>|]+)', text)
                 link_to_save = links[0] if links else ""
 
                 if not slack_user:
-                    open_token_modal(trigger_id, link_to_save)
+                    open_token_modal(trigger_id, link_to_save, bot_token)
                 else:
-                    open_save_modal(trigger_id, slack_user.user, link_to_save)
+                    open_save_modal(trigger_id, slack_user.user, link_to_save, bot_token)
                 
                 return "", 200
 
@@ -65,7 +132,6 @@ def payload():
             
             if callback_id == "link_account_modal":
                 values = view.get("state", {}).get("values", {})
-                # Accessing values safely
                 token = ""
                 for b_id, b_val in values.items():
                     if "token_input" in b_val:
@@ -73,18 +139,23 @@ def payload():
                 
                 user = User.query.filter_by(api_token=token).first()
                 if user:
-                    new_slack_user = SlackUser(slack_user_id=slack_user_id, user_id=user.id)
-                    db.session.add(new_slack_user)
+                    slack_user = SlackUser.query.filter_by(slack_user_id=slack_user_id).first()
+                    if not slack_user:
+                        slack_user = SlackUser(slack_user_id=slack_user_id, user_id=user.id, team_id=team_id)
+                        db.session.add(slack_user)
+                    else:
+                        slack_user.user_id = user.id
+                        slack_user.team_id = team_id
                     db.session.commit()
                     
                     link_to_save = view.get("private_metadata")
-                    open_save_modal(trigger_id, user, link_to_save)
+                    open_save_modal(trigger_id, user, link_to_save, bot_token)
                     return jsonify({"response_action": "clear"})
                 else:
                     return jsonify({
                         "response_action": "errors",
                         "errors": {
-                            "token_block": "Invalid API Token. Please check your Linkversity settings."
+                            "token_block": "Invalid API Token."
                         }
                     })
 
@@ -105,16 +176,12 @@ def payload():
 
     except Exception as e:
         print(f"Slack Payload Error: {str(e)}")
-        traceback.print_exc()
-        return "", 200 # Always return 200 to Slack to avoid "Sorry, did not work" if possible, but the error happened anyway
+        return "", 200
 
     return "", 200
 
-def open_token_modal(trigger_id, link_to_save):
-    bot_token = current_app.config.get('SLACK_BOT_TOKEN')
-    if not bot_token:
-        print("Error: SLACK_BOT_TOKEN not configured in app.config")
-        return
+def open_token_modal(trigger_id, link_to_save, bot_token):
+    if not bot_token: return
 
     view = {
         "type": "modal",
@@ -123,7 +190,7 @@ def open_token_modal(trigger_id, link_to_save):
         "blocks": [
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": "It looks like your Slack account isn't linked to Linkversity yet."}
+                "text": {"type": "mrkdwn", "text": "It looks like your Slack account isn't linked yet."}
             },
             {
                 "type": "input",
@@ -134,25 +201,61 @@ def open_token_modal(trigger_id, link_to_save):
                     "placeholder": {"type": "plain_text", "text": "Enter your API Token"}
                 },
                 "label": {"type": "plain_text", "text": "API Token"}
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {"type": "mrkdwn", "text": "Find your token in your profile settings."}
-                ]
             }
         ],
         "submit": {"type": "plain_text", "text": "Link Account"},
         "private_metadata": link_to_save
     }
     
-    resp = requests.post(
-        "https://slack.com/api/views.open",
+    requests.post("https://slack.com/api/views.open",
         headers={"Authorization": f"Bearer {bot_token}"},
         json={"trigger_id": trigger_id, "view": view}
     )
-    if not resp.json().get('ok'):
-        print(f"Slack API Error (views.open): {resp.json()}")
+
+def open_save_modal(trigger_id, user, link_to_save, bot_token):
+    if not bot_token: return
+    
+    sections = []
+    for path in user.paths:
+        for section in path.sections:
+            sections.append({
+                "text": {"type": "plain_text", "text": f"{path.slug} > {section.title}"},
+                "value": str(section.id)
+            })
+    
+    if not sections:
+        view = {
+            "type": "modal",
+            "title": {"type": "plain_text", "text": "Save Link"},
+            "blocks": [{"type": "section", "text": {"type": "mrkdwn", "text": "No sections found. Create one on Linkversity first."}}]
+        }
+    else:
+        view = {
+            "type": "modal",
+            "callback_id": "save_link_modal",
+            "title": {"type": "plain_text", "text": "Save Link"},
+            "blocks": [
+                {"type": "section", "text": {"type": "mrkdwn", "text": f"Saving: *{link_to_save}*"}},
+                {
+                    "type": "input",
+                    "block_id": "section_block",
+                    "element": {
+                        "type": "static_select",
+                        "action_id": "section_select",
+                        "placeholder": {"type": "plain_text", "text": "Select a section"},
+                        "options": sections[:100]
+                    },
+                    "label": {"type": "plain_text", "text": "Section"}
+                }
+            ],
+            "submit": {"type": "plain_text", "text": "Save"},
+            "private_metadata": link_to_save
+        }
+
+    requests.post("https://slack.com/api/views.open",
+        headers={"Authorization": f"Bearer {bot_token}"},
+        json={"trigger_id": trigger_id, "view": view}
+    )
 
 @module_blueprint.route("/options", methods=["POST"])
 @csrf.exempt
@@ -174,66 +277,6 @@ def options():
             
             query = data.get("value", "").lower()
             filtered_sections = [s for s in sections if query in s["text"]["text"].lower()]
-            
             return jsonify({"options": filtered_sections[:100]})
 
     return jsonify({"options": []})
-
-def open_save_modal(trigger_id, user, link_to_save):
-    bot_token = current_app.config.get('SLACK_BOT_TOKEN')
-    if not bot_token:
-        print("Error: SLACK_BOT_TOKEN not configured in app.config")
-        return
-    
-    sections = []
-    for path in user.paths:
-        for section in path.sections:
-            sections.append({
-                "text": {"type": "plain_text", "text": f"{path.slug} > {section.title}"},
-                "value": str(section.id)
-            })
-    
-    if not sections:
-        view = {
-            "type": "modal",
-            "title": {"type": "plain_text", "text": "Save Link"},
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {"type": "mrkdwn", "text": "You don't have any sections in your paths yet. Please create one on Linkversity first."}
-                }
-            ]
-        }
-    else:
-        view = {
-            "type": "modal",
-            "callback_id": "save_link_modal",
-            "title": {"type": "plain_text", "text": "Save Link"},
-            "blocks": [
-                {
-                    "type": "section",
-                    "text": {"type": "mrkdwn", "text": f"Saving link: *{link_to_save}*"}
-                },
-                {
-                    "type": "input",
-                    "block_id": "section_block",
-                    "element": {
-                        "type": "static_select",
-                        "action_id": "section_select",
-                        "placeholder": {"type": "plain_text", "text": "Select a section"},
-                        "options": sections[:100]
-                    },
-                    "label": {"type": "plain_text", "text": "Section"}
-                }
-            ],
-            "submit": {"type": "plain_text", "text": "Save"},
-            "private_metadata": link_to_save
-        }
-
-    resp = requests.post(
-        "https://slack.com/api/views.open",
-        headers={"Authorization": f"Bearer {bot_token}"},
-        json={"trigger_id": trigger_id, "view": view}
-    )
-    if not resp.json().get('ok'):
-        print(f"Slack API Error (views.open): {resp.json()}")
