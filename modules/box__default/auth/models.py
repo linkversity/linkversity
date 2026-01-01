@@ -82,6 +82,7 @@ class User(UserMixin, PkModel):
     email_confirm_date = db.Column(db.DateTime)
     emoji_class = db.Column(db.String(100), default='em-airplane')
     subscription_plan = db.Column(db.Integer, default=0, nullable=True)
+    api_token = db.Column(db.String(100), unique=True, nullable=True)
 
     paths = db.relationship('Path', backref='path_user', lazy=True)
 
@@ -175,6 +176,13 @@ class User(UserMixin, PkModel):
 
     def is_enterprise(self):
         return self.subscription_plan == 2
+
+    def get_api_token(self):
+        if not self.api_token:
+            import secrets
+            self.api_token = secrets.token_hex(16)
+            self.update()
+        return self.api_token
 
 @login_manager.user_loader
 def load_user(user_id):

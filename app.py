@@ -38,6 +38,7 @@ from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import Emoji 
 from modules.box__linkolearn.linkolearn.models import ActivationCode
+from modules.box__linkolearn.slack.models import SlackUser
 
 from shopyo_admin import DefaultModelView
 

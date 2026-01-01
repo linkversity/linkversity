@@ -1,0 +1,12 @@
+{
+    "author": {
+        "mail": "",
+        "name": "",
+        "website": ""
+    },
+    "display_string": "Slack",
+    "fa-icon": "fa fa-store",
+    "module_name": "slack",
+    "type": "show",
+    "url_prefix": "/slack"
+}
