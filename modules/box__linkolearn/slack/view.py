@@ -82,31 +82,20 @@ def oauth_callback():
         slack_user.user_id = current_user.id
         slack_user.team_id = team_id
     
-        db.session.commit()
-    
-        return redirect(url_for('slack.connected'))
-    
-    
-    
-    @module_blueprint.route("/connected")
-    
-    @login_required
-    
-    def connected():
-    
-        return render_template("linkolearn_theme/templates/connected.html")
-    
-    
-    
-    @module_blueprint.route("/payload", methods=["POST"])
-    
-    
+    db.session.commit()
+    return redirect(url_for('slack.connected'))
+
+@module_blueprint.route("/connected")
+@login_required
+def connected():
+    return render_template("linkolearn_theme/templates/connected.html")
+
+@module_blueprint.route("/payload", methods=["POST"])
 @csrf.exempt
 def payload():
     try:
         payload_raw = request.form.get("payload")
         if not payload_raw:
-            print("DEBUG: No payload in request")
             return jsonify({"error": "No payload"}), 400
         
         data = json.loads(payload_raw)
@@ -116,12 +105,10 @@ def payload():
 
         workspace = SlackWorkspace.query.filter_by(team_id=team_id).first()
         if not workspace:
-            # If workspace not found, we can't do anything as a multi-tenant app
-            # For public distribution, the app must be installed via OAuth first
             return jsonify({
                 "response_action": "errors",
                 "errors": {
-                    "main": "App not installed correctly. Please visit our website to install Linkversity to your workspace."
+                    "main": "App not installed correctly."
                 }
             }), 200
         
@@ -137,10 +124,8 @@ def payload():
                 link_to_save = links[0] if links else ""
 
                 if not slack_user:
-                    print(f"DEBUG: Slack user {slack_user_id} not linked. Opening token modal.")
                     open_token_modal(trigger_id, link_to_save, bot_token)
                 else:
-                    print(f"DEBUG: Slack user {slack_user_id} linked to {slack_user.user.username}. Opening save modal.")
                     open_save_modal(trigger_id, slack_user.user, link_to_save, bot_token)
                 
                 return "", 200
@@ -148,7 +133,6 @@ def payload():
         elif data.get("type") == "view_submission":
             view = data.get("view", {})
             callback_id = view.get("callback_id")
-            print(f"DEBUG: View submission callback_id: {callback_id}")
             
             if callback_id == "link_account_modal":
                 values = view.get("state", {}).get("values", {})
@@ -194,8 +178,7 @@ def payload():
                     return jsonify({"response_action": "clear"})
 
     except Exception as e:
-        print(f"DEBUG: Slack Payload Error: {str(e)}")
-        traceback.print_exc()
+        print(f"Slack Payload Error: {str(e)}")
         return "", 200
 
     return "", 200
@@ -218,11 +201,10 @@ def open_token_modal(trigger_id, link_to_save, bot_token):
         "submit": {"type": "plain_text", "text": "Link Account"},
         "private_metadata": link_to_save
     }
-    resp = requests.post("https://slack.com/api/views.open",
+    requests.post("https://slack.com/api/views.open",
         headers={"Authorization": f"Bearer {bot_token}"},
         json={"trigger_id": trigger_id, "view": view}
     )
-    print(f"DEBUG: views.open (token) response: {resp.json()}")
 
 def open_save_modal(trigger_id, user, link_to_save, bot_token):
     if not bot_token: return
@@ -262,11 +244,10 @@ def open_save_modal(trigger_id, user, link_to_save, bot_token):
             "submit": {"type": "plain_text", "text": "Save"},
             "private_metadata": link_to_save
         }
-    resp = requests.post("https://slack.com/api/views.open",
+    requests.post("https://slack.com/api/views.open",
         headers={"Authorization": f"Bearer {bot_token}"},
         json={"trigger_id": trigger_id, "view": view}
     )
-    print(f"DEBUG: views.open (save) response: {resp.json()}")
 
 @module_blueprint.route("/options", methods=["POST"])
 @csrf.exempt
