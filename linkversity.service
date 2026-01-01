@@ -1,0 +1,23 @@
+# /etc/systemd/system/linkversity.service
+[Unit]
+Description=Gunicorn instance to serve Linkversity Flask application
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/root/linkversity
+Environment="PATH=/root/linkversity/.venv/bin"
+
+ExecStart=/root/linkversity/.venv/bin/gunicorn \
+  -w 4 \
+  --bind unix:/root/run/linkversity.sock \
+  --access-logfile /root/linkversity/logs/access.log \
+  --error-logfile /root/linkversity/logs/error.log \
+  app:app
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
