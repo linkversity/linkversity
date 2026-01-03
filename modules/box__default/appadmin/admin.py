@@ -13,7 +13,7 @@ from shopyo.api.html import notify_warning
 from modules.box__default.auth.models import User
 
 login_manager.login_view = "auth.login"
-login_manager.login_message = notify_warning("Please login for access")
+login_manager.login_message = "Please login for access"
 
 
 @login_manager.user_loader
