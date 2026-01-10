@@ -19,6 +19,15 @@
                                 <button class="ml-4 text-xs bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-md" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="moving links">
                                     <i class="fa fa-exchange-alt"></i>
                                 </button>
+                                {% if current_user.is_pro() %}
+                                <button class="ml-2 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 p-1 rounded-md" onclick="generatePreview('{{ link.id }}')" title="Generate Preview">
+                                    <i class="fa fa-sync"></i>
+                                </button>
+                                {% else %}
+                                <a href="{{ url_for('new.activate') }}" class="ml-2 text-xs bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-1 rounded-md" title="Upgrade to Pro to generate previews">
+                                    <i class="fa fa-star"></i>
+                                </a>
+                                {% endif %}
                             {% endif %}
                     </div>
 
@@ -518,5 +527,28 @@ document.getElementById('confirm-move').addEventListener('click', function() {
         alert('An error occurred while moving the link.');
     });
 });
+
+function generatePreview(linkId) {
+    fetch('/linkolearn/generate_preview', {
+        method: 'POST',
+        body: JSON.stringify({ link_id: linkId }),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{csrf_token()}}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert('Error generating preview: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the preview.');
+    });
+}
 </script>
 {%endblock%}
