@@ -15,12 +15,11 @@
                             {% else %}
                                 <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800 font-semibold underline decoration-blue-300 underline-offset-4 transition-colors">{{ link.url }}</a>
                             {% endif %}
-                        </div>
-                        {% if can_edit %}
-                            <button class="ml-4 text-xs text-blue-500 hover:text-blue-700 font-bold py-1 px-2 rounded" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')">
-                                <i class="fa fa-exchange-alt"></i>
-                            </button>
-                        {% endif %}
+                            {% if can_edit %}
+                                <button class="ml-4 text-xs bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-md" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="moving links">
+                                    <i class="fa fa-exchange-alt"></i>
+                                </button>
+                            {% endif %}
                     </div>
 
                     {% if link.title or link.description or link.image_url %}
