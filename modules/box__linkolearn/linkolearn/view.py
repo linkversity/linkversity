@@ -397,7 +397,16 @@ def generate_preview():
         import requests
         from bs4 import BeautifulSoup
 
-        response = requests.get(link.url)
+        url_to_scrape = link.url
+        if link.url.startswith('['):
+            path = link.link_section.section_path
+            extracted_data = path.extract_link(link.url)
+            url_to_scrape = extracted_data.get('href')
+
+        if not url_to_scrape:
+            return jsonify({'success': False, 'error': 'Invalid URL in markdown link'})
+
+        response = requests.get(url_to_scrape)
         soup = BeautifulSoup(response.content, 'html.parser')
 
         title = soup.find('title').string if soup.find('title') else ''
