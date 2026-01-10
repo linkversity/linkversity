@@ -21,8 +21,9 @@
                                 <i class="fa fa-exchange-alt"></i>
                             </button>
                             {% if current_user.is_pro() %}
-                            <button class="ml-2 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 p-1 rounded-md" onclick="generatePreview('{{ link.id }}')" title="Generate Preview">
-                                <i class="fa fa-sync"></i>
+                            <button class="ml-2 text-xs bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-md" onclick="generatePreview(this, '{{ link.id }}')" title="Generate Preview">
+                                <i class="fa fa-search"></i>
+                                <i class="fa fa-spinner fa-spin hidden"></i>
                             </button>
                             {% else %}
                             <a href="{{ url_for('new.activate') }}" class="ml-2 text-xs bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-1 rounded-md" title="Upgrade to Pro to generate previews">
@@ -529,7 +530,14 @@ document.getElementById('confirm-move').addEventListener('click', function() {
     });
 });
 
-function generatePreview(linkId) {
+function generatePreview(button, linkId) {
+    const searchIcon = button.querySelector('.fa-search');
+    const spinnerIcon = button.querySelector('.fa-spinner');
+
+    searchIcon.classList.add('hidden');
+    spinnerIcon.classList.remove('hidden');
+    button.disabled = true;
+
     fetch('/linkolearn/generate_preview', {
         method: 'POST',
         body: JSON.stringify({ link_id: linkId }),
@@ -549,6 +557,11 @@ function generatePreview(linkId) {
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred while generating the preview.');
+    })
+    .finally(() => {
+        searchIcon.classList.remove('hidden');
+        spinnerIcon.classList.add('hidden');
+        button.disabled = false;
     });
 }
 </script>
