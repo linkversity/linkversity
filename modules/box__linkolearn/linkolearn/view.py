@@ -423,3 +423,24 @@ def generate_preview():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+@module_blueprint.route("/remove_preview", methods=['POST'])
+@login_required
+def remove_preview():
+    data = request.get_json()
+    link_id = data.get('link_id')
+    link = Link.query.get(link_id)
+
+    if not link:
+        return jsonify({'success': False, 'error': 'Link not found'})
+    
+    path = link.link_section.section_path
+    if not (current_user == path.path_user or current_user in path.editors):
+        return jsonify({'success': False, 'error': 'Permission denied'})
+
+    link.title = None
+    link.description = None
+    link.image_url = None
+
+    db.session.commit()
+    return jsonify({'success': True})
