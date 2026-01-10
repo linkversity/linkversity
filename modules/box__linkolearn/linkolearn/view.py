@@ -356,3 +356,26 @@ def remove_editor(username, path_id):
 
     flash(f'Removed {username} successfully', 'success')
     return redirect(path.get_url())
+
+@module_blueprint.route("/move_link", methods=['POST'])
+@login_required
+def move_link():
+    link_id = request.form.get('link_id')
+    from_section_id = request.form.get('from_section_id')
+    section_id = request.form.get('section_id')
+
+    link = Link.query.get(link_id)
+    from_section = Section.query.get(from_section_id)
+    to_section = Section.query.get(section_id)
+
+    if not link or not from_section or not to_section:
+        return jsonify({'success': False, 'error': 'Invalid data'})
+
+    path = to_section.section_path
+    if not (current_user == path.path_user or current_user in path.editors):
+        return jsonify({'success': False, 'error': 'Permission denied'})
+
+    link.section_id = to_section.id
+    db.session.commit()
+
+    return jsonify({'success': True})
