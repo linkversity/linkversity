@@ -379,3 +379,38 @@ def move_link():
     db.session.commit()
 
     return jsonify({'success': True})
+
+@module_blueprint.route("/generate_preview", methods=['POST'])
+@login_required
+def generate_preview():
+    if not current_user.is_pro():
+        return jsonify({'success': False, 'error': 'Pro subscription required'})
+
+    data = request.get_json()
+    link_id = data.get('link_id')
+    link = Link.query.get(link_id)
+
+    if not link:
+        return jsonify({'success': False, 'error': 'Link not found'})
+
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+
+        response = requests.get(link.url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        title = soup.find('title').string if soup.find('title') else ''
+        description = soup.find('meta', attrs={'name': 'description'})
+        image = soup.find('meta', attrs={'property': 'og:image'})
+
+        link.title = title
+        if description:
+            link.description = description.get('content')
+        if image:
+            link.image_url = image.get('content')
+
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
