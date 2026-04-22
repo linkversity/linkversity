@@ -1,7 +1,24 @@
 import { create } from 'zustand';
 import { MMKV } from 'react-native-mmkv';
 
-const storage = new MMKV();
+// Safely initialize MMKV
+let storage: {
+  getString: (key: string) => string | undefined;
+  set: (key: string, value: string | number | boolean | Uint8Array) => void;
+  delete: (key: string) => void;
+};
+
+try {
+  storage = new MMKV();
+} catch (e) {
+  console.warn('MMKV could not be initialized, using fallback storage', e);
+  const mockStorage: Record<string, string> = {};
+  storage = {
+    getString: (key: string) => mockStorage[key],
+    set: (key: string, value: any) => { mockStorage[key] = String(value); },
+    delete: (key: string) => { delete mockStorage[key]; },
+  };
+}
 
 interface User {
   id: number;
