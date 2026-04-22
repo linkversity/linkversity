@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blog - Linkversity</title>
+    <meta name="description" content="Learn about Linkversity - the platform for organizing learning resources into shareable paths">
+    <meta name="keywords" content="linkversity, learning paths, educational resources, organize links, course creation">
+    <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-screen-xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center">
+                <img src="{{url_for('static', filename='linkversity.png')}}" class="h-10">
+                <span class="ml-2 text-xl font-bold text-gray-800">Linkversity</span>
+            </a>
+            <div class="flex space-x-6">
+                <a href="/" class="text-gray-600 hover:text-gray-900">Home</a>
+                <a href="/blog" class="text-gray-900 font-semibold">Blog</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-screen-xl mx-auto px-4 py-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Blog</h1>
+        <p class="text-xl text-gray-600 mb-12">Latest updates and insights about Linkversity</p>
+
+        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {% for post in posts %}
+            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <a href="{{ url_for('blog.post', slug=post.slug) }}">
+                    <div class="p-6">
+                        <span class="text-sm text-gray-500">{{ post.date }}</span>
+                        <h2 class="text-xl font-bold mt-2 mb-2 text-gray-900">{{ post.title }}</h2>
+                        <p class="text-gray-600">{{ post.description }}</p>
+                    </div>
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-screen-xl mx-auto px-4 text-center">
+            <p>&copy; 2024 Linkversity. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
