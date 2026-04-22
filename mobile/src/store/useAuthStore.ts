@@ -8,16 +8,26 @@ let storage: {
   delete: (key: string) => void;
 };
 
-try {
-  storage = new MMKV();
-} catch (e) {
-  console.warn('MMKV could not be initialized, using fallback storage', e);
+const createMockStorage = () => {
   const mockStorage: Record<string, string> = {};
-  storage = {
+  return {
     getString: (key: string) => mockStorage[key],
     set: (key: string, value: any) => { mockStorage[key] = String(value); },
     delete: (key: string) => { delete mockStorage[key]; },
   };
+};
+
+try {
+  // Check if MMKV is actually a constructor (available in the current environment)
+  if (typeof MMKV === 'function') {
+    storage = new MMKV();
+  } else {
+    console.warn('MMKV is not a constructor, using fallback storage');
+    storage = createMockStorage();
+  }
+} catch (e) {
+  console.warn('MMKV could not be initialized, using fallback storage', e);
+  storage = createMockStorage();
 }
 
 interface User {
