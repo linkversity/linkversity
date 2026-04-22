@@ -389,224 +389,69 @@ def move_link():
     link.section_id = to_section.id
     db.session.commit()
 
-    return jsonify({"success": True})
+    return jsonify({'success': True})
 
-
-@module_blueprint.route("/generate_preview", methods=["POST"])
+@module_blueprint.route("/generate_preview", methods=['POST'])
 @login_required
 def generate_preview():
     if not current_user.is_pro():
-        return jsonify({"success": False, "error": "Pro subscription required"})
+        return jsonify({'success': False, 'error': 'Pro subscription required'})
 
     data = request.get_json()
-    link_id = data.get("link_id")
+    link_id = data.get('link_id')
     link = Link.query.get(link_id)
 
     if not link:
-        return jsonify({"success": False, "error": "Link not found"})
+        return jsonify({'success': False, 'error': 'Link not found'})
 
     try:
         import requests
         from bs4 import BeautifulSoup
 
         url_to_scrape = link.url
-        if link.url.startswith("["):
+        if link.url.startswith('['):
             path = link.link_section.section_path
             extracted_data = path.extract_link(link.url)
-            url_to_scrape = extracted_data.get("href")
+            url_to_scrape = extracted_data.get('href')
 
         if not url_to_scrape:
-            return jsonify({"success": False, "error": "Invalid URL in markdown link"})
+            return jsonify({'success': False, 'error': 'Invalid URL in markdown link'})
 
         response = requests.get(url_to_scrape)
-        soup = BeautifulSoup(response.content, "html.parser")
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-        title = soup.find("title").string if soup.find("title") else ""
-        description = soup.find("meta", attrs={"name": "description"})
-        image = soup.find("meta", attrs={"property": "og:image"})
+        title = soup.find('title').string if soup.find('title') else ''
+        description = soup.find('meta', attrs={'name': 'description'})
+        image = soup.find('meta', attrs={'property': 'og:image'})
 
         link.title = title
         if description:
-            link.description = description.get("content")
+            link.description = description.get('content')
         if image:
-            link.image_url = image.get("content")
+            link.image_url = image.get('content')
 
         db.session.commit()
-        return jsonify({"success": True})
+        return jsonify({'success': True})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        return jsonify({'success': False, 'error': str(e)})
 
-
-@module_blueprint.route("/remove_preview", methods=["POST"])
+@module_blueprint.route("/remove_preview", methods=['POST'])
 @login_required
 def remove_preview():
     data = request.get_json()
-    link_id = data.get("link_id")
+    link_id = data.get('link_id')
     link = Link.query.get(link_id)
 
     if not link:
-        return jsonify({"success": False, "error": "Link not found"})
-
+        return jsonify({'success': False, 'error': 'Link not found'})
+    
     path = link.link_section.section_path
     if not (current_user == path.path_user or current_user in path.editors):
-        return jsonify({"success": False, "error": "Permission denied"})
+        return jsonify({'success': False, 'error': 'Permission denied'})
 
     link.title = None
     link.description = None
     link.image_url = None
 
     db.session.commit()
-    return jsonify({"success": True})
-
-
-@module_blueprint.route("/enterprise/", methods=["GET"])
-@login_required
-def enterprise_dashboard():
-    if not current_user.is_enterprise():
-        flash("Enterprise plan required", "error")
-        return redirect(url_for("linkolearn.dashboard"))
-
-    team = None
-    if current_user.team_id:
-        team = EnterpriseTeam.query.get(current_user.team_id)
-
-    members = []
-    analytics = []
-    domains = []
-
-    if team:
-        members = EnterpriseTeamMember.query.filter_by(team_id=team.id).all()
-        for m in members:
-            m.user = User.query.get(m.user_id)
-        analytics = (
-            EnterpriseAnalytics.query.filter_by(team_id=team.id)
-            .order_by(EnterpriseAnalytics.event_date.desc())
-            .limit(30)
-            .all()
-        )
-        domains = EnterpriseCustomDomain.query.filter_by(team_id=team.id).all()
-        team_paths = Path.query.filter_by(team_id=team.id).all()
-        for p in team_paths:
-            p.owner = User.query.get(p.user_id)
-
-    return render_template(
-        "linkolearn_theme/templates/enterprise.html",
-        team=team,
-        members=members,
-        analytics=analytics,
-        domains=domains,
-        team_paths=team_paths,
-    )
-
-
-@module_blueprint.route("/enterprise/create-team/", methods=["POST"])
-@login_required
-def create_enterprise_team():
-    if not current_user.is_enterprise():
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
-    if current_user.team_id:
-        return jsonify({"success": False, "error": "Team already exists"})
-
-    team_name = request.form.get("team_name")
-    if not team_name:
-        return jsonify({"success": False, "error": "Team name required"})
-
-    team = current_user.create_enterprise_team(team_name)
-    return jsonify({"success": True, "team_id": team.id})
-
-
-@module_blueprint.route("/enterprise/add-member/", methods=["POST"])
-@login_required
-def add_enterprise_member():
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
-    username = request.form.get("username")
-    role = request.form.get("role", "member")
-
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({"success": False, "error": "User not found"})
-
-    existing = EnterpriseTeamMember.query.filter_by(
-        team_id=current_user.team_id, user_id=user.id
-    ).first()
-    if existing:
-        return jsonify({"success": False, "error": "User already in team"})
-
-    member = EnterpriseTeamMember.add_member(current_user.team_id, user.id, role)
-
-    user.team_id = current_user.team_id
-    db.session.commit()
-
-    EnterpriseAuditLog.log_action(
-        team_id=current_user.team_id,
-        user_id=current_user.id,
-        action="member_added",
-        details=f"Added {username} as {role}",
-    )
-
-    return jsonify({"success": True})
-
-
-@module_blueprint.route("/enterprise/remove-member/<int:member_id>/", methods=["POST"])
-@login_required
-def remove_enterprise_member(member_id):
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
-    member = EnterpriseTeamMember.query.get(member_id)
-    if not member or member.team_id != current_user.team_id:
-        return jsonify({"success": False, "error": "Member not found"})
-
-    user = User.query.get(member.user_id)
-    if user:
-        user.team_id = None
-
-    db.session.delete(member)
-    db.session.commit()
-
-    return jsonify({"success": True})
-
-
-@module_blueprint.route("/enterprise/add-domain/", methods=["POST"])
-@login_required
-def add_enterprise_domain():
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
-    domain = request.form.get("domain")
-    if not domain:
-        return jsonify({"success": False, "error": "Domain required"})
-
-    existing = EnterpriseCustomDomain.query.filter_by(domain=domain).first()
-    if existing:
-        return jsonify({"success": False, "error": "Domain already in use"})
-
-    custom_domain = EnterpriseCustomDomain.add_domain(current_user.team_id, domain)
-
-    EnterpriseAuditLog.log_action(
-        team_id=current_user.team_id,
-        user_id=current_user.id,
-        action="domain_added",
-        details=f"Added domain {domain}",
-    )
-
-    return jsonify({"success": True})
-
-
-@module_blueprint.route("/enterprise/remove-domain/<int:domain_id>/", methods=["POST"])
-@login_required
-def remove_enterprise_domain(domain_id):
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
-    domain = EnterpriseCustomDomain.query.get(domain_id)
-    if not domain or domain.team_id != current_user.team_id:
-        return jsonify({"success": False, "error": "Domain not found"})
-
-    db.session.delete(domain)
-    db.session.commit()
-
-    return jsonify({"success": True})
+    return jsonify({'success': True})
