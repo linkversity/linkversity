@@ -174,7 +174,7 @@ $('#path-link').on('blur', function() {
 });
 
 $("#submit-button").click(function(){
-    var json_submit = { sections: [] };
+    var json_submit = {};
 
     var path_title = $('#path-title').val();
     var path_link = $('#path-link').val();
@@ -192,10 +192,10 @@ $("#submit-button").click(function(){
       if (section_title || section_links) {
         sectionCount++;
         if (section_links.trim()) hasLinks = true;
-        json_submit.sections.push({
-            section_title: section_title,
-            section_links: section_links
-        });
+        var section = {};
+        section['section_title'] = section_title;
+        section['section_links'] = section_links;
+        json_submit['sections'].push(section);
       }
     });
 
@@ -204,10 +204,10 @@ $("#submit-button").click(function(){
         return;
     }
 
-    json_submit.path_title = path_title;
-    json_submit.path_link = path_link;
+    json_submit['path_title'] = path_title;
+    json_submit['path_link'] = path_link;
     if (currentTeamId) {
-        json_submit.team_id = currentTeamId;
+        json_submit['team_id'] = currentTeamId;
     }
 
     $('#submit-button').prop('disabled', true).html('Creating...');
