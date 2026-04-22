@@ -183,7 +183,7 @@ class User(UserMixin, PkModel):
         db.session.commit()
 
     def is_pro(self):
-        return self.subscription_plan is not None and self.subscription_plan >= 1
+        return self.subscription_plan >= 1
 
     def is_enterprise(self):
         return self.subscription_plan is not None and self.subscription_plan == 2
