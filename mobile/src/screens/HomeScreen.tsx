@@ -1,0 +1,179 @@
+import React, { useEffect } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
+import { useAuthStore } from '../store/useAuthStore';
+import { useLinkStore, Path } from '../store/useLinkStore';
+import { LogOut, Plus, ExternalLink } from 'lucide-react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
+
+type HomeScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
+};
+
+const HomeScreen = ({ navigation }: HomeScreenProps) => {
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const { paths, isLoading, fetchPaths } = useLinkStore();
+
+  useEffect(() => {
+    fetchPaths();
+  }, [fetchPaths]);
+
+  const renderPathItem = ({ item }: { item: Path }) => (
+    <TouchableOpacity style={styles.pathCard}>
+      <View style={styles.pathInfo}>
+        <Text style={styles.pathTitle}>{item.title}</Text>
+      </View>
+      <ExternalLink size={20} color="#64748b" />
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcome}>Welcome back,</Text>
+          <Text style={styles.username}>{user?.username}</Text>
+        </View>
+        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+          <LogOut size={24} color="#ef4444" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Your Paths</Text>
+      </View>
+
+      {isLoading && paths.length === 0 ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#2563eb" />
+        </View>
+      ) : (
+        <FlatList
+          data={paths}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderPathItem}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={fetchPaths} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No paths found.</Text>
+            </View>
+          }
+        />
+      )}
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('SaveLink', { url: '' })}
+      >
+        <Plus size={32} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  welcome: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  logoutButton: {
+    padding: 8,
+  },
+  sectionHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'semibold',
+    color: '#475569',
+  },
+  listContent: {
+    padding: 16,
+    gap: 12,
+  },
+  pathCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+    marginBottom: 12,
+  },
+  pathInfo: {
+    flex: 1,
+  },
+  pathTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  emptyText: {
+    color: '#64748b',
+    fontSize: 16,
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    backgroundColor: '#2563eb',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+});
+
+export default HomeScreen;
