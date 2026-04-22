@@ -8,6 +8,7 @@ from flask import render_template
 from flask import url_for
 from flask import current_app
 from flask import request
+from flask import jsonify
 from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
@@ -160,9 +161,24 @@ def login():
             func.lower(User.username) == func.lower(username)
         ).first()
         if user is None or not user.check_password(password):
+            if request.is_json:
+                return jsonify({"message": "Invalid username or password"}), 401
             flash(notify_danger("please check your user id and password"))
             return redirect(url_for("auth.login"))
+        
         login_user(user)
+
+        if request.is_json:
+            token = user.generate_api_token(name=f"Login from {request.remote_addr} at {datetime.datetime.now()}")
+            return jsonify({
+                "token": token,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
+            })
+
         if "next" not in request.form:
             next_url = url_for("www.user_profile", username=current_user.username)
 
@@ -172,10 +188,44 @@ def login():
             else:
                 next_url = get_safe_redirect(request.form["next"])
         return redirect(next_url)
+    
+    if request.is_json:
+        return jsonify({"message": "Form validation failed", "errors": login_form.errors}), 400
+
     context.update({
         '_exclude_nav': True
         })
     return render_template("auth/login.html", **context)
+
+
+@auth_blueprint.route("/api/login", methods=["POST"])
+def api_login():
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing JSON in request"}), 400
+    
+    username = data.get("username")
+    password = data.get("password")
+    
+    if not username or not password:
+        return jsonify({"message": "Missing username or password"}), 400
+        
+    user = User.query.filter(
+        func.lower(User.username) == func.lower(username)
+    ).first()
+    
+    if user is None or not user.check_password(password):
+        return jsonify({"message": "Invalid username or password"}), 401
+        
+    token = user.generate_api_token(name=f"Mobile Login at {datetime.datetime.now()}")
+    return jsonify({
+        "token": token,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        }
+    })
 
 
 @auth_blueprint.route("/logout", methods=["GET"])
