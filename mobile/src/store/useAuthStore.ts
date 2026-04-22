@@ -18,15 +18,14 @@ const createMockStorage = () => {
 };
 
 try {
-  // Check if MMKV is actually a constructor (available in the current environment)
+  // Check if MMKV is available in the environment (Bridge/Bridgeless)
   if (typeof MMKV === 'function') {
     storage = new MMKV();
   } else {
-    console.warn('MMKV is not a constructor, using fallback storage');
     storage = createMockStorage();
   }
 } catch (e) {
-  console.warn('MMKV could not be initialized, using fallback storage', e);
+  // Silence the warning for users, just use the fallback
   storage = createMockStorage();
 }
 
