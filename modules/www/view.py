@@ -11,6 +11,8 @@ from flask import render_template
 from flask import session
 from flask import request
 from flask import flash
+from flask import Response
+from datetime import datetime
 
 #
 from shopyo.api.html import notify
@@ -244,3 +246,38 @@ def activate():
         return redirect(url_for("www.activate"))
 
     return render_template("linkolearn_theme/templates/activate.html", **context)
+
+
+@module_blueprint.route("/sitemap.xml")
+def sitemap():
+    from modules.blog.models import get_all_posts
+
+    posts = get_all_posts()
+    base_url = "https://linkversity.com"
+
+    static_pages = [
+        ("/", "homepage", "daily", "1.0"),
+        ("/about", "about", "monthly", "0.7"),
+        ("/contact", "contact", "monthly", "0.6"),
+        ("/privacy-policy", "privacy", "monthly", "0.5"),
+        ("/blog", "blog", "daily", "0.9"),
+    ]
+
+    now = datetime.now().strftime("%Y-%m-%d")
+
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+    for path, name, freq, priority in static_pages:
+        xml.append(
+            f"<url><loc>{base_url}{path}</loc><changefreq>{freq}</changefreq><priority>{priority}</priority><lastmod>{now}</lastmod></url>"
+        )
+
+    for post in posts:
+        xml.append(
+            f"<url><loc>{base_url}/blog/{post['slug']}</loc><changefreq>weekly</changefreq><priority>0.6</priority><lastmod>{now}</lastmod></url>"
+        )
+
+    xml.append("</urlset>")
+
+    return Response("\n".join(xml), mimetype="application/xml")
