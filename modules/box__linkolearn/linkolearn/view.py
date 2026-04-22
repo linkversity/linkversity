@@ -117,7 +117,6 @@ def toggle_password(path_id):
 
     return jsonify({"status": "success"})
 
-
 @module_blueprint.route("/check-password/<path_id>", methods=["POST"])
 def check_password(path_id):
 
