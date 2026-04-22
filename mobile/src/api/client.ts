@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
 import { useAuthStore } from '../store/useAuthStore';
 
-const BASE_URL = 'https://linkversity.lol'; 
+// Change this to your backend URL. 
+// For Android emulator, 10.0.2.2 points to localhost of the host machine.
+const BASE_URL = 'http://10.0.2.2:5000'; 
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

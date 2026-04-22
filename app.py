@@ -9,6 +9,7 @@ Need help?
 
 Hope it helps! We welcome all questions and even requests for walkthroughs
 """
+
 import importlib
 import os
 import sys
@@ -25,7 +26,6 @@ from shopyo.api.debug import is_yo_debug
 from shopyo.api.file import trycopy
 
 
-
 base_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, base_path)
 from config import app_config
@@ -36,7 +36,7 @@ from modules.box__linkolearn.linkolearn.models import LikeList
 from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
-from modules.box__linkolearn.linkolearn.models import Emoji 
+from modules.box__linkolearn.linkolearn.models import Emoji
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__linkolearn.slack.models import SlackUser
 
@@ -45,8 +45,6 @@ from shopyo_admin import DefaultModelView
 from init import db
 from init import load_extensions
 from init import modules_path
-
-
 
 
 try:
@@ -65,6 +63,7 @@ from shopyo_admin import MyAdminIndexView
 
 def create_app(config_name="development"):
     from dotenv import load_dotenv
+
     load_dotenv()
 
     global_template_variables = {}
@@ -76,11 +75,12 @@ def create_app(config_name="development"):
     )
 
     try:
-        app.config.from_pyfile('config.py')
+        app.config.from_pyfile("config.py")
     except:
-        pass 
+        pass
     from werkzeug.middleware.proxy_fix import ProxyFix
     from flask import request, jsonify
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     load_plugins(app, global_template_variables, global_configs, config_name)
@@ -89,18 +89,24 @@ def create_app(config_name="development"):
     create_config_json()
     load_extensions(app)
 
+    from shopyo_auth import ShopyoAuth
+
+    auth = ShopyoAuth()
+    auth.init_app(app)
+
     # Connection pool settings
-    app.config['SQLALCHEMY_POOL_SIZE'] = 5  # Number of connections to keep in the pool
-    app.config['SQLALCHEMY_MAX_OVERFLOW'] = 10  # Extra connections beyond pool_size
-    app.config['SQLALCHEMY_POOL_TIMEOUT'] = 30  # Maximum wait time for a connection
-    app.config['SQLALCHEMY_POOL_RECYCLE'] = 1800  # Recycle connections every 30 minutes
+    app.config["SQLALCHEMY_POOL_SIZE"] = 5  # Number of connections to keep in the pool
+    app.config["SQLALCHEMY_MAX_OVERFLOW"] = 10  # Extra connections beyond pool_size
+    app.config["SQLALCHEMY_POOL_TIMEOUT"] = 30  # Maximum wait time for a connection
+    app.config["SQLALCHEMY_POOL_RECYCLE"] = 1800  # Recycle connections every 30 minutes
 
     # Disable track_modifications to save memory
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config['SESSION_COOKIE_SECURE'] = True  # Ensures cookies are only sent over HTTPS
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # or 'None' if cross-site
-
+    app.config["SESSION_COOKIE_SECURE"] = (
+        True  # Ensures cookies are only sent over HTTPS
+    )
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # or 'None' if cross-site
 
     setup_flask_admin(app)
     register_devstatic(app, modules_path)
@@ -108,10 +114,10 @@ def create_app(config_name="development"):
     setup_theme_paths(app)
     inject_global_vars(app, global_template_variables)
 
-
     @app.shell_context_processor
     def make_shell_context():
-        return {'db': db, 'User':User}
+        return {"db": db, "User": User}
+
     return app
 
 
@@ -315,7 +321,7 @@ def setup_theme_paths(app):
 def inject_global_vars(app, global_template_variables):
     @app.context_processor
     def inject_global_vars():
-        APP_NAME = os.environ.get('APP_NAME', 'PLEASE SET APP NAME in .env')
+        APP_NAME = os.environ.get("APP_NAME", "PLEASE SET APP NAME in .env")
 
         base_context = {
             "APP_NAME": APP_NAME,
@@ -326,7 +332,9 @@ def inject_global_vars(app, global_template_variables):
 
         return base_context
 
-app = create_app(os.environ.get('FLASK_ENV', 'production'))
+
+app = create_app(os.environ.get("FLASK_ENV", "production"))
+
 
 @app.cli.command("update-password")
 @click.argument("username")

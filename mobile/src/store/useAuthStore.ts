@@ -1,33 +1,7 @@
 import { create } from 'zustand';
 import { MMKV } from 'react-native-mmkv';
 
-// Safely initialize MMKV
-let storage: {
-  getString: (key: string) => string | undefined;
-  set: (key: string, value: string | number | boolean | Uint8Array) => void;
-  delete: (key: string) => void;
-};
-
-const createMockStorage = () => {
-  const mockStorage: Record<string, string> = {};
-  return {
-    getString: (key: string) => mockStorage[key],
-    set: (key: string, value: any) => { mockStorage[key] = String(value); },
-    delete: (key: string) => { delete mockStorage[key]; },
-  };
-};
-
-try {
-  // Check if MMKV is available in the environment (Bridge/Bridgeless)
-  if (typeof MMKV === 'function') {
-    storage = new MMKV();
-  } else {
-    storage = createMockStorage();
-  }
-} catch (e) {
-  // Silence the warning for users, just use the fallback
-  storage = createMockStorage();
-}
+const storage = new MMKV();
 
 interface User {
   id: number;

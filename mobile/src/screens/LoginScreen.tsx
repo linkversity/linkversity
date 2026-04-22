@@ -24,31 +24,15 @@ const LoginScreen = () => {
     }
 
     setLoading(true);
-    console.log('--- LOGIN REQUEST ---');
-    console.log('URL:', apiClient.defaults.baseURL + '/auth/api/login');
-    console.log('Payload:', { username, password });
-
     try {
       const response = await apiClient.post('/auth/api/login', {
         username,
         password,
       });
 
-      console.log('--- LOGIN SUCCESS ---');
-      console.log('Response Status:', response.status);
-      console.log('Response Data:', JSON.stringify(response.data, null, 2));
-
       const { token, user } = response.data;
       setAuth(token, user);
     } catch (error: any) {
-      console.log('--- LOGIN FAILURE ---');
-      if (error.response) {
-        console.log('Response Status:', error.response.status);
-        console.log('Response Data:', JSON.stringify(error.response.data, null, 2));
-      } else {
-        console.log('Error Message:', error.message);
-      }
-      
       const message = error.response?.data?.message || 'Failed to login';
       Alert.alert('Login Error', message);
     } finally {
@@ -107,40 +91,31 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#ff8080', // Coral from web theme
-    letterSpacing: -1,
+    color: '#2563eb',
   },
   subtitle: {
     fontSize: 16,
-    color: '#475569',
-    marginTop: 4,
-    fontWeight: '500',
+    color: '#64748b',
+    marginTop: 8,
   },
   form: {
     gap: 16,
   },
   input: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 8,
     fontSize: 16,
-    color: '#1e293b',
   },
   button: {
-    backgroundColor: '#ff8080', // Coral button
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: '#2563eb',
+    padding: 14,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
-    shadowColor: '#ff8080',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   buttonText: {
     color: '#fff',

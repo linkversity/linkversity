@@ -1,6 +1,7 @@
 """
 All initializations like db = SQLAlchemy in this file
 """
+
 import os
 
 from flask_login import LoginManager
