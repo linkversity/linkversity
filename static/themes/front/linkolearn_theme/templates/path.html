@@ -3,9 +3,34 @@
 
 {% macro render_sections(path, can_edit) %}
     {% for section in path.sections %}
-        <h4 class="text-xl font-bold text-gray-900 mb-4 pl-3">{{ section.title }}</h4>
-        <ol class="list-decimal list-inside space-y-6">
-            {% for link in section.links %}
+        <div class="section-container" data-section-id="{{ section.id }}">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-xl font-bold text-gray-900 pl-3">{{ section.title or 'Untitled Section' }}</h4>
+                {% if can_edit %}
+                <button onclick="toggleAddLinkForm('{{ section.id }}')" class="text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-md transition">
+                    <i class="fa fa-plus mr-1"></i> Add Link
+                </button>
+                {% endif %}
+            </div>
+            
+            {% if can_edit %}
+            <div id="add-link-form-{{ section.id }}" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="space-y-3">
+                    <input type="text" id="new-link-url-{{ section.id }}" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter URL or [Link Text](url)">
+                    <div class="flex gap-2">
+                        <button onclick="addLinkToSection('{{ section.id }}')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                            Add
+                        </button>
+                        <button onclick="toggleAddLinkForm('{{ section.id }}')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <ol class="list-decimal list-inside space-y-6">
+                {% for link in section.links %}
                 <li class="links text-sm text-blue-600 break-words relative">
                     <div>
                         {% if link.url.startswith('[') %}
@@ -56,9 +81,15 @@
                         </div>
                     {% endif %}
                 </li>
-            {% endfor %}
-        </ol>
-        <div class="my-8 border-t border-gray-100"></div>
+                {% endfor %}
+            </ol>
+            {% if section.links|length == 0 %}
+            <div class="text-center py-8 text-gray-400">
+                <p class="text-sm">No links yet. Click "Add Link" to get started.</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="my-6 border-t border-gray-200"></div>
     {% endfor %}
 {% endmacro %}
 
@@ -187,6 +218,13 @@
         <div class="w-full md:w-{%if path.path_user == current_user%}4{%else%}5{%endif%}/6 flex flex-col flex-grow">
             <!-- Top Section -->
             <div class="p-6 border-b flex-grow">
+                <nav class="text-sm text-gray-500 mb-4">
+                    <a href="{{ url_for('www.index') }}" class="hover:text-blue-600">Home</a>
+                    <span class="mx-2">›</span>
+                    <a href="{{ url_for('www.user_profile', username=path.path_user.username) }}" class="hover:text-blue-600">@{{ path.path_user.username }}</a>
+                    <span class="mx-2">›</span>
+                    <span class="text-gray-700">{{ path.title or path.slug }}</span>
+                </nav>
                 {% set username = path.path_user.username %}
                 <h3 class="text-3xl font-semibold text-gray-800">
                     <a href="{{ url_for('www.user_profile', username=username) }}" class="text-blue-600 hover:text-blue-800">
