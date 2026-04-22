@@ -596,6 +596,31 @@ def add_enterprise_domain():
     return jsonify({"success": True})
 
 
+@module_blueprint.route("/add-link-to-section/", methods=["POST"])
+@login_required
+def add_link_to_section():
+    data = request.get_json()
+    section_id = data.get("section_id")
+    url = data.get("url")
+
+    if not section_id or not url:
+        return jsonify({"success": False, "error": "Missing section_id or url"})
+
+    section = Section.query.get(section_id)
+    if not section:
+        return jsonify({"success": False, "error": "Section not found"})
+
+    path = section.section_path
+    if not path.can_edit(current_user):
+        return jsonify({"success": False, "error": "Permission denied"})
+
+    link = Link(url=url)
+    section.links.append(link)
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+
 @module_blueprint.route("/enterprise/remove-domain/<int:domain_id>/", methods=["POST"])
 @login_required
 def remove_enterprise_domain(domain_id):
