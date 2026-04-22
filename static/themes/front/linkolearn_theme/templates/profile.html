@@ -54,14 +54,20 @@
         <div class="w-full md:w-4/6 flex flex-col flex-grow">
             <!-- Top Section -->
             <div class="p-6 border-b flex-grow">
-                <p class="text-gray-600 text-sm">
+                <p class="text-gray-600 text-sm flex flex-wrap gap-3">
                     <div class="inline-flex items-center gap-2 bg-green-100 text-green-600 text-sm font-medium px-3 py-1 rounded-full">
-                        <i class="fas fa-folder-open"></i> <!-- Folder icon for collections -->
-                        <span>{{len(user.paths)}} Collections</span>
+                        <i class="fas fa-folder-open"></i>
+                        <span>{{len(user.paths)}} Path{{ 's' if user.paths|length != 1 else '' }}</span>
                     </div>
-                    <div class="inline-flex items-center gap-2 bg-blue-100 text-red-600 text-sm font-medium px-3 py-1 rounded-full">
-                        <i class="fas fa-heart"></i> <!-- FontAwesome icon for collections -->
-                        <span>{{len(user.user_like_lists)}} Likes</span>
+                    {% if user == current_user and private_count > 0 %}
+                    <div class="inline-flex items-center gap-2 bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-full">
+                        <i class="fas fa-lock"></i>
+                        <span>{{ private_count }} Private</span>
+                    </div>
+                    {% endif %}
+                    <div class="inline-flex items-center gap-2 bg-pink-100 text-pink-600 text-sm font-medium px-3 py-1 rounded-full">
+                        <i class="fas fa-heart"></i>
+                        <span>{{len(user.user_like_lists)}} Like{{ 's' if user.user_like_lists|length != 1 else '' }}</span>
                     </div>
                 </p>
             </div>
@@ -113,10 +119,20 @@
                 {% endif %}
                 
                 <div class="max-w-3xl mx-auto bg-white">
-                    <!-- Card Title -->
-                    <!--                     <h2 class="text-xl font-semibold text-gray-800">My Favorite Links</h2>
-                    <p class="text-gray-600 text-sm mt-1">A collection of useful resources.</p> -->
-                    <!-- Links List -->
+                    {% if user.paths|length == 0 %}
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📚</div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">No paths yet</h3>
+                        <p class="text-gray-500 mb-6">Start sharing your links by creating your first path</p>
+                        {% if user == current_user %}
+                        <a href="{{ url_for('new.index') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-plus"></i>
+                            Create Your First Path
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">My Paths</h3>
                     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {% for path in user.paths %}
                         {% if not path.is_visible %}
@@ -148,6 +164,7 @@
                         {%endif%}
                         {% endfor %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

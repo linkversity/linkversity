@@ -187,6 +187,13 @@
         <div class="w-full md:w-{%if path.path_user == current_user%}4{%else%}5{%endif%}/6 flex flex-col flex-grow">
             <!-- Top Section -->
             <div class="p-6 border-b flex-grow">
+                <nav class="text-sm text-gray-500 mb-4">
+                    <a href="{{ url_for('www.index') }}" class="hover:text-blue-600">Home</a>
+                    <span class="mx-2">›</span>
+                    <a href="{{ url_for('www.user_profile', username=path.path_user.username) }}" class="hover:text-blue-600">@{{ path.path_user.username }}</a>
+                    <span class="mx-2">›</span>
+                    <span class="text-gray-700">{{ path.title or path.slug }}</span>
+                </nav>
                 {% set username = path.path_user.username %}
                 <h3 class="text-3xl font-semibold text-gray-800">
                     <a href="{{ url_for('www.user_profile', username=username) }}" class="text-blue-600 hover:text-blue-800">

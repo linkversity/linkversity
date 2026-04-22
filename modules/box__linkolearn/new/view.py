@@ -67,6 +67,25 @@ def index():
     return render_template("linkolearn_theme/templates/new.html", team_id=team_id)
 
 
+@module_blueprint.route("/check-slug", methods=["GET"])
+@login_required
+def check_slug():
+    slug = request.args.get("slug", "")
+    slug = Path.slugify(slug)
+    team_id = request.args.get("team_id")
+
+    if team_id:
+        exists = Path.query.filter(
+            Path.slug == slug, Path.team_id == int(team_id)
+        ).first()
+    else:
+        exists = Path.query.filter(
+            Path.slug == slug, Path.user_id == current_user.id
+        ).first()
+
+    return jsonify({"available": not exists, "slug": slug})
+
+
 @module_blueprint.route("/add", methods=["POST"])
 @login_required
 def add():
@@ -95,7 +114,7 @@ def add():
     path = Path()
     path.like_list = LikeList()
     path.bookmark_list = BookmarkList()
-    path.title = ""
+    path.title = json_submit.get("path_title", path_link.replace("-", " ").title())
     path.slug = path_link
     if team_id:
         path.team_id = int(team_id)

@@ -82,6 +82,8 @@ def user_profile(username):
         func.lower(User.username) == func.lower(username)
     ).first_or_404()
     context.update({"user": user})
+    private_count = Path.query.filter_by(user_id=user.id, is_visible=False).count()
+    context.update({"private_count": private_count})
 
     if user.is_enterprise() and user.team_id:
         from modules.box__default.auth.models import EnterpriseTeam
