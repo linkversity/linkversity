@@ -81,3 +81,63 @@ flask run --debug
 
 
 Frontend files located at /static/themes/front/linkolearn_theme
+
+## Enterprise Mode
+
+Linkversity offers an enterprise plan (subscription_plan=2) with advanced features for teams and organizations:
+
+### Features
+
+- **URL Encryption**: Enterprise links can be encrypted at rest in the database using per-organization encryption keys
+- **Dedicated Database**: Optional isolated database per enterprise for complete tenant data separation
+- **Audit Logging**: Full action logging for compliance (who did what and when)
+- **Click Analytics**: Built-in analytics tracking with referrer, device type, and geographic data
+- **Team Management**: Add team members with roles (admin, member, viewer)
+- **Custom Domains**: Connect your own domain to your enterprise workspace
+- **White Label**: Custom branding options for enterprise deployments
+
+### Enterprise Models
+
+| Model | Description |
+|-------|-------------|
+| `EnterpriseTeam` | Team/organization entity owned by a user |
+| `EnterpriseSettings` | Encryption keys, domain config, feature flags |
+| `EnterpriseAuditLog` | Compliance audit trail |
+| `EnterpriseAnalytics` | Click/event tracking data |
+| `EnterpriseTeamMember` | Team member associations |
+| `EnterpriseCustomDomain` | Custom domain mappings |
+
+### API Usage
+
+```python
+from modules.box__default.auth.models import User
+from modules.box__linkolearn.linkolearn.encryption import encrypt_url, decrypt_url
+
+# Create enterprise team
+team = current_user.create_enterprise_team("My Company")
+
+# Get enterprise settings
+settings = current_user.get_enterprise_settings()
+
+# Encrypt a link
+link.set_encrypted_url(settings.encryption_key)
+
+# Decrypt when needed
+url = link.decrypt_url(settings.encryption_key)
+```
+
+### Enterprise Database
+
+For strict data isolation, enterprises can use dedicated SQLite databases:
+
+```python
+from modules.box__linkolearn.linkolearn.enterprise_db import EnterpriseDatabaseManager
+
+# Create dedicated database
+db_manager = EnterpriseDatabaseManager()
+db_manager.create_enterprise_database("company_name")
+
+# Query isolated data
+with enterprise_db_session("company_name") as session:
+    paths = session.query(Path).all()
+```

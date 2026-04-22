@@ -4,12 +4,14 @@ import os
 from flask import url_for
 from flask import redirect
 from flask import flash
+
 # from flask import request
 from flask import Blueprint
 from flask import render_template
 from flask import session
 from flask import request
 from flask import flash
+
 #
 from shopyo.api.html import notify
 # from shopyo.api.forms import flash_errors
@@ -27,7 +29,7 @@ from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
-from init import db 
+from init import db
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
 module_info = {}
@@ -63,16 +65,12 @@ def index():
             if len(paths) >= 10:
                 return paths[-11:-1]
             else:
-                len_paths = len(paths) +1
+                len_paths = len(paths) + 1
                 return paths[:len_paths]
         except:
             return []
 
-    context = {
-        'get_last_5': get_last_5,
-        'current_user': current_user
-    }
-
+    context = {"get_last_5": get_last_5, "current_user": current_user}
 
     return render_template("linkolearn_theme/index.html", **context)
 
@@ -82,8 +80,36 @@ def user_profile(username):
     context = {}
     user = User.query.filter(
         func.lower(User.username) == func.lower(username)
-        ).first_or_404()
-    context.update({'user': user})
+    ).first_or_404()
+    context.update({"user": user})
+    private_count = Path.query.filter_by(user_id=user.id, is_visible=False).count()
+    context.update({"private_count": private_count})
+
+    if user.is_enterprise() and user.team_id:
+        from modules.box__default.auth.models import EnterpriseTeam
+        from modules.box__linkolearn.linkolearn.enterprise_features import (
+            EnterpriseTeamMember,
+        )
+        from modules.box__linkolearn.linkolearn.models import Path
+
+        team = EnterpriseTeam.query.get(user.team_id)
+        members = EnterpriseTeamMember.query.filter_by(team_id=user.team_id).all()
+        for m in members:
+            m.user = User.query.get(m.user_id)
+        team_paths = Path.query.filter_by(team_id=user.team_id).all()
+        for p in team_paths:
+            p.owner = User.query.get(p.user_id)
+        team.paths = team_paths
+        context.update(
+            {
+                "team": team,
+                "team_members": members,
+                "is_team_owner": user == User.query.get(team.owner_id)
+                if team
+                else False,
+            }
+        )
+
     return render_template("linkolearn_theme/templates/profile.html", **context)
 
 
@@ -91,32 +117,62 @@ def user_profile(username):
 def path(username, path_slug):
     user = User.query.filter(
         func.lower(User.username) == func.lower(username)
-        ).first_or_404()
-    path = Path.query.filter(Path.slug == path_slug, Path.user_id == user.id).first_or_404()
-    if (not path.is_visible):
-        if (current_user.is_authenticated):
-            if(path.path_user == current_user):
-                pass 
+    ).first_or_404()
+    path = Path.query.filter(
+        Path.slug == path_slug, Path.user_id == user.id
+    ).first_or_404()
+    if not path.is_visible:
+        if current_user.is_authenticated:
+            if path.path_user == current_user:
+                pass
             elif current_user in path.editors:
                 pass
             elif path.is_password_protected:
                 pass
             else:
-                flash(notify("Path not public!", alert_type='warning'))
-                return redirect(url_for('www.index'))
+                flash(notify("Path not public!", alert_type="warning"))
+                return redirect(url_for("www.index"))
         else:
             if path.is_password_protected:
                 pass
             else:
-                flash(notify("Path not public!", alert_type='warning'))
-                return redirect(url_for('www.index'))
+                flash(notify("Path not public!", alert_type="warning"))
+                return redirect(url_for("www.index"))
 
     context = {}
 
-    url = path.get_url().replace('/', '_')
-    has_entered_password = session.get(f'has_entered_password_{url}', False)
+    url = path.get_url().replace("/", "_")
+    has_entered_password = session.get(f"has_entered_password_{url}", False)
 
-    context.update({'user': user, 'path': path, 'has_entered_password': has_entered_password, 'session':session})
+    if path.team_id:
+        from modules.box__default.auth.models import EnterpriseTeam
+        from modules.box__linkolearn.linkolearn.enterprise_features import (
+            EnterpriseTeamMember,
+        )
+
+        team = EnterpriseTeam.query.get(path.team_id)
+        members = EnterpriseTeamMember.query.filter_by(team_id=path.team_id).all()
+        for m in members:
+            m.user = User.query.get(m.user_id)
+        is_team_member = (
+            current_user.is_authenticated and current_user.team_id == path.team_id
+        )
+        context.update(
+            {
+                "team": team,
+                "team_members": members,
+                "is_team_member": is_team_member,
+            }
+        )
+
+    context.update(
+        {
+            "user": user,
+            "path": path,
+            "has_entered_password": has_entered_password,
+            "session": session,
+        }
+    )
     return render_template("linkolearn_theme/templates/path.html", **context)
 
 
@@ -129,6 +185,7 @@ def privacy_policy():
 def contact():
     return render_template("linkolearn_theme/templates/info/contact.html")
 
+
 @module_blueprint.route("/about")
 def about():
     return render_template("linkolearn_theme/templates/info/about.html")
@@ -138,18 +195,19 @@ def about():
 def info():
     return render_template("linkolearn_theme/templates/info.html")
 
+
 import validators
 
-@module_blueprint.route("/save-link", methods=['GET', 'POST'])
+
+@module_blueprint.route("/save-link", methods=["GET", "POST"])
 @login_required
 def save_link():
-    context = {'user': current_user}
-    if request.method == 'POST':
+    context = {"user": current_user}
+    if request.method == "POST":
         data = request.form
 
-
-        url = data.get('url')
-        section_id = data.get('section_id')
+        url = data.get("url")
+        section_id = data.get("section_id")
         print(url, section_id)
         if not url or not section_id:
             return "URL and section ID are required"
@@ -167,25 +225,23 @@ def save_link():
     return render_template("linkolearn_theme/templates/save_link.html", **context)
 
 
-@module_blueprint.route("/activate", methods=['GET', 'POST'])
+@module_blueprint.route("/activate", methods=["GET", "POST"])
 @login_required
 def activate():
-    context = {'current_user': current_user}
-    if request.method == 'POST':
-        activation_code = request.form.get('code')
-        print(activation_code)
+    context = {"current_user": current_user}
+    if request.method == "POST":
+        activation_code = request.form.get("code")
 
         code_entry = ActivationCode.query.filter_by(code=activation_code).first()
-        
+
         if not code_entry:
-            flash('Wrong code', 'error')
-            return redirect(url_for('www.activate'))
+            flash("Wrong code", "error")
+            return redirect(url_for("www.activate"))
 
-
-        current_user.subscription_plan = 1; 
+        current_user.subscription_plan = code_entry.plan_type
         db.session.commit()
 
-        flash('Activated', 'success')
-        return redirect(url_for('www.activate'))
+        flash(f"Activated {code_entry.plan_type_name}!", "success")
+        return redirect(url_for("www.activate"))
 
     return render_template("linkolearn_theme/templates/activate.html", **context)
