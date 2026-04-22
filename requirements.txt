@@ -21,3 +21,4 @@ urlextract==1.8.0
 beautifulsoup4
 requests
 cryptography
+shopyo-auth==1.10.0
