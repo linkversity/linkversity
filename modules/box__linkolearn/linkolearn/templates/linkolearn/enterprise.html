@@ -1,0 +1,362 @@
+{% extends "base/module_base.html" %}
+{% set active_page = 'Enterprise Dashboard' %}
+{% block pagehead %}
+<title>Enterprise Dashboard</title>
+<style>
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    border-top: 3px solid #0d6efd;
+}
+.stat-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.member-row, .domain-row {
+    transition: background 0.2s;
+}
+.member-row:hover, .domain-row:hover {
+    background: #f8f9fa;
+}
+.badge-admin { background: #dc3545; }
+.badge-member { background: #6c757d; }
+.badge-viewer { background: #0dcaf0; color: #000; }
+.badge-verified { background: #198754; }
+.badge-pending { background: #ffc107; color: #000; }
+</style>
+{% endblock %}
+{% block sidebar %}
+{% include 'linkolearn/blocks/enterprise_sidebar.html' %}
+{% endblock %}
+{% block content %}
+<br>
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-building"></i> Enterprise Dashboard</h4>
+        {% if team %}
+        <span class="badge bg-primary">{{ team.name }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if not team %}
+        <div class="text-center py-5">
+            <h5>Create Your Enterprise Team</h5>
+            <p class="text-muted">Get started with team management, analytics, and custom domains.</p>
+            <form id="createTeamForm" class="d-inline-block">
+                <div class="input-group" style="max-width: 400px;">
+                    <input type="text" name="team_name" class="form-control" placeholder="Team Name" required>
+                    <button type="submit" class="btn btn-primary">Create Team</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <ul class="nav nav-tabs" id="enterpriseTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="team-tab" data-bs-toggle="tab" data-bs-target="#team" type="button">
+                    <i class="fas fa-users"></i> Team <span class="badge bg-secondary">{{ members|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="domains-tab" data-bs-toggle="tab" data-bs-target="#domains" type="button">
+                    <i class="fas fa-globe"></i> Domains <span class="badge bg-secondary">{{ domains|length }}</span>
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content mt-4" id="enterpriseTabsContent">
+            <div class="tab-pane fade show active" id="team" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-primary text-white">
+                            <div class="card-body">
+                                <h3>{{ members|length + 1 }}</h3>
+                                <p class="mb-0">Team Members</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-success text-white">
+                            <div class="card-body">
+                                <h3>{{ analytics|sum(attribute='event_count', default=0) }}</h3>
+                                <p class="mb-0">Total Clicks</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card bg-info text-white">
+                            <div class="card-body">
+                                <h3>{{ domains|length }}</h3>
+                                <p class="mb-0">Custom Domains</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users"></i> Team Members</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                            <i class="fas fa-plus"></i> Add Member
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="member-row">
+                                    <td>
+                                        <strong>{{ current_user.username }}</strong>
+                                        <span class="badge badge-admin">Owner</span>
+                                    </td>
+                                    <td>Admin</td>
+                                    <td>{{ team.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>-</td>
+                                </tr>
+                                {% for member in members %}
+                                <tr class="member-row" data-member-id="{{ member.id }}">
+                                    <td>
+                                        {% if member.user_id %}{{ member.user_id }}{% else %}User #{{ member.user_id }}{% endif %}
+                                        {% if member.role == 'admin' %}<span class="badge badge-admin">Admin</span>
+                                        {% elif member.role == 'viewer' %}<span class="badge badge-viewer">Viewer</span>
+                                        {% else %}<span class="badge badge-member">Member</span>{% endif %}
+                                    </td>
+                                    <td>{{ member.role }}</td>
+                                    <td>{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger remove-member" data-member-id="{{ member.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Link Analytics</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if analytics %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Link ID</th>
+                                    <th>Clicks</th>
+                                    <th>Country</th>
+                                    <th>Device</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in analytics %}
+                                <tr>
+                                    <td>{{ a.event_date }}</td>
+                                    <td>{{ a.link_id }}</td>
+                                    <td><span class="badge bg-primary">{{ a.event_count }}</span></td>
+                                    <td>{{ a.country or '-' }}</td>
+                                    <td>{{ a.device_type or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p class="text-muted text-center py-4">No analytics data yet. Links need to be clicked to see stats.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="domains" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-globe"></i> Custom Domains</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDomainModal">
+                            <i class="fas fa-plus"></i> Add Domain
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Domain</th>
+                                    <th>Status</th>
+                                    <th>SSL</th>
+                                    <th>Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for domain in domains %}
+                                <tr class="domain-row" data-domain-id="{{ domain.id }}">
+                                    <td><strong>{{ domain.domain }}</strong></td>
+                                    <td>
+                                        {% if domain.is_verified %}
+                                        <span class="badge badge-verified">Verified</span>
+                                        {% else %}
+                                        <span class="badge badge-pending">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if domain.ssl_enabled %}
+                                        <i class="fas fa-lock text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-lock-open text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ domain.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger remove-domain" data-domain-id="{{ domain.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not domains %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No custom domains added yet.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if team %}
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Team Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addMemberForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select">
+                            <option value="member">Member</option>
+                            <option value="admin">Admin</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addDomainModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Custom Domain</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addDomainForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Domain</label>
+                        <input type="text" name="domain" class="form-control" placeholder="example.com" required>
+                        <small class="text-muted">Enter domain without http://</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Domain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.getElementById('createTeamForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.create_enterprise_team") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) {
+        location.reload();
+    } else {
+        alert(data.error);
+    }
+});
+
+document.getElementById('addMemberForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_member") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) {
+        location.reload();
+    } else {
+        alert(data.error);
+    }
+});
+
+document.querySelectorAll('.remove-member').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        if (!confirm('Remove this member?')) return;
+        const resp = await fetch(`/linkolearn/enterprise/remove-member/${btn.dataset.memberId}/`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.success) location.reload();
+        else alert(data.error);
+    });
+});
+
+document.getElementById('addDomainForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_domain") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) {
+        location.reload();
+    } else {
+        alert(data.error);
+    }
+});
+
+document.querySelectorAll('.remove-domain').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        if (!confirm('Remove this domain?')) return;
+        const resp = await fetch(`/linkolearn/enterprise/remove-domain/${btn.dataset.domainId}/`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.success) location.reload();
+        else alert(data.error);
+    });
+});
+</script>
+{% endblock %}

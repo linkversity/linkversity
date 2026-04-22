@@ -8,6 +8,7 @@ User=root
 Group=root
 WorkingDirectory=/root/linkversity
 Environment="PATH=/root/linkversity/.venv/bin"
+EnvironmentFile=/root/linkversity/.env
 
 ExecStart=/root/linkversity/.venv/bin/gunicorn \
   -w 4 \

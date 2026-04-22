@@ -1,0 +1,348 @@
+{% set active_page='enterprise' %}
+{% extends 'linkolearn_theme/templates/base.html' %}
+{% block head %}
+<title>Enterprise Dashboard</title>
+{% endblock %}
+{% block body %}
+
+<div class="max-w-screen-xl mx-auto px-4 p-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Enterprise Dashboard</h1>
+        <p class="text-gray-600">Manage your team, analytics, and custom domains</p>
+    </div>
+
+    {% if not team %}
+    <div class="bg-white shadow-md rounded-lg p-8 text-center">
+        <div class="text-6xl mb-4">🏢</div>
+        <h2 class="text-2xl font-bold mb-2">Create Your Enterprise Team</h2>
+        <p class="text-gray-600 mb-6">Get started with team collaboration and advanced analytics</p>
+        <form id="createTeamForm" class="max-w-md mx-auto">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div class="flex gap-2">
+                <input type="text" name="team_name" class="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter team name" required>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Create Team</button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+            <div class="text-4xl mb-2">👥</div>
+            <div class="text-3xl font-bold">{{ members|length + 1 }}</div>
+            <div class="text-blue-100">Team Members</div>
+        </div>
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+            <div class="text-4xl mb-2">📊</div>
+            <div class="text-3xl font-bold">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
+            <div class="text-green-100">Total Clicks</div>
+        </div>
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
+            <div class="text-4xl mb-2">🌐</div>
+            <div class="text-3xl font-bold">{{ domains|length }}</div>
+            <div class="text-purple-100">Custom Domains</div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg">
+        <div class="border-b">
+            <nav class="flex -mb-px">
+                <button onclick="showTab('team')" id="tab-team" class="tab-btn px-6 py-4 border-b-2 border-blue-500 text-blue-600 font-medium">Team</button>
+                <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Analytics</button>
+                <button onclick="showTab('domains')" id="tab-domains" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Domains</button>
+                <button onclick="showTab('paths')" id="tab-paths" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Team Paths</button>
+            </nav>
+        </div>
+
+        <div id="content-team" class="tab-content p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Team Members</h3>
+                <button onclick="openModal('addMemberModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                    <i class="fa fa-plus mr-1"></i> Add Member
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">User</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Role</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Joined</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium">{{ current_user.username }}</td>
+                            <td class="px-4 py-3"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Owner</span></td>
+                            <td class="px-4 py-3 text-gray-500">{{ team.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td class="px-4 py-3">-</td>
+                        </tr>
+                        {% for member in members %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium">{% if member.user %}{{ member.user.username }}{% else %}User #{{ member.user_id }}{% endif %}</td>
+                            <td class="px-4 py-3">
+                                {% if member.role == 'admin' %}<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Admin</span>
+                                {% elif member.role == 'viewer' %}<span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs">Viewer</span>
+                                {% else %}<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Member</span>{% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-gray-500">{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
+                            <td class="px-4 py-3">
+                                <button onclick="removeMember({{ member.id }})" class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="content-analytics" class="tab-content p-6 hidden">
+            <h3 class="text-xl font-bold mb-4">Link Analytics</h3>
+            {% if analytics %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Date</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Link</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Clicks</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Country</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Device</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for a in analytics %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">{{ a.event_date }}</td>
+                            <td class="px-4 py-3">Link #{{ a.link_id }}</td>
+                            <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{{ a.event_count }}</span></td>
+                            <td class="px-4 py-3">{{ a.country or '-' }}</td>
+                            <td class="px-4 py-3">{{ a.device_type or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <div class="text-4xl mb-4">📊</div>
+                <p>No analytics data yet. Links need to be clicked to see stats.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="content-domains" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Custom Domains</h3>
+                <button onclick="openModal('addDomainModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                    <i class="fa fa-plus mr-1"></i> Add Domain
+                </button>
+            </div>
+            {% if domains %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Domain</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Status</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">SSL</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Added</th>
+                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for domain in domains %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium">{{ domain.domain }}</td>
+                            <td class="px-4 py-3">
+                                {% if domain.is_verified %}<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Verified</span>
+                                {% else %}<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>{% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if domain.ssl_enabled %}<i class="fa fa-lock text-green-600"></i>{% else %}<i class="fa fa-lock-open text-gray-400"></i>{% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-gray-500">{{ domain.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td class="px-4 py-3">
+                                <button onclick="removeDomain({{ domain.id }})" class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <div class="text-4xl mb-4">🌐</div>
+                <p>No custom domains added yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="content-paths" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Team Paths</h3>
+                <button onclick="window.location.href='{{ url_for('new.index') }}?team_id={{ team.id }}'" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                    <i class="fa fa-plus mr-1"></i> Create Team Path
+                </button>
+            </div>
+            {% if team_paths %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for path in team_paths %}
+                <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <a href="/{{ path.owner.username if path.owner else 'unknown' }}/{{ path.slug }}" class="text-lg font-semibold text-blue-600 hover:underline">{{ path.title or path.slug }}</a>
+                            <p class="text-sm text-gray-500">by {{ path.owner.username if path.owner else 'Unknown' }}</p>
+                        </div>
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Team</span>
+                    </div>
+                    <div class="mt-2 flex items-center gap-4 text-sm text-gray-500">
+                        <span><i class="fa fa-list mr-1"></i> {{ path.sections|length }} sections</span>
+                        <span><i class="fa fa-link mr-1"></i> {{ path.sections|length }} links</span>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <a href="/{{ path.owner.username if path.owner else 'unknown' }}/{{ path.slug }}" class="text-blue-600 hover:underline text-sm">View</a>
+                        {% if path.can_edit(current_user) %}
+                        <a href="{{ url_for('linkolearn.settings') }}" class="text-gray-600 hover:underline text-sm">Edit</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <div class="text-4xl mb-4">📚</div>
+                <p>No team paths yet. Create one to get started!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div id="addMemberModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Add Team Member</h3>
+            <button onclick="closeModal('addMemberModal')" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        <form id="addMemberForm">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" name="username" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select name="role" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal('addMemberModal')" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="addDomainModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Add Custom Domain</h3>
+            <button onclick="closeModal('addDomainModal')" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        <form id="addDomainForm">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+                <input type="text" name="domain" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="example.com" required>
+                <small class="text-gray-500">Enter domain without http://</small>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal('addDomainModal')" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add Domain</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-blue-500', 'text-blue-600');
+        b.classList.add('border-transparent', 'text-gray-500');
+    });
+    document.getElementById('content-' + tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).classList.add('border-blue-500', 'text-blue-600');
+    document.getElementById('tab-' + tab).classList.remove('border-transparent', 'text-gray-500');
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById(id).classList.add('flex');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.getElementById(id).classList.remove('flex');
+}
+
+document.getElementById('createTeamForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.create_enterprise_team") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+document.getElementById('addMemberForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_member") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+document.getElementById('addDomainForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_domain") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+async function removeMember(id) {
+    if (!confirm('Remove this member?')) return;
+    const resp = await fetch(`/linkolearn/enterprise/remove-member/${id}/`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+}
+
+async function removeDomain(id) {
+    if (!confirm('Remove this domain?')) return;
+    const resp = await fetch(`/linkolearn/enterprise/remove-domain/${id}/`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+}
+</script>
+
+{% endblock %}

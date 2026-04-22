@@ -8,12 +8,12 @@ from werkzeug.security import generate_password_hash
 
 from shopyo.api.models import PkModel
 from modules.box__default.auth.models import User
+from modules.box__linkolearn.linkolearn.enterprise_features import EnterpriseTeamMember
 from init import db
 
 import re
 from markdown_it import MarkdownIt
 from slugify import slugify as slugify_func
-
 
 
 path_editor_bridge = db.Table(
@@ -32,14 +32,18 @@ path_editor_bridge = db.Table(
     ),
 )
 
+
 class Path(PkModel):
     __tablename__ = "paths"
-    
+
     slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
-    sections = db.relationship("Section", backref="section_path", lazy=True, cascade="all, delete-orphan")
+    sections = db.relationship(
+        "Section", backref="section_path", lazy=True, cascade="all, delete-orphan"
+    )
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    team_id = db.Column(db.Integer, db.ForeignKey("enterprise_teams.id"), nullable=True)
     is_visible = db.Column(db.Boolean, default=True)
 
     # Password for protection
@@ -49,15 +53,15 @@ class Path(PkModel):
     is_password_protected = db.Column(db.Boolean, default=False)
 
     # Relationships
-    like_list = db.relationship("LikeList", backref="like_list_path", lazy=True, uselist=False)
-    bookmark_list = db.relationship("BookmarkList", backref="bookmark_list_path", lazy=True, uselist=False)
-
+    like_list = db.relationship(
+        "LikeList", backref="like_list_path", lazy=True, uselist=False
+    )
+    bookmark_list = db.relationship(
+        "BookmarkList", backref="bookmark_list_path", lazy=True, uselist=False
+    )
 
     editors = db.relationship(
-        "User",
-        secondary=path_editor_bridge,
-        backref="editable_paths",
-        lazy="dynamic"
+        "User", secondary=path_editor_bridge, backref="editable_paths", lazy="dynamic"
     )
 
     def add_editor(self, user):
@@ -69,8 +73,17 @@ class Path(PkModel):
             self.editors.remove(user)
 
     def can_edit(self, user):
-        return user == self.path_user or user in self.editors
+        if user == self.path_user or user in self.editors:
+            return True
+        if self.team_id and user.team_id == self.team_id:
+            member = EnterpriseTeamMember.query.filter_by(
+                team_id=self.team_id, user_id=user.id
+            ).first()
+            return member and member.role in ["admin", "member"]
+        return False
 
+    def is_team_path(self):
+        return self.team_id is not None
 
     @hybrid_property
     def password(self):
@@ -97,7 +110,7 @@ class Path(PkModel):
         )
 
     def is_valid_markdown_link(self, string):
-        pattern = r'^\[([^\]]+)\]\((https?:\/\/[^\s\)]+|[^\s\)]+)\)$'
+        pattern = r"^\[([^\]]+)\]\((https?:\/\/[^\s\)]+|[^\s\)]+)\)$"
         return bool(re.match(pattern, string))
 
     def extract_link(self, md_text):
@@ -107,7 +120,7 @@ class Path(PkModel):
         link_data = {}
 
         for token in tokens:
-            if token.children: 
+            if token.children:
                 for child in token.children:
                     if child.type == "link_open" and child.attrs:
                         # Extract href safely
@@ -118,7 +131,7 @@ class Path(PkModel):
                     if "href" in link_data and "text" in link_data:
                         return link_data
 
-        return {} 
+        return {}
 
     def slugify(title):
         return slugify_func(title)
@@ -142,7 +155,6 @@ like_list_user_bridge = db.Table(
 
 
 class LikeList(PkModel):
-
     __tablename__ = "like_lists"
 
     path_id = db.Column(db.Integer, db.ForeignKey("paths.id"), nullable=False)
@@ -171,10 +183,11 @@ bookmark_list_user_bridge = db.Table(
 
 
 class BookmarkList(PkModel):
-
     __tablename__ = "bookmark_lists"
 
-    path_id = db.Column(db.Integer, db.ForeignKey("paths.id", ondelete="CASCADE"), nullable=False)
+    path_id = db.Column(
+        db.Integer, db.ForeignKey("paths.id", ondelete="CASCADE"), nullable=False
+    )
     users = db.relationship(
         "User",
         secondary=bookmark_list_user_bridge,
@@ -183,42 +196,64 @@ class BookmarkList(PkModel):
 
 
 class Section(PkModel):
-
     __tablename__ = "sections"
 
     title = db.Column(db.String(200), nullable=False)
-    links = db.relationship("Link", backref="link_section", lazy=True, cascade="all, delete-orphan")
-    path_id = db.Column(
-        db.Integer, db.ForeignKey("paths.id"), nullable=False
-    )  # noqa: E128
+    links = db.relationship(
+        "Link", backref="link_section", lazy=True, cascade="all, delete-orphan"
+    )
+    path_id = db.Column(db.Integer, db.ForeignKey("paths.id"), nullable=False)  # noqa: E128
 
 
 class Link(PkModel):
-
     __tablename__ = "links"
 
     url = db.Column(db.String(500), nullable=False)
     title = db.Column(db.String(500), nullable=True)
     description = db.Column(db.Text, nullable=True)
     image_url = db.Column(db.String(500), nullable=True)
-    section_id = db.Column(
-        db.Integer, db.ForeignKey("sections.id"), nullable=False
-    )  # noqa: W292
+    section_id = db.Column(db.Integer, db.ForeignKey("sections.id"), nullable=False)
+    encrypted_url = db.Column(db.String(1000), nullable=True)
+    is_encrypted = db.Column(db.Boolean, default=False)
+
+    def get_url(self):
+        if self.is_encrypted and self.encrypted_url:
+            return self.decrypt_url()
+        return self.url
+
+    def set_encrypted_url(self, encryption_key):
+        if encryption_key:
+            from modules.box__linkolearn.linkolearn.encryption import encrypt_url
+
+            self.encrypted_url = encrypt_url(self.url, encryption_key)
+            self.is_encrypted = True
+
+    def decrypt_url(self, encryption_key=None):
+        if self.is_encrypted and self.encrypted_url:
+            from modules.box__linkolearn.linkolearn.encryption import decrypt_url
+
+            return decrypt_url(self.encrypted_url, encryption_key)
+        return self.url
 
 
 class Emoji(PkModel):
-
     __tablename__ = "emoji_classes"
 
     class_name = db.Column(db.String(100), nullable=False)
 
 
-
 class ActivationCode(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(50), unique=True, nullable=False)
     plan = db.Column(db.Integer, nullable=False)
 
+    @property
+    def plan_type(self):
+        return self.plan
+
+    @property
+    def plan_type_name(self):
+        return {1: "Pro", 2: "Enterprise"}.get(self.plan, "Unknown")
+
     def __repr__(self):
-        return f'<ActivationCode {self.code} for {self.plan}>'
+        return f"<ActivationCode {self.code} for {self.plan}>"
