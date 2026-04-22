@@ -26,6 +26,7 @@ from .models import User
 from .email import send_async_email
 from .forms import LoginForm
 from .forms import RegistrationForm
+from init import csrf
 
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
@@ -150,19 +151,25 @@ def register():
 
 
 @auth_blueprint.route("/login", methods=["GET", "POST"])
+@csrf.exempt
 def login():
     context = {}
     login_form = LoginForm()
     context["form"] = login_form
     if login_form.validate_on_submit():
-        username = login_form.username.data
+        email = login_form.username.data # Linkversity's LoginForm still uses 'username' as field name but we'll treat it as email if it looks like one, or just update the query
         password = login_form.password.data
-        user = User.query.filter(
-            func.lower(User.username) == func.lower(username)
-        ).first()
+        
+        user = User.get_by_email(email)
+        if user is None:
+            # Fallback to username for legacy support
+            user = User.query.filter(
+                func.lower(User.username) == func.lower(email)
+            ).first()
+
         if user is None or not user.check_password(password):
             if request.is_json:
-                return jsonify({"message": "Invalid username or password"}), 401
+                return jsonify({"message": "Invalid email/username or password"}), 401
             flash(notify_danger("please check your user id and password"))
             return redirect(url_for("auth.login"))
         
@@ -199,23 +206,27 @@ def login():
 
 
 @auth_blueprint.route("/api/login", methods=["POST"])
+@csrf.exempt
 def api_login():
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing JSON in request"}), 400
     
-    username = data.get("username")
+    login_id = data.get("username") # Client sends it as 'username'
     password = data.get("password")
     
-    if not username or not password:
-        return jsonify({"message": "Missing username or password"}), 400
+    if not login_id or not password:
+        return jsonify({"message": "Missing email/username or password"}), 400
         
-    user = User.query.filter(
-        func.lower(User.username) == func.lower(username)
-    ).first()
+    user = User.get_by_email(login_id)
+    if user is None:
+        # Fallback to username
+        user = User.query.filter(
+            func.lower(User.username) == func.lower(login_id)
+        ).first()
     
     if user is None or not user.check_password(password):
-        return jsonify({"message": "Invalid username or password"}), 401
+        return jsonify({"message": "Invalid email/username or password"}), 401
         
     token = user.generate_api_token(name=f"Mobile Login at {datetime.datetime.now()}")
     return jsonify({

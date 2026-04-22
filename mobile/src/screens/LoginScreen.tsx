@@ -24,15 +24,32 @@ const LoginScreen = () => {
     }
 
     setLoading(true);
+    const loginUrl = (apiClient.defaults.baseURL || '') + '/auth/api/login';
+    console.log('--- [DEBUG] LOGIN ATTEMPT ---');
+    console.log('DESTINATION:', loginUrl);
+    console.log('PAYLOAD:', { username, password });
+
     try {
       const response = await apiClient.post('/auth/api/login', {
         username,
         password,
       });
 
+      console.log('--- [DEBUG] LOGIN SUCCESS ---');
+      console.log('STATUS:', response.status);
+      console.log('RESPONSE:', JSON.stringify(response.data, null, 2));
+
       const { token, user } = response.data;
       setAuth(token, user);
     } catch (error: any) {
+      console.log('--- [DEBUG] LOGIN FAILURE ---');
+      if (error.response) {
+        console.log('STATUS:', error.response.status);
+        console.log('RESPONSE:', JSON.stringify(error.response.data, null, 2));
+      } else {
+        console.log('ERROR:', error.message);
+      }
+      
       const message = error.response?.data?.message || 'Failed to login';
       Alert.alert('Login Error', message);
     } finally {
