@@ -141,6 +141,63 @@ User.get_enterprise_settings = get_enterprise_settings
 User.create_enterprise_team = create_enterprise_team
 
 
+def get_first_name(self):
+    if self.first_name in ["", None]:
+        return "-first name-"
+    else:
+        return self.first_name
+
+
+def get_last_name(self):
+    if self.last_name in ["", None]:
+        return "-last name-"
+    else:
+        return self.last_name
+
+
+def get_profile_url(self):
+    return f"/{self.username}"
+
+
+def upgrade_subscription(self, plan: int):
+    from init import db
+
+    self.subscription_plan = plan
+    db.session.commit()
+
+
+def get_bookmarked_paths(self):
+    from modules.box__linkolearn.linkolearn.models import (
+        Path,
+        BookmarkList,
+        bookmark_list_user_bridge,
+    )
+    from init import db
+
+    user = self
+    if user:
+        bookmarked_paths = (
+            db.session.query(Path)
+            .join(BookmarkList, BookmarkList.path_id == Path.id)
+            .join(
+                bookmark_list_user_bridge,
+                bookmark_list_user_bridge.c.bookmark_list_id == BookmarkList.id,
+            )
+            .filter(bookmark_list_user_bridge.c.user_id == user.id)
+            .all()
+        )
+        return bookmarked_paths
+    else:
+        return None
+
+
+User.get_first_name = get_first_name
+User.get_last_name = get_last_name
+User.get_profile_url = get_profile_url
+User.upgrade_subscription = upgrade_subscription
+User.get_bookmarked_paths = get_bookmarked_paths
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
