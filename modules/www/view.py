@@ -77,6 +77,8 @@ def index():
 
 @module_blueprint.route("/<username>")
 def user_profile(username):
+    from modules.box__linkolearn.linkolearn.models import Path
+
     context = {}
     user = User.query.filter(
         func.lower(User.username) == func.lower(username)
@@ -90,7 +92,6 @@ def user_profile(username):
         from modules.box__linkolearn.linkolearn.enterprise_features import (
             EnterpriseTeamMember,
         )
-        from modules.box__linkolearn.linkolearn.models import Path
 
         team = EnterpriseTeam.query.get(user.team_id)
         members = EnterpriseTeamMember.query.filter_by(team_id=user.team_id).all()
