@@ -26,6 +26,7 @@ from .models import User
 from .email import send_async_email
 from .forms import LoginForm
 from .forms import RegistrationForm
+from init import csrf
 
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
@@ -150,6 +151,7 @@ def register():
 
 
 @auth_blueprint.route("/login", methods=["GET", "POST"])
+@csrf.exempt
 def login():
     context = {}
     login_form = LoginForm()
@@ -199,6 +201,7 @@ def login():
 
 
 @auth_blueprint.route("/api/login", methods=["POST"])
+@csrf.exempt
 def api_login():
     data = request.get_json()
     if not data:
