@@ -668,44 +668,5 @@ function removePreview(linkId) {
         alert('An error occurred while removing the preview.');
     });
 }
-
-function toggleAddLinkForm(sectionId) {
-    const form = document.getElementById('add-link-form-' + sectionId);
-    form.classList.toggle('hidden');
-    if (!form.classList.contains('hidden')) {
-        document.getElementById('new-link-url-' + sectionId).focus();
-    }
-}
-
-function addLinkToSection(sectionId) {
-    const urlInput = document.getElementById('new-link-url-' + sectionId);
-    const url = urlInput.value.trim();
-    
-    if (!url) {
-        alert('Please enter a URL');
-        return;
-    }
-
-    fetch('{{ url_for("linkolearn.add_link_to_section") }}', {
-        method: 'POST',
-        body: JSON.stringify({ section_id: sectionId, url: url }),
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{csrf_token()}}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload();
-        } else {
-            alert('Error adding link: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while adding the link.');
-    });
-}
 </script>
 {%endblock%}
