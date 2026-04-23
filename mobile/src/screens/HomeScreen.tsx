@@ -21,16 +21,34 @@ type HomeScreenProps = {
 const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-  const { paths, isLoading, fetchPaths } = useLinkStore();
+  const { paths, isLoading, fetchPaths, currentPage, totalPages } = useLinkStore();
 
   useEffect(() => {
-    fetchPaths();
+    fetchPaths(1);
   }, [fetchPaths]);
 
+  const loadMore = () => {
+    if (!isLoading && currentPage < totalPages) {
+      fetchPaths(currentPage + 1);
+    }
+  };
+
   const renderPathItem = ({ item }: { item: Path }) => (
-    <TouchableOpacity style={styles.pathCard}>
+    <TouchableOpacity 
+      style={styles.pathCard}
+      onPress={() => navigation.navigate('SaveLink', { url: '', pathId: item.id })}
+    >
       <View style={styles.pathInfo}>
         <Text style={styles.pathTitle}>{item.title}</Text>
+        <View style={styles.pathMeta}>
+          <Text style={styles.pathSlug}>/{item.slug}</Text>
+          <Text style={styles.pathCount}>{item.section_count} sections</Text>
+          {!item.is_visible && (
+            <View style={styles.privateBadge}>
+              <Text style={styles.privateText}>Private</Text>
+            </View>
+          )}
+        </View>
       </View>
       <ExternalLink size={20} color="#64748b" />
     </TouchableOpacity>
@@ -54,7 +72,7 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
       {isLoading && paths.length === 0 ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#2563eb" />
+          <ActivityIndicator size="large" color="#ff8080" />
         </View>
       ) : (
         <FlatList
@@ -62,13 +80,20 @@ const HomeScreen = ({ navigation }: HomeScreenProps) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderPathItem}
           contentContainerStyle={styles.listContent}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
           refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={fetchPaths} />
+            <RefreshControl refreshing={isLoading} onRefresh={() => fetchPaths(1)} colors={['#ff8080']} />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No paths found.</Text>
             </View>
+          }
+          ListFooterComponent={
+            isLoading && paths.length > 0 ? (
+              <ActivityIndicator color="#ff8080" style={{ padding: 20 }} />
+            ) : null
           }
         />
       )}
@@ -141,10 +166,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pathTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#334155',
   },
+  pathMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 8,
+  },
+  pathSlug: {
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  pathCount: {
+    fontSize: 13,
+    color: '#94a3b8',
+  },
+  privateBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  privateText: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+
   center: {
     flex: 1,
     justifyContent: 'center',

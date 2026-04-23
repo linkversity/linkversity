@@ -10,7 +10,7 @@ import SaveLinkScreen from '../screens/SaveLinkScreen';
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
-  SaveLink: { url: string };
+  SaveLink: { url: string; pathId?: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
