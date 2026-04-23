@@ -7,9 +7,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { useAuthStore } from '../store/useAuthStore';
 import { apiClient } from '../api/client';
+
+const logo = require('../assets/logo.png');
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
@@ -60,6 +63,7 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Image source={logo} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>Linkversity</Text>
         <Text style={styles.subtitle}>Save and organize your links</Text>
       </View>
@@ -106,6 +110,11 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 40,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,
