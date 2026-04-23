@@ -283,23 +283,52 @@ def chrome_ext_auth():
     # Redirect back to Chrome extension with the token
     return redirect(f"{redirect_uri}?token={token}")
 
+def get_user_from_token(token):
+    if not token:
+        return None
+    # Check legacy api_token column
+    user = User.query.filter_by(api_token=token).first()
+    if user:
+        return user
+    # Check new UserToken table
+    return User.verify_api_token(token)
+
 @module_blueprint.route("/api/paths", methods=["GET"])
 @csrf.exempt
 def api_get_paths():
     token = request.args.get("token")
-    user = User.query.filter_by(api_token=token).first()
+    user = get_user_from_token(token)
     if not user:
         return jsonify({"error": "Invalid token"}), 401
     
-    paths = [{"id": p.id, "title": p.slug} for p in user.paths]
-    return jsonify(paths)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+    
+    # Get all user's paths (public and private)
+    pagination = Path.query.filter_by(user_id=user.id).order_by(Path.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    paths = [{
+        "id": p.id, 
+        "title": p.title, 
+        "slug": p.slug, 
+        "is_visible": p.is_visible,
+        "is_password_protected": p.is_password_protected,
+        "section_count": len(p.sections)
+    } for p in pagination.items]
+    
+    return jsonify({
+        "items": paths,
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "current_page": pagination.page
+    })
 
 @module_blueprint.route("/api/sections", methods=["GET"])
 @csrf.exempt
 def api_get_sections():
     token = request.args.get("token")
     path_id = request.args.get("path_id")
-    user = User.query.filter_by(api_token=token).first()
+    user = get_user_from_token(token)
     if not user:
         return jsonify({"error": "Invalid token"}), 401
     
@@ -307,8 +336,113 @@ def api_get_sections():
     if not path or path.user_id != user.id:
         return jsonify({"error": "Path not found"}), 404
         
-    sections = [{"id": s.id, "title": s.title} for s in path.sections]
+    sections = [{"id": s.id, "title": s.title, "link_count": len(s.links)} for s in path.sections]
     return jsonify(sections)
+
+@module_blueprint.route("/api/path/<int:path_id>/content", methods=["GET"])
+@csrf.exempt
+def api_get_path_content(path_id):
+    token = request.args.get("token")
+    user = get_user_from_token(token)
+    if not user:
+        return jsonify({"error": "Invalid token"}), 401
+    
+    path = Path.query.get(path_id)
+    if not path or path.user_id != user.id:
+        return jsonify({"error": "Path not found"}), 404
+    
+    content = []
+    for section in path.sections:
+        content.append({
+            "id": section.id,
+            "title": section.title,
+            "links": [{
+                "id": l.id,
+                "url": l.url,
+                "title": l.title,
+                "description": l.description,
+                "image_url": l.image_url
+            } for l in section.links]
+        })
+        
+    return jsonify({
+        "id": path.id,
+        "title": path.title,
+        "slug": path.slug,
+        "sections": content
+    })
+
+@module_blueprint.route("/api/paths", methods=["POST"])
+@csrf.exempt
+def api_create_path():
+    data = request.get_json()
+    token = data.get("token")
+    title = data.get("title")
+    is_visible = data.get("is_visible", True)
+    
+    user = get_user_from_token(token)
+    if not user:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+    
+    if not title:
+        return jsonify({"success": False, "error": "Title is required"}), 400
+        
+    from slugify import slugify as slugify_func
+    slug = slugify_func(title)
+    # Check for slug collision
+    existing = Path.query.filter_by(user_id=user.id, slug=slug).first()
+    if existing:
+        import secrets
+        slug = f"{slug}-{secrets.token_hex(4)}"
+        
+    new_path = Path(title=title, slug=slug, user_id=user.id, is_visible=is_visible)
+    db.session.add(new_path)
+    db.session.commit()
+    
+    # Create a default section
+    default_section = Section(title="General", path_id=new_path.id)
+    db.session.add(default_section)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True, 
+        "path": {
+            "id": new_path.id, 
+            "title": new_path.title, 
+            "slug": new_path.slug
+        }
+    })
+
+@module_blueprint.route("/api/sections", methods=["POST"])
+@csrf.exempt
+def api_create_section():
+    data = request.get_json()
+    token = data.get("token")
+    title = data.get("title")
+    path_id = data.get("path_id")
+    
+    user = get_user_from_token(token)
+    if not user:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+    
+    if not title or not path_id:
+        return jsonify({"success": False, "error": "Title and path_id are required"}), 400
+        
+    path = Path.query.get(path_id)
+    if not path or path.user_id != user.id:
+        return jsonify({"success": False, "error": "Path not found"}), 404
+        
+    new_section = Section(title=title, path_id=path_id)
+    db.session.add(new_section)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True, 
+        "section": {
+            "id": new_section.id, 
+            "title": new_section.title
+        }
+    })
 
 @module_blueprint.route("/api/save-link", methods=["POST"])
 @csrf.exempt
@@ -317,8 +451,9 @@ def api_save_link():
     token = data.get("token")
     url = data.get("url")
     section_id = data.get("section_id")
+    title = data.get("title") # Optional
     
-    user = User.query.filter_by(api_token=token).first()
+    user = get_user_from_token(token)
     if not user:
         return jsonify({"success": False, "error": "Invalid token"}), 401
         
@@ -326,8 +461,8 @@ def api_save_link():
     if not section or section.section_path.user_id != user.id:
         return jsonify({"success": False, "error": "Section not found"}), 404
 
-    new_link = Link(url=url, section_id=section_id)
+    new_link = Link(url=url, section_id=section_id, title=title)
     db.session.add(new_link)
     db.session.commit()
     
-    return jsonify({"success": True})
+    return jsonify({"success": True, "id": new_link.id})

@@ -18,9 +18,17 @@ type SaveLinkScreenProps = NativeStackScreenProps<RootStackParamList, 'SaveLink'
 
 const SaveLinkScreen = ({ route, navigation }: SaveLinkScreenProps) => {
   const sharedUrl = route.params?.url || '';
+  const initialPathId = route.params?.pathId || null;
+  
   const [url, setUrl] = useState(sharedUrl);
-  const [selectedPathId, setSelectedPathId] = useState<number | null>(null);
+  const [selectedPathId, setSelectedPathId] = useState<number | null>(initialPathId);
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
+  
+  const [isCreatingPath, setIsCreatingPath] = useState(false);
+  const [newPathTitle, setNewPathTitle] = useState('');
+  
+  const [isCreatingSection, setIsCreatingSection] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
 
   const {
     paths,
@@ -29,10 +37,12 @@ const SaveLinkScreen = ({ route, navigation }: SaveLinkScreenProps) => {
     fetchPaths,
     fetchSections,
     saveLink,
+    createPath,
+    createSection,
   } = useLinkStore();
 
   useEffect(() => {
-    fetchPaths();
+    fetchPaths(1);
   }, [fetchPaths]);
 
   useEffect(() => {
@@ -62,6 +72,30 @@ const SaveLinkScreen = ({ route, navigation }: SaveLinkScreenProps) => {
     }
   };
 
+  const handleCreatePath = async () => {
+    if (!newPathTitle.trim()) return;
+    const success = await createPath(newPathTitle.trim());
+    if (success) {
+      setNewPathTitle('');
+      setIsCreatingPath(false);
+      fetchPaths(1);
+    } else {
+      Alert.alert('Error', 'Failed to create path');
+    }
+  };
+
+  const handleCreateSection = async () => {
+    if (!newSectionTitle.trim() || !selectedPathId) return;
+    const success = await createSection(newSectionTitle.trim(), selectedPathId);
+    if (success) {
+      setNewSectionTitle('');
+      setIsCreatingSection(false);
+      fetchSections(selectedPathId);
+    } else {
+      Alert.alert('Error', 'Failed to create section');
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.section}>
@@ -76,7 +110,32 @@ const SaveLinkScreen = ({ route, navigation }: SaveLinkScreenProps) => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.label}>Select Path</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Select Path</Text>
+          <TouchableOpacity onPress={() => setIsCreatingPath(!isCreatingPath)}>
+            <Text style={styles.createText}>{isCreatingPath ? 'Cancel' : '+ New Path'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {isCreatingPath && (
+          <View style={styles.createForm}>
+            <TextInput
+              style={styles.smallInput}
+              value={newPathTitle}
+              onChangeText={setNewPathTitle}
+              placeholder="Enter path title..."
+              autoFocus
+            />
+            <TouchableOpacity 
+              style={styles.createButton} 
+              onPress={handleCreatePath}
+              disabled={isLoading}
+            >
+              <Text style={styles.createButtonText}>Create</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.optionsGrid}>
           {paths.map((path) => (
             <TouchableOpacity
@@ -104,9 +163,34 @@ const SaveLinkScreen = ({ route, navigation }: SaveLinkScreenProps) => {
 
       {selectedPathId && (
         <View style={styles.section}>
-          <Text style={styles.label}>Select Section</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Select Section</Text>
+            <TouchableOpacity onPress={() => setIsCreatingSection(!isCreatingSection)}>
+              <Text style={styles.createText}>{isCreatingSection ? 'Cancel' : '+ New Section'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {isCreatingSection && (
+            <View style={styles.createForm}>
+              <TextInput
+                style={styles.smallInput}
+                value={newSectionTitle}
+                onChangeText={setNewSectionTitle}
+                placeholder="Enter section title..."
+                autoFocus
+              />
+              <TouchableOpacity 
+                style={styles.createButton} 
+                onPress={handleCreateSection}
+                disabled={isLoading}
+              >
+                <Text style={styles.createButtonText}>Create</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {isLoading && !sections[selectedPathId] ? (
-            <ActivityIndicator color="#2563eb" />
+            <ActivityIndicator color="#ff8080" />
           ) : (
             <View style={styles.optionsGrid}>
               {(sections[selectedPathId] || []).map((section) => (
@@ -166,52 +250,100 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#475569',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#ff8080',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  input: {
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  createText: {
+    fontSize: 14,
+    color: '#ff8080',
+    fontWeight: 'bold',
+  },
+  createForm: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  smallInput: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
+    fontSize: 14,
+    color: '#1e293b',
+  },
+  createButton: {
+    backgroundColor: '#ff8080',
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 16,
+    borderRadius: 12,
     fontSize: 16,
     color: '#1e293b',
   },
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   optionButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
     maxWidth: '100%',
   },
   optionButtonSelected: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
+    backgroundColor: '#ff8080',
+    borderColor: '#ff8080',
   },
   optionText: {
-    color: '#64748b',
-    fontSize: 14,
+    color: '#475569',
+    fontSize: 15,
+    fontWeight: '500',
   },
   optionTextSelected: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   saveButton: {
-    backgroundColor: '#2563eb',
-    padding: 16,
+    backgroundColor: '#ff8080',
+    padding: 18,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 20,
+    shadowColor: '#ff8080',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   saveButtonDisabled: {
     backgroundColor: '#94a3b8',
