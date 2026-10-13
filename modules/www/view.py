@@ -94,22 +94,21 @@ def user_profile(username):
         )
 
         team = EnterpriseTeam.query.get(user.team_id)
-        members = EnterpriseTeamMember.query.filter_by(team_id=user.team_id).all()
-        for m in members:
-            m.user = User.query.get(m.user_id)
-        team_paths = Path.query.filter_by(team_id=user.team_id).all()
-        for p in team_paths:
-            p.owner = User.query.get(p.user_id)
-        team.paths = team_paths
-        context.update(
-            {
-                "team": team,
-                "team_members": members,
-                "is_team_owner": user == User.query.get(team.owner_id)
-                if team
-                else False,
-            }
-        )
+        if team:
+            members = EnterpriseTeamMember.query.filter_by(team_id=user.team_id).all()
+            for m in members:
+                m.user = User.query.get(m.user_id)
+            team_paths = Path.query.filter_by(team_id=user.team_id).all()
+            for p in team_paths:
+                p.owner = User.query.get(p.user_id)
+            team.paths = team_paths
+            context.update(
+                {
+                    "team": team,
+                    "team_members": members,
+                    "is_team_owner": user == User.query.get(team.owner_id),
+                }
+            )
 
     return render_template("linkolearn_theme/templates/profile.html", **context)
 
