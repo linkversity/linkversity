@@ -1,95 +1,184 @@
 {% set active_page='enterprise' %}
 {% extends 'linkolearn_theme/templates/base.html' %}
 {% block head %}
-<title>Enterprise Dashboard</title>
+<title>Enterprise · {{ APP_NAME }}</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
+<style>
+    .tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        border: 1px solid transparent;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .tab-btn:hover { color: #111827; }
+    .tab-btn.active {
+        background: #fff;
+        border-color: #e5e7eb;
+        color: #111827;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .05);
+    }
+    @media (prefers-color-scheme: dark) {
+        .tab-btn { color: #9ca3af; }
+        .tab-btn:hover { color: #f3f4f6; }
+        .tab-btn.active { background: #16191e; border-color: #262b36; color: #f3f4f6; box-shadow: none; }
+    }
+
+    .stat-glyph {
+        width: 44px;
+        height: 44px;
+        flex: none;
+        border-radius: 12px;
+        background: #f7f7f8;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 17px;
+    }
+    @media (prefers-color-scheme: dark) {
+        .stat-glyph { background: #16191e; border-color: #262b36; color: #6b7280; }
+    }
+
+    .data-table { width: 100%; text-align: left; font-size: 13.5px; }
+    .data-table thead tr {
+        border-bottom: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+    .data-table th { padding: 10px 14px; font-weight: 600; }
+    .data-table td { padding: 12px 14px; color: #374151; border-bottom: 1px solid #f3f4f6; }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table tbody tr:hover { background: #fafafa; }
+    @media (prefers-color-scheme: dark) {
+        .data-table thead tr { border-bottom-color: #262b36; color: #9ca3af; }
+        .data-table td { color: #d1d5db; border-bottom-color: #1c212b; }
+        .data-table tbody tr:hover { background: #12151a; }
+    }
+
+    .row-action {
+        color: #cc3f3f;
+        font-size: 12.5px;
+        font-weight: 600;
+        transition: color .15s ease;
+    }
+    .row-action:hover { color: #a02f2f; }
+
+    .modal-backdrop { background: rgba(17, 24, 39, .6); }
+</style>
 {% endblock %}
 {% block body %}
 
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Enterprise Dashboard</h1>
-        <p class="text-gray-600">Manage your team, analytics, and custom domains</p>
-    </div>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Enterprise</span>
+        </nav>
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Enterprise dashboard</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                    {% if team %}Manage <span class="font-semibold text-gray-700 dark:text-gray-200">{{ team.name }}</span> — members, analytics, domains and team paths.{% else %}Set up your team to get started.{% endif %}
+                </p>
+            </div>
+            <span class="relative inline-block flex-none">
+                {% if current_user.is_pro() %}
+                {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                {% endif %}
+                <i class="em {{ current_user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+            </span>
+        </div>
+    </header>
 
     {% if not team %}
-    <div class="bg-white shadow-md rounded-lg p-8 text-center">
-        <div class="text-6xl mb-4">🏢</div>
-        <h2 class="text-2xl font-bold mb-2">Create Your Enterprise Team</h2>
-        <p class="text-gray-600 mb-6">Get started with team collaboration and advanced analytics</p>
-        <form id="createTeamForm" class="max-w-md mx-auto">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <div class="flex gap-2">
-                <input type="text" name="team_name" class="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter team name" required>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">Create Team</button>
-            </div>
-        </form>
+    <div class="path-card">
+        <div class="path-empty">
+            <div class="glyph"><i class="fas fa-building"></i></div>
+            <h3>Create your enterprise team</h3>
+            <p>Get started with team collaboration and advanced analytics.</p>
+            <form id="createTeamForm" class="max-w-md mx-auto mt-5">
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" name="team_name" class="path-input flex-1" placeholder="Team name" required>
+                    <button type="submit" class="path-btn-primary whitespace-nowrap">Create team</button>
+                </div>
+            </form>
+        </div>
     </div>
     {% else %}
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-            <div class="text-4xl mb-2">👥</div>
-            <div class="text-3xl font-bold">{{ members|length + 1 }}</div>
-            <div class="text-blue-100">Team Members</div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-users"></i></span>
+            <div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ members|length + 1 }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Team members</div>
+            </div>
         </div>
-        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-            <div class="text-4xl mb-2">📊</div>
-            <div class="text-3xl font-bold">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
-            <div class="text-green-100">Total Clicks</div>
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-chart-simple"></i></span>
+            <div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total clicks</div>
+            </div>
         </div>
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-            <div class="text-4xl mb-2">🌐</div>
-            <div class="text-3xl font-bold">{{ domains|length }}</div>
-            <div class="text-purple-100">Custom Domains</div>
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-globe"></i></span>
+            <div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ domains|length }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Custom domains</div>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg">
-        <div class="border-b">
-            <nav class="flex -mb-px">
-                <button onclick="showTab('team')" id="tab-team" class="tab-btn px-6 py-4 border-b-2 border-blue-500 text-blue-600 font-medium">Team</button>
-                <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Analytics</button>
-                <button onclick="showTab('domains')" id="tab-domains" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Domains</button>
-                <button onclick="showTab('paths')" id="tab-paths" class="tab-btn px-6 py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Team Paths</button>
-            </nav>
+    <div class="path-card">
+        <div class="inline-flex flex-wrap items-center gap-1 mb-5 bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-full p-1">
+            <button onclick="showTab('team')" id="tab-team" class="tab-btn active" type="button"><i class="fas fa-users"></i> Team</button>
+            <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn" type="button"><i class="fas fa-chart-simple"></i> Analytics</button>
+            <button onclick="showTab('domains')" id="tab-domains" class="tab-btn" type="button"><i class="fas fa-globe"></i> Domains</button>
+            <button onclick="showTab('paths')" id="tab-paths" class="tab-btn" type="button"><i class="fas fa-folder-open"></i> Paths</button>
         </div>
 
-        <div id="content-team" class="tab-content p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Team Members</h3>
-                <button onclick="openModal('addMemberModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-                    <i class="fa fa-plus mr-1"></i> Add Member
-                </button>
+        <!-- Team -->
+        <div id="content-team" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Team members</h4>
+                <button onclick="openModal('addMemberModal')" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Add member</button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">User</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Role</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Joined</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Actions</th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 font-medium">{{ current_user.username }}</td>
-                            <td class="px-4 py-3"><span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Owner</span></td>
-                            <td class="px-4 py-3 text-gray-500">{{ team.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td class="px-4 py-3">-</td>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{{ current_user.username }} <span class="text-gray-400 font-normal">(you)</span></td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-crown"></i> Owner</span></td>
+                            <td>{{ team.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td></td>
                         </tr>
                         {% for member in members %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 font-medium">{% if member.user %}{{ member.user.username }}{% else %}User #{{ member.user_id }}{% endif %}</td>
-                            <td class="px-4 py-3">
-                                {% if member.role == 'admin' %}<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">Admin</span>
-                                {% elif member.role == 'viewer' %}<span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs">Viewer</span>
-                                {% else %}<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Member</span>{% endif %}
-                            </td>
-                            <td class="px-4 py-3 text-gray-500">{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
-                            <td class="px-4 py-3">
-                                <button onclick="removeMember({{ member.id }})" class="text-red-600 hover:text-red-800 text-sm">Remove</button>
-                            </td>
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{% if member.user %}{{ member.user.username }}{% else %}User #{{ member.user_id }}{% endif %}</td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ member.role|title }}</span></td>
+                            <td>{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
+                            <td><button onclick="removeMember({{ member.id }})" class="row-action">Remove</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -97,123 +186,119 @@
             </div>
         </div>
 
-        <div id="content-analytics" class="tab-content p-6 hidden">
-            <h3 class="text-xl font-bold mb-4">Link Analytics</h3>
+        <!-- Analytics -->
+        <div id="content-analytics" class="tab-content hidden">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">Link analytics</h4>
             {% if analytics %}
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Date</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Link</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Clicks</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Country</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Device</th>
+                            <th>Date</th>
+                            <th>Link</th>
+                            <th>Clicks</th>
+                            <th>Country</th>
+                            <th>Device</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody>
                         {% for a in analytics %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3">{{ a.event_date }}</td>
-                            <td class="px-4 py-3">Link #{{ a.link_id }}</td>
-                            <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{{ a.event_count }}</span></td>
-                            <td class="px-4 py-3">{{ a.country or '-' }}</td>
-                            <td class="px-4 py-3">{{ a.device_type or '-' }}</td>
+                        <tr>
+                            <td>{{ a.event_date }}</td>
+                            <td>Link #{{ a.link_id }}</td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ a.event_count }}</span></td>
+                            <td>{{ a.country or '-' }}</td>
+                            <td>{{ a.device_type or '-' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-12 text-gray-500">
-                <div class="text-4xl mb-4">📊</div>
-                <p>No analytics data yet. Links need to be clicked to see stats.</p>
+            <div class="path-empty">
+                <div class="glyph"><i class="fas fa-chart-simple"></i></div>
+                <h3>No analytics yet</h3>
+                <p>Stats appear once your team's links start getting clicks.</p>
             </div>
             {% endif %}
         </div>
 
-        <div id="content-domains" class="tab-content p-6 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Custom Domains</h3>
-                <button onclick="openModal('addDomainModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-                    <i class="fa fa-plus mr-1"></i> Add Domain
-                </button>
+        <!-- Domains -->
+        <div id="content-domains" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Custom domains</h4>
+                <button onclick="openModal('addDomainModal')" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Add domain</button>
             </div>
             {% if domains %}
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Domain</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Status</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">SSL</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Added</th>
-                            <th class="px-4 py-3 text-sm font-semibold text-gray-600">Actions</th>
+                            <th>Domain</th>
+                            <th>Status</th>
+                            <th>SSL</th>
+                            <th>Added</th>
+                            <th></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody>
                         {% for domain in domains %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 font-medium">{{ domain.domain }}</td>
-                            <td class="px-4 py-3">
-                                {% if domain.is_verified %}<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Verified</span>
-                                {% else %}<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>{% endif %}
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{{ domain.domain }}</td>
+                            <td>
+                                {% if domain.is_verified %}<span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-check"></i> Verified</span>
+                                {% else %}<span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-clock"></i> Pending</span>{% endif %}
                             </td>
-                            <td class="px-4 py-3">
-                                {% if domain.ssl_enabled %}<i class="fa fa-lock text-green-600"></i>{% else %}<i class="fa fa-lock-open text-gray-400"></i>{% endif %}
+                            <td>
+                                {% if domain.ssl_enabled %}<i class="fa fa-lock text-gray-400"></i>{% else %}<i class="fa fa-lock-open text-gray-300 dark:text-gray-600"></i>{% endif %}
                             </td>
-                            <td class="px-4 py-3 text-gray-500">{{ domain.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td class="px-4 py-3">
-                                <button onclick="removeDomain({{ domain.id }})" class="text-red-600 hover:text-red-800 text-sm">Remove</button>
-                            </td>
+                            <td>{{ domain.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td><button onclick="removeDomain({{ domain.id }})" class="row-action">Remove</button></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-12 text-gray-500">
-                <div class="text-4xl mb-4">🌐</div>
-                <p>No custom domains added yet.</p>
+            <div class="path-empty">
+                <div class="glyph"><i class="fas fa-globe"></i></div>
+                <h3>No custom domains</h3>
+                <p>Add a domain to serve your team's paths from it.</p>
             </div>
             {% endif %}
         </div>
 
-        <div id="content-paths" class="tab-content p-6 hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Team Paths</h3>
-                <button onclick="window.location.href='{{ url_for('new.index') }}?team_id={{ team.id }}'" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-                    <i class="fa fa-plus mr-1"></i> Create Team Path
-                </button>
+        <!-- Team paths -->
+        <div id="content-paths" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Team paths</h4>
+                <a href="{{ url_for('new.index') }}?team_id={{ team.id }}" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Create team path</a>
             </div>
             {% if team_paths %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {% for path in team_paths %}
-                <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <a href="/{{ path.owner.username if path.owner else 'unknown' }}/{{ path.slug }}" class="text-lg font-semibold text-blue-600 hover:underline">{{ path.title or path.slug }}</a>
-                            <p class="text-sm text-gray-500">by {{ path.owner.username if path.owner else 'Unknown' }}</p>
+                {% set ns = namespace(links=0) %}
+                {% for s in path.sections %}{% set ns.links = ns.links + s.links|length %}{% endfor %}
+                <a href="{{ path.get_url() }}" class="path-link-card">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <div class="title truncate">{{ path.title or path.slug }}</div>
+                            <div class="sub truncate">by {{ path.owner.username if path.owner else 'Unknown' }}</div>
                         </div>
-                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">Team</span>
+                        <span class="path-chip !py-1 !px-2.5 !text-[11px] shrink-0"><i class="fas fa-users"></i> Team</span>
                     </div>
-                    <div class="mt-2 flex items-center gap-4 text-sm text-gray-500">
-                        <span><i class="fa fa-list mr-1"></i> {{ path.sections|length }} sections</span>
-                        <span><i class="fa fa-link mr-1"></i> {{ path.sections|length }} links</span>
+                    <div class="badges">
+                        <span class="path-badge"><i class="fas fa-list"></i> {{ path.sections|length }} section{{ '' if path.sections|length == 1 else 's' }}</span>
+                        <span class="path-badge"><i class="fas fa-link"></i> {{ ns.links }} link{{ '' if ns.links == 1 else 's' }}</span>
                     </div>
-                    <div class="mt-3 flex gap-2">
-                        <a href="/{{ path.owner.username if path.owner else 'unknown' }}/{{ path.slug }}" class="text-blue-600 hover:underline text-sm">View</a>
-                        {% if path.can_edit(current_user) %}
-                        <a href="{{ url_for('linkolearn.settings') }}" class="text-gray-600 hover:underline text-sm">Edit</a>
-                        {% endif %}
-                    </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
             {% else %}
-            <div class="text-center py-12 text-gray-500">
-                <div class="text-4xl mb-4">📚</div>
-                <p>No team paths yet. Create one to get started!</p>
+            <div class="path-empty">
+                <div class="glyph"><i class="fas fa-book-open"></i></div>
+                <h3>No team paths yet</h3>
+                <p>Create one and your whole team can use it.</p>
             </div>
             {% endif %}
         </div>
@@ -221,50 +306,52 @@
     {% endif %}
 </div>
 
-<div id="addMemberModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+<!-- Add member modal -->
+<div id="addMemberModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="path-card max-w-md w-full !p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold">Add Team Member</h3>
-            <button onclick="closeModal('addMemberModal')" class="text-gray-500 hover:text-gray-700">&times;</button>
+            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Add team member</h3>
+            <button onclick="closeModal('addMemberModal')" class="path-tool" title="Close">&times;</button>
         </div>
-        <form id="addMemberForm">
+        <form id="addMemberForm" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" name="username" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <div>
+                <label class="path-label">Username</label>
+                <input type="text" name="username" class="path-input w-full" placeholder="Username" required>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select name="role" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div>
+                <label class="path-label">Role</label>
+                <select name="role" class="path-input w-full">
                     <option value="member">Member</option>
                     <option value="admin">Admin</option>
                     <option value="viewer">Viewer</option>
                 </select>
             </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('addMemberModal')" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add Member</button>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeModal('addMemberModal')" class="path-pill">Cancel</button>
+                <button type="submit" class="path-btn-primary">Add member</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="addDomainModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+<!-- Add domain modal -->
+<div id="addDomainModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="path-card max-w-md w-full !p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold">Add Custom Domain</h3>
-            <button onclick="closeModal('addDomainModal')" class="text-gray-500 hover:text-gray-700">&times;</button>
+            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Add custom domain</h3>
+            <button onclick="closeModal('addDomainModal')" class="path-tool" title="Close">&times;</button>
         </div>
-        <form id="addDomainForm">
+        <form id="addDomainForm" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
-                <input type="text" name="domain" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="example.com" required>
-                <small class="text-gray-500">Enter domain without http://</small>
+            <div>
+                <label class="path-label">Domain</label>
+                <input type="text" name="domain" class="path-input w-full" placeholder="example.com" required>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Enter the domain without http://</p>
             </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('addDomainModal')" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add Domain</button>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeModal('addDomainModal')" class="path-pill">Cancel</button>
+                <button type="submit" class="path-btn-primary">Add domain</button>
             </div>
         </form>
     </div>
@@ -273,13 +360,9 @@
 <script>
 function showTab(tab) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('border-blue-500', 'text-blue-600');
-        b.classList.add('border-transparent', 'text-gray-500');
-    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('content-' + tab).classList.remove('hidden');
-    document.getElementById('tab-' + tab).classList.add('border-blue-500', 'text-blue-600');
-    document.getElementById('tab-' + tab).classList.remove('border-transparent', 'text-gray-500');
+    document.getElementById('tab-' + tab).classList.add('active');
 }
 
 function openModal(id) {
