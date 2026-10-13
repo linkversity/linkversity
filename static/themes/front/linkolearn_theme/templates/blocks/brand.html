@@ -144,7 +144,64 @@
         filter: drop-shadow(0 1px 1px rgba(17, 24, 39, .3));
     }
 
+    .ent-badge {
+        position: absolute;
+        top: -13px;
+        right: -11px;
+        transform: rotate(-8deg);
+        filter: drop-shadow(0 1px 1px rgba(17, 24, 39, .3));
+    }
+
+    .vis-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px 5px 6px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #6b7280;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .vis-switch:hover { border-color: #d1d5db; }
+    .vis-switch .track {
+        position: relative;
+        width: 30px;
+        height: 17px;
+        flex: none;
+        border-radius: 999px;
+        background: #d1d5db;
+        transition: background .15s ease;
+    }
+    .vis-switch .track::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .25);
+        transition: transform .15s ease;
+    }
+    .vis-switch.on {
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+        color: #15803d;
+    }
+    .vis-switch.on .track { background: #22c55e; }
+    .vis-switch.on .track::after { transform: translateX(13px); }
+
     @media (prefers-color-scheme: dark) {
+        .vis-switch { background: #16191e; border-color: #262b36; color: #9ca3af; }
+        .vis-switch:hover { border-color: #4b3436; }
+        .vis-switch .track { background: #374151; }
+        .vis-switch.on { border-color: #14532d; background: #0c1f14; color: #4ade80; }
+        .vis-switch.on .track { background: #16a34a; }
         .path-card { background: #111318; border-color: #1f2430; box-shadow: none; }
         .path-pill { background: #16191e; border-color: #262b36; color: #d1d5db; }
         .path-pill:hover { background: #1c2027; border-color: #4b3436; }
@@ -206,22 +263,22 @@
         box-shadow: 0 1px 2px rgba(17, 24, 39, .05);
         transition: border-color .15s ease, box-shadow .15s ease;
     }
-    a.path-link-card:hover {
+    .path-link-card:hover, div.path-link-card:hover {
         border-color: #ffd2cd;
         box-shadow: 0 10px 24px -16px rgba(17, 24, 39, .4);
     }
-    a.path-link-card .title {
+    .path-link-card .title {
         font-size: 14.5px;
         font-weight: 700;
         color: #111827;
         line-height: 1.3;
     }
-    a.path-link-card .sub {
+    .path-link-card .sub {
         font-size: 12px;
         color: #6b7280;
         margin-top: 2px;
     }
-    a.path-link-card .badges {
+    .path-link-card .badges {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -262,9 +319,9 @@
         .path-stat i { color: #6b7280; }
         .path-badge { color: #9ca3af; }
         a.path-link-card, .path-link-card { background: #16191e; border-color: #262b36; box-shadow: none; }
-        a.path-link-card:hover { border-color: #4b3436; }
-        a.path-link-card .title { color: #f3f4f6; }
-        a.path-link-card .sub { color: #9ca3af; }
+        .path-link-card:hover, div.path-link-card:hover { border-color: #4b3436; }
+        .path-link-card .title { color: #f3f4f6; }
+        .path-link-card .sub { color: #9ca3af; }
         .path-empty { color: #9ca3af; }
         .path-empty .glyph { background: #16191e; border-color: #262b36; color: #6b7280; }
         .path-empty h3 { color: #f3f4f6; }

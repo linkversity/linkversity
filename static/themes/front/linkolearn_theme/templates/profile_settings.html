@@ -89,7 +89,9 @@
                 </p>
             </div>
             <span class="relative inline-block flex-none">
-                {% if current_user.is_pro() %}
+                {% if current_user.is_enterprise() %}
+                {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                {% elif current_user.is_pro() %}
                 {% include 'linkolearn_theme/templates/blocks/crown.html' %}
                 {% endif %}
                 <i class="em {{ current_user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
