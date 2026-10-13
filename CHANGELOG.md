@@ -24,6 +24,22 @@
 - Owners are no longer locked out of viewing their own password-protected
   path; fix `remove_editor` raising a NameError for non-premium users
 
+### App pages
+
+- Shared brand style extracted to `blocks/brand.html` + a cleaned `blocks/crown.html`
+  partial (dropped ~4KB of Inkscape metadata per crown); all pages below draw
+  from the same cards/pills/inputs/empty-states and dark mode
+- Bookmarks (`/linkolearn/bookmarks`): hero with saved count, path-card grid
+  showing titles + owner + Locked/Private badges, empty state
+- Create (`/new/`): hero, details card (title + slug with `/username/` prefix
+  and live availability check), restyled sections, coral "Create path" button
+- Profile (`/<username>`): avatar + crown hero, name/@handle/enterprise chips,
+  labeled stat pills (paths / private / likes), path-card grid, empty state
+- Fix "Create Path" never submitting: `json_submit.sections` was never
+  initialized (TypeError on the first push); remove the duplicated
+  "extract from document" button
+- Fix every profile page 500ing: `len()` is not a Jinja global — use `|length`
+
 ## 1.1.0
 
 ### Refactor
