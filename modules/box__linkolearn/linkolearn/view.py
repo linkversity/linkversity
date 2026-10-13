@@ -342,12 +342,14 @@ def add_editor():
 @module_blueprint.route("/remove-editor/<username>/<path_id>/", methods=["GET"])
 @login_required
 def remove_editor(username, path_id):
+    path = Path.query.get(path_id)
+
     if current_user.subscription_plan is None:
         current_user.subscription_plan = 0
 
     if current_user.subscription_plan < 1:
         flash("You must be premium to add editors")
-        return redirect(path.get_url())
+        return redirect(path.get_url() if path else url_for("www.index"))
 
     path = Path.query.get(path_id)
 
@@ -365,6 +367,40 @@ def remove_editor(username, path_id):
 
     flash(f"Removed {username} successfully", "success")
     return redirect(path.get_url())
+
+
+@module_blueprint.route("/add-link", methods=["POST"])
+@login_required
+def add_link():
+    """Add a link to a section from the path page (inline 'Add link' form).
+
+    Accepts a plain URL or the markdown form [Title](url), mirroring the
+    edit-page convention.
+    """
+    section = Section.query.get(request.form.get("section_id"))
+    raw = (request.form.get("url") or "").strip()
+
+    if not section or not raw:
+        return jsonify({"success": False, "error": "Invalid data"})
+
+    path = section.section_path
+    if not path.can_edit(current_user):
+        return jsonify({"success": False, "error": "Permission denied"})
+
+    url, title = raw, None
+    if path.is_valid_markdown_link(raw):
+        extracted = path.extract_link(raw)
+        if extracted.get("href"):
+            url, title = extracted["href"], extracted.get("text")
+
+    if not validators.url(url):
+        return jsonify({"success": False, "error": "That doesn't look like a valid URL."})
+
+    link = Link(url=url, title=title, section_id=section.id)
+    db.session.add(link)
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 
 @module_blueprint.route("/move_link", methods=["POST"])
