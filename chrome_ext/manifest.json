@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Linkversity Saver",
-  "version": "1.0",
+  "version": "1.2.0",
   "description": "Save links to your Linkversity paths instantly.",
   "permissions": [
-    "tabs",
+    "activeTab",
     "identity",
     "storage"
   ],
@@ -14,7 +14,8 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": "icon.png",
+    "default_title": "Save this page to Linkversity"
   },
   "background": {
     "service_worker": "background.js"

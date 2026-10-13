@@ -1,88 +1,658 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Linkversity</title>
   <style>
+    /* ================================================================
+       Linkversity design tokens
+       Coral #FF8080 + gold #FFCC00 (brand CTAs / crown accent),
+       Tailwind-like neutrals, matching linkversity.lol.
+       ================================================================ */
+    :root {
+      --coral: #ff8080;
+      --coral-600: #f9645f;
+      --coral-700: #e25555;
+      --coral-050: #fff5f3;
+      --coral-100: #ffe9e6;
+      --coral-200: #ffd2cd;
+      --coral-strong: #cc3f3f;        /* button fill: AA on white text */
+      --coral-strong-hover: #bd3838;
+      --coral-strong-active: #b03333;
+      --gold: #ffcc00;
+
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #fafafb;
+      --inset: #f7f7f8;
+
+      --ink: #111827;      /* gray-900 */
+      --ink-2: #374151;    /* gray-700 */
+      --muted: #6b7280;    /* gray-500 */
+      --faint: #9ca3af;    /* gray-400 */
+      --line: #ececef;
+      --line-2: #e5e7eb;   /* gray-200 */
+
+      --ok: #059669;                /* fills + icons (3.7:1 vs white glyph) */
+      --ok-text: #047857;           /* green text (5.5:1 on white) */
+      --ok-border: rgba(5, 150, 105, .5);
+      --err: #ef4444;
+      --err-050: #fef2f2;
+
+      --shadow-sm: 0 1px 2px rgba(17, 24, 39, .06);
+      --shadow-md: 0 6px 20px -10px rgba(17, 24, 39, .28);
+      --ring: 0 0 0 3px rgba(255, 128, 128, .28);
+      --radius: 12px;
+
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+              "Helvetica Neue", Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --coral-050: #221617;
+        --coral-100: #2d1b1c;
+        --coral-200: #4a2626;
+
+        --bg: #0e1013;
+        --surface: #16191e;
+        --surface-2: #1b1f25;
+        --inset: #1e222a;
+
+        --ink: #f3f4f6;
+        --ink-2: #e5e7eb;
+        --muted: #9ca3af;
+        --faint: #6b7280;
+        --line: #232830;
+        --line-2: #2b313a;
+
+        --ok: #10b981;
+        --ok-text: #34d399;
+        --ok-border: rgba(16, 185, 129, .45);
+        --err-050: #2a1618;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+        --shadow-md: 0 6px 22px -10px rgba(0, 0, 0, .8);
+        --ring: 0 0 0 3px rgba(255, 128, 128, .32);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; }
+
     body {
-      width: 300px;
-      padding: 15px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      width: 356px;
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--ink);
+      background: var(--bg);
+      position: relative;
+      -webkit-font-smoothing: antialiased;
     }
-    .container {
+
+    .shell { padding: 0 16px 14px; }
+
+    /* ---------------------------------------------------- masthead ---- */
+    .masthead {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 10px;
     }
-    h2 {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-      color: #333;
+    .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      box-shadow: var(--shadow-sm);
+      flex: 0 0 26px;
     }
-    select, button {
-      padding: 8px;
+    .brand-text { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+    .brand-name {
+      font-size: 15.5px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--ink);
+    }
+    .brand-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--coral-700);
+      background: var(--coral-100);
+      border: 1px solid var(--coral-200);
+      border-radius: 999px;
+      padding: 1.5px 7px;
+      line-height: 1.5;
+    }
+    .ghost-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid transparent;
+      text-decoration: none;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .ghost-icon:hover {
+      color: var(--coral-700);
+      background: var(--coral-050);
+      border-color: var(--coral-200);
+    }
+
+    /* brand hairline: coral -> gold, fading out (site CTA colors) */
+    .hairline {
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--coral) 0%, var(--gold) 42%,
+                  rgba(255, 204, 0, 0) 100%);
+      opacity: .85;
+      margin-bottom: 12px;
+    }
+
+    /* ------------------------------------------------------- panes ---- */
+    .pane { animation: pane-in .28s cubic-bezier(.2, .7, .3, 1) both; }
+    @keyframes pane-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* -------------------------------------------------------- text ---- */
+    h1 {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin: 0 0 6px;
+      color: var(--ink);
+    }
+    p { margin: 0; }
+
+    .label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 14px 0 6px;
+    }
+    .label.tight { margin-top: 10px; }
+
+    .hint { font-size: 11px; color: var(--muted); }
+    .hidden { display: none !important; }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 10px;
+      border: 1px solid var(--line-2);
+      border-bottom-width: 2px;
       border-radius: 4px;
-      border: 1px solid #ccc;
-      font-size: 14px;
+      padding: 0 4px;
+      color: var(--muted);
+      background: var(--inset);
     }
-    button {
-      background-color: #ff8080;
-      color: white;
-      border: none;
+
+    /* -------------------------------------------------------- cards --- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .page-card { padding: 10px 11px; }
+    .page-head { display: flex; align-items: center; gap: 8px; }
+
+    .favicon {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      flex: 0 0 18px;
+      object-fit: contain;
+      background: var(--inset);
+      border: 1px solid var(--line);
+    }
+
+    .title-input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 7px;
+      padding: 4px 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+      color: var(--ink);
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .title-input::placeholder { color: var(--faint); font-weight: 500; }
+    .title-input:hover { border-color: var(--line-2); }
+    .title-input:focus {
+      outline: none;
+      background: var(--bg);
+      border-color: var(--coral-200);
+      box-shadow: var(--ring);
+    }
+
+    .page-url {
+      font-size: 11px;
+      color: var(--muted);
+      word-break: break-all;
+      max-height: 30px;
+      overflow: hidden;
+      margin: 4px 0 0 26px;
+    }
+
+    .warning {
+      margin-top: 8px;
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    @media (prefers-color-scheme: dark) {
+      .warning { background: #2a2110; color: #fcd34d; border-color: #463a17; }
+    }
+
+    /* ------------------------------------------------------ selects --- */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: "";
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      margin-top: -2px;
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg);
+      pointer-events: none;
+      transition: border-color .15s ease;
+    }
+    .select-wrap:focus-within::after { border-color: var(--coral-600); }
+
+    select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 9px 30px 9px 11px;
+      border-radius: 9px;
+      border: 1px solid var(--line-2);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
-      font-weight: bold;
+      transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
-    button:hover {
-      background-color: #ff6666;
+    select:hover:not(:disabled) { border-color: var(--coral-200); }
+    select:focus-visible {
+      outline: none;
+      border-color: var(--coral);
+      box-shadow: var(--ring);
     }
-    button:disabled {
-      background-color: #ccc;
+    select:disabled {
+      cursor: default;
+      opacity: .65;
+      background: var(--inset);
+      color: var(--muted);
     }
-    .hidden {
-      display: none;
+
+    /* -------------------------------------------------------- chips --- */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      border: 1px solid var(--line-2);
+      background: var(--surface);
+      color: var(--ink-2);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
     }
-    #login-section {
+    .chip:hover {
+      border-color: var(--coral-200);
+      background: var(--coral-050);
+    }
+    .chip.active {
+      border-color: var(--coral);
+      background: var(--coral-050);
+      color: var(--coral-700);
+      font-weight: 700;
+    }
+
+    /* ------------------------------------------------------ buttons --- */
+    .btn {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid transparent;   /* keeps height stable when bordered */
+      border-radius: 11px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .16s ease, color .16s ease,
+                  border-color .16s ease, box-shadow .16s ease;
+    }
+
+    /* Solid, accessible coral (4.8:1 with white) — no gradient, no glow. */
+    .btn-primary {
+      background: var(--coral-strong);
+      color: #fff;
+      box-shadow: 0 1px 2px rgba(17, 24, 39, .16);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--coral-strong-hover);
+      box-shadow: 0 2px 6px -2px rgba(17, 24, 39, .28);
+    }
+    .btn-primary:active:not(:disabled) {
+      background: var(--coral-strong-active);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .18);
+    }
+    /* auto-focused on open, so a soft ring instead of a hard outline */
+    .btn-primary:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(199, 63, 63, .30);
+    }
+
+    .btn:disabled {
+      background: var(--inset);
+      color: var(--muted);
+      border-color: var(--line-2);
+      box-shadow: none;
+      cursor: default;
+    }
+
+    /* Saved: quiet confirmation — neutral surface, green only as the accent */
+    .btn.done {
+      background: var(--surface);
+      color: var(--ok-text);
+      border-color: var(--ok-border);
+      box-shadow: var(--shadow-sm);
+      cursor: default;
+    }
+
+    /* spinner, driven by the .loading class (no DOM changes needed).
+       Must beat .btn:disabled, which is why :disabled is repeated here —
+       otherwise the disabled gray text sits on the coral background. */
+    .btn.loading::before {
+      content: "";
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, .4);
+      border-top-color: #fff;
+      animation: spin .7s linear infinite;
+    }
+    .btn.loading,
+    .btn.loading:disabled {
+      background: var(--coral-strong);
+      color: #fff;
+      border-color: transparent;
+      opacity: 1;
+      box-shadow: 0 1px 2px rgba(17, 24, 39, .16);
+      cursor: progress;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px 6px;
+      border-radius: 6px;
+      transition: color .15s ease, background .15s ease;
+    }
+    .link-btn:hover:not(:disabled) { color: var(--coral-700); background: var(--coral-050); }
+    .link-btn:disabled { cursor: default; opacity: .55; }
+
+    .save-hint {
       text-align: center;
-      padding: 20px 0;
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 15px;
+      margin-top: 7px;
     }
+
+    /* ------------------------------------------------------- status --- */
     .status {
-      font-size: 12px;
-      margin-top: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      line-height: 1.4;
+      min-height: 16px;
+      margin-top: 8px;
     }
-    .success { color: green; }
-    .error { color: red; }
+    .status:empty { min-height: 2px; }
+    .status.success { color: var(--ok-text); }
+    .status.error { color: var(--err); }
+    .status.info { color: var(--muted); }
+
+    .center { text-align: center; }
+
+    /* ----------------------------------------------------- success ---- */
+    .success {
+      display: flex;
+      gap: 11px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-left: 3px solid var(--ok);
+      border-radius: var(--radius);
+      padding: 11px 12px;
+      margin-top: 10px;
+      box-shadow: var(--shadow-sm);
+      animation: pane-in .3s cubic-bezier(.2, .7, .3, 1) both;
+    }
+    .success-icon {
+      flex: 0 0 22px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--ok);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .success-icon svg { display: block; width: 12px; height: 12px; }
+    .success-icon path {
+      stroke-dasharray: 22;
+      stroke-dashoffset: 22;
+      animation: draw .45s .08s ease-out forwards;
+    }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    .success-body { min-width: 0; }
+    .headline {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      color: var(--ink);
+    }
+
+    .success .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+    .success a {
+      color: var(--ink-2);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: color .15s ease, border-color .15s ease;
+    }
+    .success a:hover { color: var(--coral-700); border-bottom-color: var(--coral-200); }
+    .success .micro { display: block; margin-top: 7px; }
+
+    /* ------------------------------------------------------- login ---- */
+    #login-section { text-align: center; padding: 22px 4px 14px; }
+    .login-art {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      margin: 0 auto 14px;
+      box-shadow: var(--shadow-md);
+      display: block;
+    }
+    #login-msg {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      min-height: 18px;
+    }
+    .micro { font-size: 10.5px; color: var(--muted); }
+
+    /* ------------------------------------------------------ footer ---- */
+    .footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      margin-top: 14px;
+      padding-top: 9px;
+    }
+    .footer .hint:first-child { margin-right: auto; }
+
+    /* --------------------------------------------------- a11y/motion -- */
+    :focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Linkversity</h2>
-    
-    <div id="login-section">
-      <p>Please log in to start saving links.</p>
-      <button id="login-btn">Log in with Linkversity</button>
-    </div>
+  <div class="shell">
+    <header class="masthead">
+      <div class="brand">
+        <img class="brand-mark" src="icon.png" alt="">
+        <span class="brand-text">
+          <span class="brand-name">Linkversity</span>
+          <span class="brand-tag">Saver</span>
+        </span>
+      </div>
+      <a class="ghost-icon" href="https://linkversity.lol" target="_blank" rel="noopener"
+         title="Open Linkversity" aria-label="Open Linkversity">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 17L17 7M9 7h8v8"/>
+        </svg>
+      </a>
+    </header>
+    <div class="hairline"></div>
 
-    <div id="save-section" class="hidden">
-      <div id="tab-info">
-        <p id="current-url" style="font-size: 12px; color: #666; word-break: break-all;"></p>
+    <!-- ------------------------------------------------------ login -->
+    <section id="login-section" class="pane hidden" aria-label="Login">
+      <img class="login-art" src="icon.png" alt="">
+      <h1>Save links you love</h1>
+      <p id="login-msg">Log in to start saving links.</p>
+      <button id="login-btn" class="btn btn-primary">Log in with Linkversity</button>
+      <p class="micro" style="margin-top:12px;">You'll be asked to authorize on linkversity.lol.</p>
+    </section>
+
+    <!-- ------------------------------------------------------- save -->
+    <section id="save-section" class="pane hidden" aria-label="Save link">
+      <div class="card page-card">
+        <div class="page-head">
+          <img id="page-favicon" class="favicon hidden" alt="">
+          <input id="page-title-input" class="title-input" type="text" placeholder="Untitled page"
+                 aria-label="Link title" maxlength="300" spellcheck="false">
+        </div>
+        <div id="page-url" class="page-url"></div>
+        <div id="page-warning" class="warning hidden"></div>
       </div>
 
-      <label for="path-select">Choose Path:</label>
-      <select id="path-select">
-        <option value="">Loading paths...</option>
-      </select>
+      <span id="recents-label" class="label hidden">Save again</span>
+      <div id="recents" class="chips hidden" role="group" aria-labelledby="recents-label"></div>
 
-      <label for="section-select">Choose Section:</label>
-      <select id="section-select" disabled>
-        <option value="">Select a path first</option>
-      </select>
+      <label class="label" for="path-select">Path</label>
+      <div class="select-wrap">
+        <select id="path-select" aria-label="Path">
+          <option value="">Loading paths…</option>
+        </select>
+      </div>
 
-      <button id="save-btn" disabled>Save Link</button>
-      <div id="status-msg" class="status"></div>
-      
-      <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
-      <button id="logout-btn" style="background: none; color: #999; font-size: 11px; font-weight: normal; padding: 0;">Logout</button>
-    </div>
+      <label class="label tight" for="section-select">Section</label>
+      <div class="select-wrap">
+        <select id="section-select" aria-label="Section" disabled>
+          <option value="">Select a path first</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <button id="save-btn" class="btn btn-primary" disabled>Save link</button>
+        <div id="save-hint" class="save-hint"></div>
+      </div>
+
+      <div id="status-msg" class="status" role="status" aria-live="polite"></div>
+      <div class="center">
+        <button id="retry-btn" class="link-btn hidden">Retry loading paths</button>
+      </div>
+
+      <div id="success-banner" class="success hidden">
+        <span class="success-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <div class="success-body">
+          <span id="success-text" class="headline">Saved ✓</span>
+          <div class="actions">
+            <a id="open-link" href="https://linkversity.lol" target="_blank" rel="noopener">Open in Linkversity ↗</a>
+            <button id="save-elsewhere" class="link-btn">Save elsewhere</button>
+          </div>
+          <span class="micro"><span id="close-countdown">Closing in 4s</span> · press Esc to close now</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span class="hint"><span class="kbd">Enter</span> saves</span>
+        <span id="account" class="hint"></span>
+        <button id="logout-btn" class="link-btn">Log out</button>
+      </div>
+    </section>
   </div>
+
+  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
