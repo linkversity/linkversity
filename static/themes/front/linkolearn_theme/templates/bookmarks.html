@@ -1,76 +1,75 @@
 {%set active_page='bookmarks'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
+
 {%block head%}
-<title>{{current_user.username}}</title>
+<title>Bookmarks · Linkversity</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
 {%endblock%}
+
 {%block body%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg flex flex-col md:flex-row min-h-[300px]">
-        <!-- Profile Section -->
-        <div class="w-full md:w-2/6 bg-gray-100 flex flex-col items-center p-6 relative">
-            
-                {% if current_user.is_pro() %}
-                <div class="absolute transform translate-x-[90%] -translate-y-[20%]">
-                    <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" version="1.1" id="svg2" sodipodi:docname="crown-svgrepo-com (2).svg" inkscape:version="1.4 (1:1.4+202410161351+e7c3feb100)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"> <defs id="defs2" /> <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="1.03875" inkscape:cx="399.51865" inkscape:cy="400" inkscape:window-width="1880" inkscape:window-height="1048" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2" /> <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451L17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#1C274C" id="path1" style="fill:#ffcc00" /> <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#1C274C" id="path2" style="fill:#ffcc00" /> </svg>
-                
-                </div>
-                {% endif %}
-            <i class="em {{current_user.emoji_class}} w-20 h-20 p-1 rounded-full mb-4 ring-2 ring-gray-300 dark:ring-gray-500"></i>
-            <h2 class="text-lg font-semibold">{{current_user.get_first_name()}}</h2>
-            <h2 class="text-lg font-semibold">{{current_user.get_last_name()}}</h2>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
-
-            <br>
-            <a href="/linkolearn/settings">
-                <button type="button" class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
-                    <i class="fa fa-wrench"></i>
-                </button>
-            </a>
-
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Bookmarks</span>
+        </nav>
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Bookmarks</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                    {% set bookmarked = current_user.get_bookmarked_paths() %}
+                    {% if bookmarked|length > 0 %}
+                        {{ bookmarked|length }} path{{ '' if bookmarked|length == 1 else 's' }} saved for later
+                    {% else %}
+                        Paths you save for later land here
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/linkolearn/settings" class="path-pill shrink-0"><i class="fa fa-cog"></i> Settings</a>
         </div>
-        <!-- Info Section -->
-        <div class="w-full md:w-4/6 flex flex-col flex-grow">
-            <!-- Top Section -->
-            <div class="p-6 border-b flex-grow">
-                <h3 class="text-3xl font-semibold text-gray-800">
-                    Bookmarks
-                </h3>
-            </div>
-            <!-- Bottom Section -->
-            <div class="p-6 flex-grow">
-                <div class="max-w-3xl mx-auto bg-white">
-                    <!-- Card Title -->
-<!--                     <h2 class="text-xl font-semibold text-gray-800">My Favorite Links</h2>
-                    <p class="text-gray-600 text-sm mt-1">A collection of useful resources.</p> -->
-                    <!-- Links List -->
-                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {% for path in current_user.get_bookmarked_paths() %}
-                            <a href="{{path.get_url()}}">
-                                <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                                    <div class="flex items-center gap-4">
-                                        <i class="em {{path.path_user.emoji_class}} w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"></i>
-                                        <div class="font-medium dark:text-white">
-                                            <div class="text-left w-40 overflow-hidden whitespace-nowrap text-ellipsis">
-                                                {% if path.is_password_protected %}
-                                                <i class="fas fa-lock text-gray-500 text-sm"></i>
-                                                {%else%}
-                                                {% endif %}
-                                                {% if path.is_visible %}
-                                                {%else%}
-                                                <i class="fas fa-eye-slash text-gray-500 text-sm"></i>
-                                                {% endif %}
-                                            {{ path.slug }}</div>
-                                            <div class="text-left text-sm text-gray-500 dark:text-gray-400">{{path.path_user.username}}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
+    </header>
 
-                        {% endfor %}
-                    </div>
+    {% if bookmarked|length > 0 %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% for path in bookmarked %}
+        <a class="path-link-card" href="{{ path.get_url() }}">
+            <div class="flex items-center gap-3">
+                <span class="relative inline-block flex-none">
+                    {% if path.path_user.is_pro() %}
+                    {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                    {% endif %}
+                    <i class="em {{ path.path_user.emoji_class }} w-10 h-10 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+                </span>
+                <div class="min-w-0">
+                    <div class="title truncate">{{ path.title or path.slug }}</div>
+                    <div class="sub truncate">@{{ path.path_user.username }}</div>
                 </div>
             </div>
+            {% if path.is_password_protected or not path.is_visible %}
+            <div class="badges">
+                {% if path.is_password_protected %}
+                <span class="path-badge"><i class="fas fa-lock"></i> Locked</span>
+                {% endif %}
+                {% if not path.is_visible %}
+                <span class="path-badge"><i class="fas fa-eye-slash"></i> Private</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="path-card">
+        <div class="path-empty">
+            <div class="glyph"><i class="fas fa-bookmark"></i></div>
+            <h3>No bookmarks yet</h3>
+            <p>Hit the bookmark button on any path and it will wait for you here.</p>
+            <a href="{{ url_for('www.index') }}" class="path-btn-primary mt-4">Explore paths</a>
         </div>
     </div>
+    {% endif %}
+
 </div>
 {%endblock%}
