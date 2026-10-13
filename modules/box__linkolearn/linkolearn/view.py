@@ -541,7 +541,7 @@ def create_enterprise_team():
     if not current_user.is_enterprise():
         return jsonify({"success": False, "error": "Enterprise plan required"})
 
-    if current_user.team_id:
+    if current_user.team_id and EnterpriseTeam.query.get(current_user.team_id):
         return jsonify({"success": False, "error": "Team already exists"})
 
     team_name = request.form.get("team_name")
