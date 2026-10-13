@@ -1,145 +1,222 @@
 {%set active_page='settings'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
+
 {%block head%}
-<title>Settings</title>
+<title>Settings · Linkversity</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
+<style>
+    .tab-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        border: 1px solid transparent;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .tab-button:hover { color: #111827; }
+    .tab-button.active {
+        background: #fff;
+        border-color: #e5e7eb;
+        color: #111827;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .05);
+    }
+
+    .emoji-tile {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        cursor: pointer;
+        transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .emoji-tile:hover { border-color: #ffd2cd; transform: translateY(-1px); }
+    .emoji-tile input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        margin: 0;
+    }
+    .emoji-tile .em { width: 30px; height: 30px; }
+    .emoji-tile.is-on {
+        border-color: #cc3f3f;
+        background: #fff5f4;
+        box-shadow: 0 0 0 1px #cc3f3f;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .tab-button { color: #9ca3af; }
+        .tab-button:hover { color: #f3f4f6; }
+        .tab-button.active {
+            background: #16191e;
+            border-color: #262b36;
+            color: #f3f4f6;
+            box-shadow: none;
+        }
+        .emoji-tile { background: #16191e; border-color: #262b36; }
+        .emoji-tile:hover { border-color: #4b3436; }
+        .emoji-tile.is-on {
+            border-color: #cc3f3f;
+            background: #241a1a;
+        }
+    }
+</style>
 {%endblock%}
+
 {%block body%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg flex flex-col md:flex-row min-h-[300px]">
-        <!-- Left Pane (with Pills) -->
-<div class="w-full md:w-1/4 bg-gray-100 flex flex-col items-center p-6" id="left-pane">
-    <!-- Center the emoji icon -->
-    <div class="flex justify-center items-center w-full mb-4 relative">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
-                        {% if current_user.is_pro() %}
-                <div class="absolute transform translate-x-[130%] -translate-y-[20%]">
-                    <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" version="1.1" id="svg2" sodipodi:docname="crown-svgrepo-com (2).svg" inkscape:version="1.4 (1:1.4+202410161351+e7c3feb100)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"> <defs id="defs2" /> <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="1.03875" inkscape:cx="399.51865" inkscape:cy="400" inkscape:window-width="1880" inkscape:window-height="1048" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2" /> <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451L17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#1C274C" id="path1" style="fill:#ffcc00" /> <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#1C274C" id="path2" style="fill:#ffcc00" /> </svg>
-                </div>
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Settings</span>
+        </nav>
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Settings</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                    Signed in as <a href="{{ current_user.get_profile_url() }}" class="font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100">@{{ current_user.username }}</a>
+                </p>
+            </div>
+            <span class="relative inline-block flex-none">
+                {% if current_user.is_pro() %}
+                {% include 'linkolearn_theme/templates/blocks/crown.html' %}
                 {% endif %}
-        <i class="em {{current_user.emoji_class}} w-20 h-20 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"></i>
-    </div>
-    <h2 class="text-lg font-semibold text-center">{{ current_user.first_name }}</h2>
-    <h2 class="text-lg font-semibold text-center">{{ current_user.last_name }}</h2>
-    <br>
-<!-- Tab Buttons moved here (Vertical) -->
-<div class="flex flex-col w-full space-y-2">
-    <!-- Profile Tab Button -->
-    <button class="tab-button w-full py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-0 transition-all duration-200"
-            data-target="#v-pills-profile" aria-selected="true">
-        Profile
-    </button>
-    <!-- Emoji Tab Button -->
-    <button class="tab-button w-full py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-0 transition-all duration-200"
-            data-target="#v-pills-emoji">
-        Emoji
-    </button>
-    <!-- Slack Tab Button -->
-    <a href="{{ url_for('slack.index') }}" class="w-full py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-0 transition-all duration-200 text-center block">
-        Slack
-    </a>
-</div>
+                <i class="em {{ current_user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+            </span>
+        </div>
 
-</div>
+        <div class="inline-flex flex-wrap items-center gap-1 mt-5 bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-full p-1">
+            <button class="tab-button active" data-target="#v-pills-profile" aria-selected="true" type="button">
+                <i class="fas fa-user"></i> Profile
+            </button>
+            <button class="tab-button" data-target="#v-pills-emoji" type="button">
+                <i class="fas fa-smile"></i> Emoji
+            </button>
+            <a href="{{ url_for('slack.index') }}" class="tab-button">
+                <i class="fab fa-slack"></i> Slack
+            </a>
+        </div>
+    </header>
 
+    <div class="tab-content">
 
-        <!-- Info Section -->
-        <div class="w-full md:w-3/4 flex flex-col flex-grow">
-            <!-- Top Section -->
-            <div class="p-6 border-b flex-grow">
-                <div class="flex-1 p-4 bg-white rounded-lg ">
-                    <div class="tab-content">
-                        <!-- Profile Tab Content -->
-                        <div class="tab-pane fade hidden" id="v-pills-profile">
-                            <form method="POST" action="{{ url_for('linkolearn.change_password') }}">
-                                {% for field in password_form %}
-                                    {% if field.id not in ['csrf_token'] %}
-                                        <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                                    {% endif %}
-                                    <div class="mt-1 mb-4">
-                                        {{ field }}
-                                    </div>
-                                {% endfor %}
-                                <button type="submit" class="w-full py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">Submit</button>
-                            </form>
-                            <br>
-                            <form method="POST" action="{{ url_for('linkolearn.change_name') }}">
-                                {% for field in name_form %}
-                                    {% if field.id not in ['csrf_token'] %}
-                                        <label class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                                    {% endif %}
-                                    <div class="mt-1 mb-4">
-                                        {{ field }}
-                                    </div>
-                                {% endfor %}
-                                <button type="submit" class="w-full py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">Submit</button>
-                            </form>
-                        </div>
+        <!-- Profile tab -->
+        <div class="tab-pane fade hidden space-y-6" id="v-pills-profile">
 
-                        <!-- Emoji Tab Content -->
-                        <div class="tab-pane fade hidden" id="v-pills-emoji">
-                            <form action="{{ url_for('linkolearn.change_emoji') }}" method="POST">
-                                {% for emoji in emoji_classes %}
-                                    <label class="inline-flex items-center space-x-2">
-                                        <input type="radio" name="emoji_class" value="{{ emoji.class_name | safe }}" {{ 'checked' if loop.index == 1 }}>
-                                        <i class="em {{ emoji.class_name | safe }}"></i>
-                                    </label>
-                                {% endfor %}
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <br><br>
-                                <button type="submit" class="w-full py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">Save</button>
-                            </form>
-                        </div>
+            <div class="path-card">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4"><i class="fas fa-key mr-1.5 text-gray-400"></i>Change password</h4>
+                <form method="POST" action="{{ url_for('linkolearn.change_password') }}" class="space-y-4">
+                    {% for field in password_form %}
+                        {% if field.id == 'csrf_token' %}
+                            {{ field }}
+                        {% else %}
+                            <div>
+                                <label class="path-label" for="{{ field.id }}">{{ field.label.text }}</label>
+                                {{ field(class_='path-input w-full', placeholder=field.label.text, autocomplete='new-password') }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <button type="submit" class="path-btn-primary">Update password</button>
+                </form>
+            </div>
 
-                        <!-- Settings Tab Content -->
-                        <div class="tab-pane fade hidden" id="v-pills-settings">
-                            <!-- Settings content goes here -->
-                        </div>
-                    </div>
-                </div>
+            <div class="path-card">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4"><i class="fas fa-id-card mr-1.5 text-gray-400"></i>Name</h4>
+                <form method="POST" action="{{ url_for('linkolearn.change_name') }}" class="space-y-4">
+                    {% for field in name_form %}
+                        {% if field.id == 'csrf_token' %}
+                            {{ field }}
+                        {% else %}
+                            <div>
+                                <label class="path-label" for="{{ field.id }}">{{ field.label.text }}</label>
+                                {{ field(class_='path-input w-full', placeholder=field.label.text) }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <button type="submit" class="path-btn-primary">Save name</button>
+                </form>
             </div>
 
         </div>
+
+        <!-- Emoji tab -->
+        <div class="tab-pane fade hidden" id="v-pills-emoji">
+            <div class="path-card">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">Pick your avatar</h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Shown on your profile, paths and everywhere you appear.</p>
+                {% set current = current_user.emoji_class %}
+                {% set has_current = emoji_classes | selectattr('class_name', 'equalto', current) | list | length %}
+                <form action="{{ url_for('linkolearn.change_emoji') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="grid grid-cols-6 sm:grid-cols-10 gap-2">
+                        {% for emoji in emoji_classes %}
+                        <label class="emoji-tile {{ 'is-on' if emoji.class_name == current or (loop.first and not has_current) else '' }}">
+                            <input type="radio" name="emoji_class" value="{{ emoji.class_name | safe }}"
+                                   {{ 'checked' if emoji.class_name == current or (loop.first and not has_current) else '' }}>
+                            <i class="em {{ emoji.class_name | safe }}"></i>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="path-btn-primary mt-5">Save avatar</button>
+                </form>
+            </div>
+        </div>
+
     </div>
+
 </div>
 
-<!-- JavaScript to handle Tab Switching -->
+<!-- Tab switching + emoji tile selection -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const buttons = document.querySelectorAll('.tab-button');
+    const buttons = document.querySelectorAll('.tab-button[data-target]');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
-    // Function to handle tab switching
     function activateTab(target) {
-        // Hide all tab content
         tabPanes.forEach(pane => pane.classList.add('hidden'));
 
-        // Remove active styles from all buttons
         buttons.forEach(button => {
-            button.classList.remove('text-blue-600', 'border-l-4', 'border-blue-500');
-            button.classList.add('text-gray-600');
+            button.classList.remove('active');
+            button.setAttribute('aria-selected', 'false');
         });
 
-        // Show the selected tab content
         const selectedTab = document.querySelector(target);
-        selectedTab.classList.remove('hidden');
+        if (selectedTab) selectedTab.classList.remove('hidden');
 
-        // Add active styles to the selected button
         const selectedButton = [...buttons].find(button => button.getAttribute('data-target') === target);
-        selectedButton.classList.add('text-blue-600', 'border-l-4', 'border-blue-500');
+        if (selectedButton) {
+            selectedButton.classList.add('active');
+            selectedButton.setAttribute('aria-selected', 'true');
+        }
     }
 
-    // Set the default tab (the first one)
     activateTab('#v-pills-profile');
-    
-    // Add event listeners to buttons
+
     buttons.forEach(button => {
         button.addEventListener('click', function() {
-            const target = button.getAttribute('data-target');
-            activateTab(target);
+            activateTab(button.getAttribute('data-target'));
+        });
+    });
+
+    // reflect the checked emoji on its tile
+    document.querySelectorAll('.emoji-tile input').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.emoji-tile').forEach(t => t.classList.remove('is-on'));
+            this.closest('.emoji-tile').classList.add('is-on');
         });
     });
 });
 </script>
-
 
 {%endblock%}
