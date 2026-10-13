@@ -393,9 +393,10 @@
         <p class="text-xs text-gray-500 dark:text-gray-400">Editors are a Pro feature. <a href="{{ url_for('new.activate') }}" class="text-[#c2410c] hover:underline">Upgrade</a> to collaborate.</p>
         {% endif %}
 
-        {% if path.editors|length > 0 %}
+        {% set editors_list = path.editors.all() %}
+        {% if editors_list|length > 0 %}
         <div class="flex flex-wrap gap-2 mt-4">
-            {% for editor in path.editors %}
+            {% for editor in editors_list %}
             <span class="path-chip">
                 <span class="inline-flex items-center justify-center w-6 h-6 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-700">
                     <i class="em {{ editor.emoji_class }}"></i>
