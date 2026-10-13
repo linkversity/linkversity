@@ -13,6 +13,17 @@
 - Share `config.js` between worker and popup; switch permission from `tabs`
   to `activeTab`; add smoke tests under `tests/chrome_ext/`
 
+### Path page
+
+- Public path page (`/<username>/<slug>`) redesigned: hero header with
+  labeled Like/Bookmark/Copy pills, owner toolbar, manage-access card,
+  section cards, password gate and dark mode
+- Wire the inline "Add link" form to a new `POST /linkolearn/add-link`
+  endpoint (the handlers shipped in #87 were never implemented)
+- Fix the page 500ing: `len()` is not a Jinja global — use `|length`
+- Owners are no longer locked out of viewing their own password-protected
+  path; fix `remove_editor` raising a NameError for non-premium users
+
 ## 1.1.0
 
 ### Refactor
