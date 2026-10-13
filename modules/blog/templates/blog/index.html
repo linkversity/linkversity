@@ -3,50 +3,97 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Blog - Linkversity</title>
-    <meta name="description" content="Learn about Linkversity - the platform for organizing learning resources into shareable paths">
-    <meta name="keywords" content="linkversity, learning paths, educational resources, organize links, course creation">
+    <title>Blog · Linkversity</title>
+    <meta name="description" content="Notes on learning systems, curation, and teaching with links — from the Linkversity team.">
     <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    {% include 'linkolearn_theme/templates/blocks/brand.html' %}
+    <style>
+        body { background: #fafafa; }
+        @media (prefers-color-scheme: dark) { body { background: #0b0d10; } }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <nav class="bg-white border-b border-gray-200">
-        <div class="max-w-screen-xl mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="flex items-center">
-                <img src="{{url_for('static', filename='linkversity.png')}}" class="h-10">
-                <span class="ml-2 text-xl font-bold text-gray-800">Linkversity</span>
+<body class="min-h-screen flex flex-col text-gray-900 dark:text-gray-100">
+
+    <nav class="border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-[#111318]/80 backdrop-blur">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-3.5 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2.5">
+                <img src="{{url_for('static', filename='linkversity.png')}}" class="h-8 w-8 rounded-lg">
+                <span class="text-[15px] font-extrabold tracking-tight">Linkversity</span>
             </a>
-            <div class="flex space-x-6">
-                <a href="/" class="text-gray-600 hover:text-gray-900">Home</a>
-                <a href="/blog" class="text-gray-900 font-semibold">Blog</a>
+            <div class="flex items-center gap-2">
+                <a href="/" class="path-pill !py-1.5">Home</a>
+                <a href="{{ url_for('blog.index') }}" class="path-pill on !py-1.5"><i class="fas fa-feather"></i> Blog</a>
+                <a href="/" class="path-btn-primary !py-2 !px-4 text-[13px]">Start a path</a>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-screen-xl mx-auto px-4 py-12">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">Blog</h1>
-        <p class="text-xl text-gray-600 mb-12">Latest updates and insights about Linkversity</p>
+    <main class="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 w-full space-y-6 flex-1">
 
-        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {% for post in posts %}
-            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <a href="{{ url_for('blog.post', slug=post.slug) }}">
-                    <div class="p-6">
-                        <span class="text-sm text-gray-500">{{ post.date }}</span>
-                        <h2 class="text-xl font-bold mt-2 mb-2 text-gray-900">{{ post.title }}</h2>
-                        <p class="text-gray-600">{{ post.description }}</p>
-                    </div>
+        <header class="path-card">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">The Linkversity Blog</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                Notes on learning systems, curation, and teaching with links — practical, occasionally opinionated, always short.
+            </p>
+        </header>
+
+        {% if posts %}
+            {% set featured = posts[0] %}
+            {% set rest = posts[1:] %}
+            {% set words = featured.raw_content.split()|length %}
+
+            <a href="{{ url_for('blog.post', slug=featured.slug) }}" class="path-link-card block">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-star"></i> Latest</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ featured.date }} · {{ (words / 200)|round|int if words > 200 else 1 }} min read</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight leading-snug">{{ featured.title }}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">{{ featured.description }}</p>
+                <span class="text-[13px] font-semibold text-[#cc3f3f] mt-4 inline-flex items-center gap-1.5">Read <i class="fas fa-arrow-right text-[10px]"></i></span>
+            </a>
+
+            {% if rest %}
+            <div class="grid gap-3 sm:grid-cols-2">
+                {% for post in rest %}
+                {% set words = post.raw_content.split()|length %}
+                <a href="{{ url_for('blog.post', slug=post.slug) }}" class="path-link-card flex flex-col">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ post.date }} · {{ (words / 200)|round|int if words > 200 else 1 }} min read</span>
+                    <h2 class="text-base font-bold leading-snug mt-2">{{ post.title }}</h2>
+                    <p class="text-[13px] text-gray-500 dark:text-gray-400 mt-2 flex-1">{{ post.description }}</p>
+                    <span class="text-[13px] font-semibold text-[#cc3f3f] mt-4 inline-flex items-center gap-1.5">Read <i class="fas fa-arrow-right text-[10px]"></i></span>
                 </a>
-            </article>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        {% else %}
+            <div class="path-card">
+                <div class="path-empty">
+                    <div class="glyph"><i class="fas fa-feather"></i></div>
+                    <h3>No posts yet</h3>
+                    <p>Articles will show up here once they're published.</p>
+                </div>
+            </div>
+        {% endif %}
+
     </main>
 
-    <footer class="bg-gray-900 text-white py-8 mt-12">
-        <div class="max-w-screen-xl mx-auto px-4 text-center">
-            <p>&copy; 2024 Linkversity. All rights reserved.</p>
+    <footer class="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111318]">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-3 text-[13px] text-gray-500 dark:text-gray-400">
+            <div class="flex items-center gap-2.5">
+                <img src="{{url_for('static', filename='linkversity.png')}}" class="h-6 w-6 rounded-md">
+                <span>Collect links. Order them. Share the path.</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+                <a href="{{ url_for('blog.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Blog</a>
+                <span class="text-gray-300 dark:text-gray-600">·</span>
+                <span>© 2026 Linkversity</span>
+            </div>
         </div>
     </footer>
+
 </body>
 </html>
