@@ -283,6 +283,14 @@ def chrome_ext_auth():
     # Redirect back to Chrome extension with the token
     return redirect(f"{redirect_uri}?token={token}")
 
+def get_request_token():
+    """Token from the Authorization/X-API-Token header, falling back to ?token=."""
+    auth = request.headers.get("Authorization", "")
+    if auth.lower().startswith("bearer "):
+        return auth[7:].strip() or None
+    return request.headers.get("X-API-Token") or request.args.get("token")
+
+
 def get_user_from_token(token):
     if not token:
         return None
@@ -296,7 +304,7 @@ def get_user_from_token(token):
 @module_blueprint.route("/api/paths", methods=["GET"])
 @csrf.exempt
 def api_get_paths():
-    token = request.args.get("token")
+    token = get_request_token()
     user = get_user_from_token(token)
     if not user:
         return jsonify({"error": "Invalid token"}), 401
@@ -311,6 +319,7 @@ def api_get_paths():
         "id": p.id, 
         "title": p.title, 
         "slug": p.slug, 
+        "url": f"/{user.username}/{p.slug}",
         "is_visible": p.is_visible,
         "is_password_protected": p.is_password_protected,
         "section_count": len(p.sections)
@@ -326,7 +335,7 @@ def api_get_paths():
 @module_blueprint.route("/api/sections", methods=["GET"])
 @csrf.exempt
 def api_get_sections():
-    token = request.args.get("token")
+    token = get_request_token()
     path_id = request.args.get("path_id")
     user = get_user_from_token(token)
     if not user:
@@ -448,7 +457,7 @@ def api_create_section():
 @csrf.exempt
 def api_save_link():
     data = request.get_json()
-    token = data.get("token")
+    token = data.get("token") or get_request_token()
     url = data.get("url")
     section_id = data.get("section_id")
     title = data.get("title") # Optional
