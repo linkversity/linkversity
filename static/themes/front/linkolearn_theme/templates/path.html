@@ -1,537 +1,618 @@
 {%set active_page='path'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
 
+{% macro link_row(link, section, can_edit, index) %}
+<li class="links group">
+    <div class="flex items-start gap-3 py-2.5 px-3 -mx-3 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/60">
+        <span class="path-num">{{ index }}</span>
+        <div class="min-w-0 flex-1">
+            {% if link.url.startswith('[') %}
+                {% set extract = path.extract_link(link.url) %}
+                <a href="{{ extract.href }}" target="_blank" rel="noopener noreferrer" class="path-link">{{ extract.text }}</a>
+            {% else %}
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="path-link break-all">{{ link.url }}</a>
+            {% endif %}
+        </div>
+        {% if can_edit %}
+        <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button class="path-tool" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="Move link">
+                <i class="fa fa-exchange-alt"></i>
+            </button>
+            {% if current_user.is_pro() %}
+            <button class="path-tool" onclick="generatePreview(this, '{{ link.id }}')" title="Generate preview">
+                <i class="fa fa-search"></i>
+                <i class="fa fa-spinner fa-spin hidden"></i>
+            </button>
+            {% else %}
+            <a href="{{ url_for('new.activate') }}" class="path-tool" title="Upgrade to Pro to generate previews">
+                <i class="fa fa-star"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if link.title or link.description or link.image_url %}
+    <div class="path-preview group relative ml-9 mb-2">
+        {% if can_edit %}
+        <button class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-red-500 hover:border-red-200 text-xs flex items-center justify-center transition-colors" onclick="removePreview('{{ link.id }}')" title="Remove preview">
+            <i class="fa fa-times"></i>
+        </button>
+        {% endif %}
+        {% if link.image_url %}
+        <div class="w-full sm:w-40 h-28 overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <img src="{{ link.image_url }}" alt="{{ link.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        </div>
+        {% endif %}
+        <div class="p-4 flex flex-col justify-center flex-1 min-w-0">
+            {% if link.title %}
+            <h5 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1 line-clamp-2 leading-snug">{{ link.title }}</h5>
+            {% endif %}
+            {% if link.description %}
+            <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">{{ link.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</li>
+{% endmacro %}
+
 {% macro render_sections(path, can_edit) %}
     {% for section in path.sections %}
-        <div class="section-container" data-section-id="{{ section.id }}">
-            <div class="flex items-center justify-between mb-4">
-                <h4 class="text-xl font-bold text-gray-900 pl-3">{{ section.title or 'Untitled Section' }}</h4>
+        <section class="path-card section-container" data-section-id="{{ section.id }}">
+            <div class="flex items-center justify-between gap-3 mb-1">
+                <div class="min-w-0">
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ section.title or 'Untitled Section' }}</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ section.links|length }} link{{ '' if section.links|length == 1 else 's' }}</p>
+                </div>
                 {% if can_edit %}
-                <button onclick="toggleAddLinkForm('{{ section.id }}')" class="text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-md transition">
-                    <i class="fa fa-plus mr-1"></i> Add Link
+                <button onclick="toggleAddLinkForm('{{ section.id }}')" class="path-pill shrink-0">
+                    <i class="fa fa-plus text-[10px]"></i> Add link
                 </button>
                 {% endif %}
             </div>
-            
+
             {% if can_edit %}
-            <div id="add-link-form-{{ section.id }}" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="space-y-3">
-                    <input type="text" id="new-link-url-{{ section.id }}" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter URL or [Link Text](url)">
-                    <div class="flex gap-2">
-                        <button onclick="addLinkToSection('{{ section.id }}')" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
-                            Add
-                        </button>
-                        <button onclick="toggleAddLinkForm('{{ section.id }}')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">
-                            Cancel
-                        </button>
-                    </div>
+            <div id="add-link-form-{{ section.id }}" class="hidden my-3 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700">
+                <input type="text" id="new-link-url-{{ section.id }}" class="path-input mb-2" placeholder="https://… or [Link text](url)" onkeydown="if (event.key === 'Enter') { event.preventDefault(); addLinkToSection('{{ section.id }}'); }">
+                <div class="flex gap-2">
+                    <button onclick="addLinkToSection('{{ section.id }}')" class="path-btn-primary text-xs px-3 py-1.5">Add</button>
+                    <button onclick="toggleAddLinkForm('{{ section.id }}')" class="path-pill">Cancel</button>
                 </div>
             </div>
             {% endif %}
-            
-            <ol class="list-decimal list-inside space-y-6">
-                {% for link in section.links %}
-                <li class="links text-sm text-blue-600 break-words relative">
-                    <div>
-                        {% if link.url.startswith('[') %}
-                            {% set extract = path.extract_link(link.url) %}
-                            <a href="{{ extract.href }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800 font-semibold underline decoration-blue-300 underline-offset-4 transition-colors">{{ extract.text }}</a>
-                        {% else %}
-                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-800 font-semibold underline decoration-blue-300 underline-offset-4 transition-colors">{{ link.url }}</a>
-                        {% endif %}
-                    </div>
-                    {% if can_edit %}
-                        <div class="flex items-center mt-2">
-                            <button class="text-xs bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-md" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="moving links">
-                                <i class="fa fa-exchange-alt"></i>
-                            </button>
-                            {% if current_user.is_pro() %}
-                            <button class="ml-2 text-xs bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-md" onclick="generatePreview(this, '{{ link.id }}')" title="Generate Preview">
-                                <i class="fa fa-search"></i>
-                                <i class="fa fa-spinner fa-spin hidden"></i>
-                            </button>
-                            {% else %}
-                            <a href="{{ url_for('new.activate') }}" class="ml-2 text-xs bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-1 rounded-md" title="Upgrade to Pro to generate previews">
-                                <i class="fa fa-star"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    {% endif %}
 
-                    {% if link.title or link.description or link.image_url %}
-                        <div class="mt-3 ml-6 flex flex-col sm:flex-row bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300 max-w-2xl group relative">
-                            {% if can_edit %}
-                            <button class="absolute top-1 right-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 p-1 rounded-md" onclick="removePreview('{{ link.id }}')" title="Remove Preview">
-                                <i class="fa fa-times"></i>
-                            </button>
-                            {% endif %}
-                            {% if link.image_url %}
-                            <div class="sm:w-1/3 h-24 sm:h-24 overflow-hidden">
-                                <img src="{{ link.image_url }}" alt="{{ link.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                            </div>
-                            {% endif %}
-                            <div class="p-4 flex flex-col justify-center sm:w-2/3">
-                                {% if link.title %}
-                                <h5 class="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{{ link.title }}</h5>
-                                {% endif %}
-                                {% if link.description %}
-                                <p class="text-xs text-gray-500 line-clamp-3 leading-relaxed">{{ link.description }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </li>
+            {% if section.links|length > 0 %}
+            <ol class="mt-1 divide-y divide-gray-100 dark:divide-gray-800">
+                {% for link in section.links %}
+                    {{ link_row(link, section, can_edit, loop.index) }}
                 {% endfor %}
             </ol>
-            {% if section.links|length == 0 %}
-            <div class="text-center py-8 text-gray-400">
-                <p class="text-sm">No links yet. Click "Add Link" to get started.</p>
+            {% else %}
+            <div class="text-center py-8 text-gray-400 dark:text-gray-500 mt-2">
+                <i class="fa fa-link text-xl mb-2 block"></i>
+                <p class="text-sm">{% if can_edit %}No links yet — add the first one.{% else %}No links yet.{% endif %}</p>
             </div>
             {% endif %}
-        </div>
-        <div class="my-6 border-t border-gray-200"></div>
+        </section>
     {% endfor %}
 {% endmacro %}
 
-{%block head%}
-<title>{{path.slug.replace('-', ' ')}}</title>
+{% block head %}
+<title>{{ (path.title or path.slug).replace('-', ' ') }} · Linkversity</title>
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ path.title or path.slug }}">
+<meta property="og:url" content="{{ request.host_url.rstrip('/') ~ path.get_url() }}">
+<meta name="twitter:card" content="summary">
 <style>
-    .relative {
-        position: relative;
+    .relative { position: relative; }
+
+    .path-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .05);
+    }
+    .path-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #374151;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: border-color .15s ease, background .15s ease, color .15s ease;
+        white-space: nowrap;
+    }
+    .path-pill:hover { border-color: #ffd2cd; background: #fff5f4; }
+    .path-pill.on {
+        border-color: #FF8080;
+        background: #fff1f0;
+        color: #b34747;
+    }
+    .path-pill.gold.on {
+        border-color: #e6b800;
+        background: #fffae6;
+        color: #8a6d00;
+    }
+    .path-pill.danger:hover { border-color: #fca5a5; background: #fef2f2; color: #b91c1c; }
+    .path-pill .count { font-variant-numeric: tabular-nums; }
+
+    .path-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FF8080;
+        color: #fff;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 12.5px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .16);
+        transition: background .15s ease;
+        white-space: nowrap;
+    }
+    .path-btn-primary:hover { background: #ef6d6d; }
+    .path-btn-primary:active { background: #e25555; }
+
+    .path-tool {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #6b7280;
+        font-size: 11px;
+        cursor: pointer;
+        transition: color .15s ease, border-color .15s ease;
+    }
+    .path-tool:hover { color: #b34747; border-color: #ffd2cd; }
+
+    .path-input {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        background: #fff;
+        color: #111827;
+    }
+    .path-input:focus { outline: none; border-color: #FF8080; box-shadow: 0 0 0 3px rgba(255, 128, 128, .25); }
+
+    .path-num {
+        flex: 0 0 22px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #f7f7f8;
+        border: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .path-link {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #1f2937;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: color .15s ease, border-color .15s ease;
+    }
+    .path-link:hover { color: #c2410c; border-bottom-color: #ffd2cd; }
+
+    .path-preview {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: box-shadow .2s ease;
+    }
+    .path-preview:hover { box-shadow: 0 10px 24px -14px rgba(17, 24, 39, .35); }
+
+    .path-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f7f7f8;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        padding: 3px 10px 3px 3px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .crown {
+        position: absolute;
+        top: -14px;
+        right: -10px;
+        transform: rotate(12deg);
+        filter: drop-shadow(0 1px 1px rgba(17, 24, 39, .3));
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .path-card { background: #111318; border-color: #1f2430; box-shadow: none; }
+        .path-pill { background: #16191e; border-color: #262b36; color: #d1d5db; }
+        .path-pill:hover { background: #1c2027; border-color: #4b3436; }
+        .path-pill.on { background: #2a1b1c; border-color: #FF8080; color: #ff9d9d; }
+        .path-pill.gold.on { background: #241f0d; border-color: #e6b800; color: #ffd85e; }
+        .path-btn-primary { background: #e25555; box-shadow: none; }
+        .path-btn-primary:hover { background: #ef6d6d; }
+        .path-tool { background: #16191e; border-color: #262b36; color: #9ca3af; }
+        .path-tool:hover { color: #ff9d9d; border-color: #4b3436; }
+        .path-input { background: #0e1013; border-color: #262b36; color: #f3f4f6; }
+        .path-input:focus { border-color: #FF8080; }
+        .path-num { background: #16191e; border-color: #262b36; color: #9ca3af; }
+        .path-link { color: #e5e7eb; }
+        .path-link:hover { color: #ff9d9d; border-bottom-color: #4b3436; }
+        .path-preview { background: #16191e; border-color: #262b36; }
+        .path-chip { background: #16191e; border-color: #262b36; color: #d1d5db; }
     }
 </style>
-{%endblock%}
-{%block body%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg flex flex-col md:flex-row min-h-[300px]">
-        <!-- Profile Section -->
-        <div class="w-full md:w-{%if path.path_user == current_user%}2{%else%}1{%endif%}/6 bg-gray-100 flex flex-col items-center p-6">
-            {% if user.is_pro() %}
-            <div class="absolute transform translate-x-[90%] -translate-y-[20%]">
-                <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" version="1.1" id="svg2" sodipodi:docname="crown-svgrepo-com (2).svg" inkscape:version="1.4 (1:1.4+202410161351+e7c3feb100)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-                    <defs id="defs2" />
-                    <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="1.03875" inkscape:cx="399.51865" inkscape:cy="400" inkscape:window-width="1880" inkscape:window-height="1048" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2" />
-                    <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451L17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#1C274C" id="path1" style="fill:#ffcc00" />
-                    <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#1C274C" id="path2" style="fill:#ffcc00" /> </svg>
+{% endblock %}
+
+{% set likes = path.like_list.users|length if path.like_list else 0 %}
+{% set bookmarked = path.bookmark_list.users|length if path.bookmark_list else 0 %}
+{% set liked = (current_user in path.like_list.users) if path.like_list else False %}
+{% set saved = (current_user in path.bookmark_list.users) if path.bookmark_list else False %}
+{% set ns = namespace(links=0) %}
+{% for s in path.sections %}{% set ns.links = ns.links + s.links|length %}{% endfor %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+    <!-- ============ hero ============ -->
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <a href="{{ url_for('www.user_profile', username=path.path_user.username) }}" class="hover:text-gray-900 dark:hover:text-gray-100">@{{ path.path_user.username }}</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200 truncate">{{ path.title or path.slug }}</span>
+        </nav>
+
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 leading-tight break-words">{{ path.title or path.slug }}</h1>
+                <div class="flex items-center flex-wrap gap-2 mt-3">
+                    <span class="relative inline-block">
+                        {% if user.is_pro() %}
+                        <svg class="crown" width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#ffcc00"/>
+                            <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#ffcc00"/>
+                        </svg>
+                        {% endif %}
+                        <a href="{{ user.get_profile_url() }}" title="{{ path.path_user.username }}'s profile">
+                            <i class="em {{ path.path_user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+                        </a>
+                    </span>
+                    <a href="{{ user.get_profile_url() }}" class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">{{ path.path_user.get_first_name() }} {{ path.path_user.get_last_name() }}</a>
+                    <span class="text-sm text-gray-400 dark:text-gray-500">@{{ path.path_user.username }}</span>
+                    {% if current_user in path.editors %}
+                    <span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fa fa-pencil-alt"></i> Editor</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    {{ path.sections|length }} section{{ '' if path.sections|length == 1 else 's' }}
+                    <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
+                    {{ ns.links }} link{{ '' if ns.links == 1 else 's' }}
+                    {% if path.team_id and team %}
+                    <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
+                    <a href="{{ url_for('linkolearn.enterprise_dashboard') }}" class="hover:text-gray-900 dark:hover:text-gray-100 inline-flex items-center gap-1">
+                        <i class="fas fa-users"></i> {{ team.name }}
+                    </a>
+                    {% endif %}
+                </p>
             </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=path.get_url()) }}" class="path-pill {{ 'on' if liked }}" title="Like this path">
+                    <i class="fa fa-heart {{ 'text-[#e25555]' if liked else 'text-gray-300 dark:text-gray-600' }}"></i>
+                    <span class="count">{{ likes }}</span>
+                </a>
+                <a href="{{ url_for('linkolearn.toggle_bookmark', path_id=path.id, next=path.get_url()) }}" class="path-pill gold {{ 'on' if saved }}" title="Bookmark this path">
+                    <i class="fa fa-bookmark {{ 'text-[#b8860b]' if saved else 'text-gray-300 dark:text-gray-600' }}"></i>
+                    <span class="count">{{ bookmarked }}</span>
+                </a>
+                <button class="path-pill" onclick="copyPathLink(this)" title="Copy link to this path">
+                    <i class="fa fa-link"></i> <span class="copy-label hidden sm:inline">Copy</span>
+                </button>
+            </div>
+        </div>
+
+        {% if current_user == path.path_user %}
+        <!-- owner toolbar -->
+        <div class="flex items-center flex-wrap gap-2 mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}" class="path-btn-primary">
+                <i class="fa fa-pencil-alt"></i> Edit path
+            </a>
+            {% if current_user.is_pro() %}
+            <a href="{{ url_for('new.upload_document', existing_path_id=path.id) }}" class="path-pill" title="Add links from a document">
+                <i class="fa fa-file-upload"></i> Import
+            </a>
             {% endif %}
-            <i class="em {{user.emoji_class}} w-20 h-20 p-1 rounded-full mb-4 ring-2 ring-gray-300 dark:ring-gray-500"></i>
-            <h2 class="text-lg font-semibold">{{path.path_user.get_first_name()}}</h2>
-            <h2 class="text-lg font-semibold">{{path.path_user.get_last_name()}}</h2>
-            <span class="link">
-                <a href="{{user.get_profile_url()}}" class="text-blue-500 hover:text-blue-700">
-                    @{{path.path_user.username}}
+            <a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}" class="path-pill" title="Toggle visibility">
+                <i class="fa fa-globe-africa"></i> {{ 'Public' if path.is_visible else 'Private' }}
+            </a>
+            <span class="stat-elem inline-flex items-center">
+                <button type="button" class="path-pill rounded-r-none border-r-0" id="pass-but" title="Set a password to protect this path">
+                    <i class="fa fa-key"></i> {{ 'Password on' if path.is_password_protected else 'Protect' }}
+                </button>
+                <input id="pass-input" type="password" class="path-input !w-28 !rounded-l-none !py-[7px] text-xs" placeholder="Password">
+            </span>
+            <a href="{{ url_for('linkolearn.delete_path', path_id=path.id) }}" class="path-pill danger" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete this path">
+                <i class="fa fa-trash"></i> Delete
+            </a>
+        </div>
+        {% endif %}
+
+        {% if current_user != path.path_user and current_user in path.editors %}
+        <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}" class="path-btn-primary">
+                <i class="fa fa-pencil-alt"></i> Edit path
+            </a>
+        </div>
+        {% endif %}
+    </header>
+
+    {% if current_user == path.path_user %}
+    <!-- ============ manage (owner) ============ -->
+    <div class="path-card">
+        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3"><i class="fa fa-users-cog mr-1.5 text-gray-400"></i>Manage access</h4>
+        {% if current_user.is_pro() %}
+        <form action="{{ url_for('linkolearn.add_editor') }}" method="POST" class="flex items-end gap-2 flex-wrap">
+            <div class="flex-1 min-w-[180px]">
+                <label for="editor-name" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Add editor by username</label>
+                <input type="text" id="editor-name" name="username" class="path-input" placeholder="username">
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                <input type="hidden" name="path_id" value="{{path.id}}">
+            </div>
+            <button type="submit" class="path-pill mb-0.5">Add editor</button>
+        </form>
+        {% else %}
+        <p class="text-xs text-gray-500 dark:text-gray-400">Editors are a Pro feature. <a href="{{ url_for('new.activate') }}" class="text-[#c2410c] hover:underline">Upgrade</a> to collaborate.</p>
+        {% endif %}
+
+        {% if path.editors|length > 0 %}
+        <div class="flex flex-wrap gap-2 mt-4">
+            {% for editor in path.editors %}
+            <span class="path-chip">
+                <span class="inline-flex items-center justify-center w-6 h-6 bg-white dark:bg-gray-800 rounded-full p-0.5 border border-gray-200 dark:border-gray-700">
+                    <i class="em {{ editor.emoji_class }}"></i>
+                </span>
+                {{ editor.username }}
+                <a href="{{ url_for('linkolearn.remove_editor', username=editor.username, path_id=path.id) }}" onclick="return confirm('Remove editor {{ editor.username }}?')" class="text-gray-400 hover:text-red-500 ml-1" title="Remove editor">
+                    <i class="fas fa-times"></i>
                 </a>
             </span>
-            {% if path.team_id and team %}
-            <div class="mt-2 flex flex-wrap gap-2">
-                <span class="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
-                    <i class="fas fa-building"></i> Team Path
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if path.team_id and team and is_team_member %}
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <h5 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"><i class="fas fa-crown text-[#ffcc00] mr-1"></i>Team</h5>
+            <div class="flex flex-wrap gap-2">
+                <span class="path-chip">
+                    <i class="em {{ path.path_user.emoji_class }}"></i>
+                    {{ path.path_user.username }} (owner)
                 </span>
-                <a href="{{ url_for('linkolearn.enterprise_dashboard') }}" class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full hover:bg-blue-200">
-                    <i class="fas fa-users"></i> {{ team.name }}
-                </a>
+                {% for member in team_members %}
+                <span class="path-chip">
+                    <i class="em {{ member.user.emoji_class if member.user else '' }}"></i>
+                    {{ member.user.username if member.user else 'User #' + member.user_id|string }} ({{ member.role }})
+                </span>
+                {% endfor %}
             </div>
-            {% endif %}
-            {%if path.path_user == current_user%}
-                <br>
-                <a href="/linkolearn/settings">
-                    <button type="button" class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
-                        <i class="fa fa-wrench"></i>
-                    </button>
-                </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
-                {% if current_user.is_pro() %}
-                    <form action="{{url_for('linkolearn.add_editor')}}" method="POST">
-                        <div class="mb-3">
-                            <label for="editor-name" class="block text-gray-700 font-semibold mb-1">Editor</label>
-                            <input type="text" id="editor-name" name="username" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter username">
-                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                            <input type="hidden" name="path_id" value="{{path.id}}">
-                        </div>
-                        <div class="flex justify-center">
-                            <button type="submit" class="bg-blue-500 text-white text-sm px-2 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Add Editor
-                            </button>
-                        </div>
-                    </form>
+    <!-- ============ sections ============ -->
+    {% if current_user == path.path_user or current_user in path.editors or not path.is_password_protected or has_entered_password %}
+        {{ render_sections(path, current_user in path.editors or current_user == path.path_user) }}
+    {% else %}
+    <div class="path-card text-center py-12">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 mb-3">
+            <i class="fa fa-lock"></i>
+        </div>
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">This path is password protected</p>
+        <form class="max-w-xs mx-auto" onsubmit="return false;">
+            <input id="check-pass-input" class="form-control path-input text-center mb-2" type="password" name="password" placeholder="Password" required>
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <button id="check-pass-but" class="path-btn-primary w-full justify-center">Unlock</button>
+        </form>
+    </div>
+    {% endif %}
 
+</div>
 
-                     <br>
-                    <h4>Editors</h4>
-                    <div>
-                        {% for editor in path.editors %}
-                        <div class="inline-flex items-center space-x-2 m-1">
-                            <span class="inline-flex items-center rounded-full text-xs font-medium leading-4 bg-blue-100 text-blue-800 pr-2">
-                                <span class="inline-flex items-center justify-center w-6 h-6 bg-white rounded-full p-0.5 mr-1">
-                                    <i class="em {{editor.emoji_class}}"></i>
-                                </span>
-                                {{editor.username}}
-                                <a href="{{url_for('linkolearn.remove_editor', username=editor.username, path_id=path.id)}}" onclick="return confirm('Are you sure you want to remove editor: {{editor.username}}?')" class="ml-2 text-red-500 hover:text-red-700">
-                                    <i class="fas fa-times"></i> <!-- Font Awesome Cross Icon -->
-                                </a>
-                            </span>
-                        </div>
-                        {%endfor%}
-                    </div>
-                {%endif%}
-                
-                {% if path.team_id and team and (is_team_member or path.path_user == current_user) %}
-                <div class="mt-4">
-                    <h4 class="text-sm font-semibold text-purple-700 mb-2">
-                        <i class="fas fa-users mr-1"></i> Team Members
-                    </h4>
-                    <div class="flex flex-wrap gap-2">
-                        <div class="inline-flex items-center rounded-full text-xs font-medium bg-purple-100 text-purple-800 pr-2">
-                            <span class="inline-flex items-center justify-center w-6 h-6 bg-white rounded-full p-0.5 mr-1">
-                                <i class="fas fa-crown text-yellow-500"></i>
-                            </span>
-                            {{ path.path_user.username }} (Owner)
-                        </div>
-                        {% for member in team_members %}
-                        <div class="inline-flex items-center rounded-full text-xs font-medium bg-purple-100 text-purple-800 pr-2">
-                            <span class="inline-flex items-center justify-center w-6 h-6 bg-white rounded-full p-0.5 mr-1">
-                                <i class="em {{member.user.emoji_class if member.user else ''}}"></i>
-                            </span>
-                            {{ member.user.username if member.user else 'User #' + member.user_id|string }} ({{ member.role }})
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif%}
-
-            {%else%}
-                {% if current_user in path.editors %}
-                    <br>
-                    <div class="flex items-center bg-blue-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-                        <i class="fas fa-pencil-alt mr-2"></i>
-                        <span>editor</span>
-                    </div>
-                {% endif %}
-            {%endif%}
-
-
-
-           
-        </div> <!-- end -->
-        <!-- Info Section -->
-        <div class="w-full md:w-{%if path.path_user == current_user%}4{%else%}5{%endif%}/6 flex flex-col flex-grow">
-            <!-- Top Section -->
-            <div class="p-6 border-b flex-grow">
-                <nav class="text-sm text-gray-500 mb-4">
-                    <a href="{{ url_for('www.index') }}" class="hover:text-blue-600">Home</a>
-                    <span class="mx-2">›</span>
-                    <a href="{{ url_for('www.user_profile', username=path.path_user.username) }}" class="hover:text-blue-600">@{{ path.path_user.username }}</a>
-                    <span class="mx-2">›</span>
-                    <span class="text-gray-700">{{ path.title or path.slug }}</span>
-                </nav>
-                {% set username = path.path_user.username %}
-                <h3 class="text-3xl font-semibold text-gray-800">
-                    <a href="{{ url_for('www.user_profile', username=username) }}" class="text-blue-600 hover:text-blue-800">
-                        {{ username }}
-                    </a>
-                    <span class="text-gray-600">/ {{ path.slug }}</span>
-                </h3>
-                <br>
-                <div class="space-y-2">
-                    <a href="{{ url_for('linkolearn.toggle_like', path_id=path.id, next=path.get_url()) }}" class="inline-flex">
-                        <!-- Like Button -->
-                        <button type="button" class="text-white font-medium text-xs p-1.5 text-center inline-flex items-center 
-        rounded-br-none rounder-tr-none rounded-bl-md rounded-tl-md
-        {% if current_user in path.like_list.users %} bg-green-600 hover:bg-green-700 focus:ring-2 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 
-        {% else %} bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800 {% endif %}">
-                            <i class="fa fa-heart text-xs"></i>
-                            <span class="sr-only">Like</span>
-                        </button>
-                        <!-- Like Count Button -->
-                        <button type="button" class="p-1.5 text-xs font-medium inline-flex items-center bg-white text-gray-700 border 
-        rounded-tr-md rounded-br-md rounded-tl-none rounded-bl-none
-        {% if current_user in path.like_list.users %} border-green-600 focus:ring-2 focus:ring-green-300 dark:border-green-500 dark:focus:ring-green-800 
-        {% else %} border-blue-600 focus:ring-2 focus:ring-blue-300 dark:border-blue-500 dark:focus:ring-blue-800 {% endif %}">
-                            {{ len(path.like_list.users) }}
-                        </button>
-                    </a>
-                    <a href="{{ url_for('linkolearn.toggle_bookmark', path_id=path.id, next=path.get_url()) }}" class="inline-flex">
-                        <!-- Bookmark Button -->
-                        <button type="button" class="text-white font-medium text-xs p-1.5 text-center inline-flex items-center 
-        rounded-br-none rounded-tr-none rounded-bl-md rounded-tl-md
-        {% if current_user in path.bookmark_list.users %} bg-yellow-600 hover:bg-yellow-700 focus:ring-2 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-500 dark:hover:bg-yellow-600 dark:focus:ring-yellow-800 
-        {% else %} bg-gray-600 hover:bg-gray-700 focus:ring-2 focus:outline-none focus:ring-gray-300 dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-800 {% endif %}">
-                            <i class="fa fa-bookmark text-xs"></i>
-                            <span class="sr-only">Bookmark</span>
-                        </button>
-                        <!-- Bookmark Count Button -->
-                        <button type="button" class="p-1.5 text-xs font-medium inline-flex items-center bg-white text-gray-700 border 
-        rounded-tr-md rounded-br-md rounded-tl-none rounded-bl-none
-        {% if current_user in path.bookmark_list.users %} border-yellow-600 focus:ring-2 focus:ring-yellow-300 dark:border-yellow-500 dark:focus:ring-yellow-800 
-        {% else %} border-gray-600 focus:ring-2 focus:ring-gray-300 dark:border-gray-500 dark:focus:ring-gray-800 {% endif %}">
-                            {{ len(path.bookmark_list.users) }}
-                        </button>
-                    </a>
-                    {% if current_user == path.path_user %}
-                    <!-- Edit Path Button -->
-                    <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}">
-                        <button type="button" class="text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:outline-none focus:ring-red-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-                            <i class="fa fa-pencil-alt text-xs"></i>
-                            <span class="sr-only">Edit Path</span>
-                        </button>
-                    </a>
-                    <!-- Delete Path Button -->
-                    <a href="{{ url_for('linkolearn.delete_path', path_id=path.id) }}">
-                        <button type="button" class="text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:outline-none focus:ring-red-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" onclick="return confirm('Are you sure you want to delete this item?');">
-                            <i class="fa fa-trash text-xs"></i>
-                            <span class="sr-only">Delete Path</span>
-                        </button>
-                    </a>
-                    {% if current_user.is_pro() %}
-                    <!-- Upload Document Button -->
-                    <a href="{{ url_for('new.upload_document', existing_path_id=path.id) }}" title="Add links from document to this path">
-                        <button type="button" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:outline-none focus:ring-indigo-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-indigo-800">
-                            <i class="fa fa-file-upload text-xs"></i>
-                            <span class="sr-only">Add links from document</span>
-                        </button>
-                    </a>
-                    {% endif %}
-                        <!-- Toggle Visibility Button -->
-                        {% if path.is_visible %}
-                        <a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}">
-                            <button type="button" class="text-white bg-green-600 hover:bg-green-700 focus:ring-2 focus:outline-none focus:ring-green-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800">
-                                <i class="fa fa-globe-africa text-xs"></i>
-                                <span class="sr-only">Visible</span>
-                            </button>
-                        </a>
-                        {% else %}
-                        <a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}">
-                            <button type="button" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">
-                                <i class="fa fa-globe-africa text-xs"></i>
-                                <span class="sr-only">Not Visible</span>
-                            </button>
-                        </a>
-                        {% endif %}
-
-                    <!-- Password Protection Toggle -->
-                    <a href="#" class="stat-elem">
-                        <div class="inline-flex items-center">
-                            {%set pass_color = 'blue'%}
-                            {% if path.is_password_protected %}
-                            {%set pass_color = 'green'%}
-                            {%else%}
-                            {%set pass_color = 'blue'%}
-                            {%endif%}
-                            <button type="button" id="pass-but" class="text-white bg-{{pass_color}}-600 hover:bg-{{pass_color}}-700 focus:ring-2 focus:outline-none focus:ring-{{pass_color}}-300 font-medium rounded-l-md text-xs p-1.5 text-center inline-flex items-center dark:bg-{{pass_color}}-500 dark:hover:bg-{{pass_color}}-500 dark:focus:ring-{{pass_color}}-800">
-                                <i class="fa fa-key text-xs"></i>
-                                <span class="sr-only">Password Protection</span>
-                            </button>
-                            <input id="pass-input" type="password" class="bg-white text-dark border border-gray-300 rounded-r-md p-1 focus:outline-none text-xs" placeholder="Password" style="border-left: none; margin-left: -1px;">
-                        </div>
-                    </a>
-
-
-                    {% endif %}
-
-
-                    {% if current_user in path.editors %}
-                    <!-- Edit Path Button -->
-                    <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}">
-                        <button type="button" class="text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:outline-none focus:ring-red-300 font-medium rounded-md text-xs p-1.5 text-center inline-flex items-center me-1 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
-                            <i class="fa fa-pencil-alt text-xs"></i>
-                            <span class="sr-only">Edit Path</span>
-                        </button>
-                    </a>
-                    {% endif %}
-
-
-                </div>
+<!-- ============ move link modal ============ -->
+<div id="move-modal" class="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm overflow-y-auto hidden">
+    <div class="relative top-20 mx-auto p-5 w-[22rem] shadow-xl rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+        <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">Move link</h3>
+        <form id="move-link-form">
+            <input type="hidden" id="link-id" name="link_id">
+            <input type="hidden" id="from-section-id" name="from_section_id">
+            <div class="mb-3">
+                <label for="path-select" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Path</label>
+                <select id="path-select" name="path_id" class="path-input"></select>
             </div>
-            <!-- Bottom Section -->
-            <div class="p-6 flex-grow">
-                <div class="max-w-3xl mx-auto bg-white">
-                    {% if current_user in path.editors or not path.is_password_protected or has_entered_password %}
-                        {{ render_sections(path, current_user in path.editors or current_user == path.path_user) }}
-                    {% else %}
-                        <div class="text-center text-gray-700">
-                            <p>This is password protected! </p>
-                            <form class="mt-4">
-                                <input id="check-pass-input" class="form-control p-2 border border-gray-300 rounded-md w-full" type="password" name="password" placeholder="Password" required><br>
-                                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                                <button id="check-pass-but" class="mt-3 px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">Submit</button>
-                            </form>
-                        </div>
-                    {% endif %}
-                </div>
+            <div class="mb-4">
+                <label for="section-select" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Section</label>
+                <select id="section-select" name="section_id" class="path-input"></select>
             </div>
+        </form>
+        <div class="flex justify-end gap-2">
+            <button id="cancel-move" class="path-pill">Cancel</button>
+            <button id="confirm-move" class="path-btn-primary">Move</button>
         </div>
     </div>
 </div>
 
-<!-- Move Link Modal -->
-<div id="move-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Move Link</h3>
-            <div class="mt-2 px-7 py-3">
-                <form id="move-link-form">
-                    <input type="hidden" id="link-id" name="link_id">
-                    <input type="hidden" id="from-section-id" name="from_section_id">
-                    <div class="mb-4">
-                        <label for="path-select" class="block text-sm font-medium text-gray-700">Path</label>
-                        <select id="path-select" name="path_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label for="section-select" class="block text-sm font-medium text-gray-700">Section</label>
-                        <select id="section-select" name="section_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <!-- Sections will be populated by JavaScript -->
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button id="cancel-move" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                    Cancel
-                </button>
-                <button id="confirm-move" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Move
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{%if not current_user.is_authenticated%}
-<br><br>
-<div class="fixed bottom-0 left-0 right-0 bg-blue-50 p-4 border-t border-blue-200">
-    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-sm text-blue-900 text-center sm:text-left">
-            Want to create your own? <span class="font-semibold">Sign up in 10 seconds.</span>
+{% if not current_user.is_authenticated %}
+<div class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 p-4">
+    <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-sm text-gray-600 dark:text-gray-300 text-center sm:text-left">
+            Want to create your own path? <span class="font-semibold text-gray-900 dark:text-gray-100">It takes 10 seconds.</span>
         </p>
-        <a href="/#reg-form" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors whitespace-nowrap">
-            Sign Up
-        </a>
+        <a href="/#reg-form" class="path-btn-primary">Sign up</a>
     </div>
 </div>
-{%endif%}
+<div class="h-20"></div>
+{% endif %}
+
 <script type="text/javascript">
-document.addEventListener("DOMContentLoaded", function() { 
+document.addEventListener("DOMContentLoaded", function() {
     {% if current_user == path.path_user %}
 
-    // Get the password button and input
+    // Set / update the path password
     const passwordButton = document.querySelector("#pass-but");
     const passwordInput = document.querySelector("#pass-input");
 
-    // Attach event listener to the button
-    passwordButton.addEventListener("click", function() {
-        event.preventDefault();
-
-        const pathId = "{{path.id}}"; // Assuming path_id is stored as a data attribute
-        const password = passwordInput.value.trim();
-
-
-        // Perform an AJAX POST request
-        const formData = new FormData();
-        formData.append("password", password); // Add password field
-        formData.append("csrf_token", '{{csrf_token()}}'); // Add CSRF token
-        fetch(`{{url_for('linkolearn.toggle_password', path_id=path.id)}}`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": '{{csrf_token()}}'
-                },
-                body: formData,
-            })
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error("Failed to toggle password protection.");
-                }
-            })
-            .then((data) => {
-                if (data.status === "success") {
-                    alert("Password protection toggled successfully!");
-                    // Optionally reload or update UI dynamically
-                    window.location.reload();
-                } else {
-                    alert("Error toggling password protection.");
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                // alert("An error occurred while toggling password protection."+password);
-            });
-    });
-
-    {% endif %}
-
-
-    {% if path.is_password_protected %}
-
-        {% if has_entered_password == False %}
-
-        const passwordCheckButton = document.querySelector("#check-pass-but");
-        const passwordCheckInput = document.querySelector("#check-pass-input");
-
-
-
-        passwordCheckButton.addEventListener("click", function(event) {
-
+    if (passwordButton && passwordInput) {
+        passwordButton.addEventListener("click", function(event) {
             event.preventDefault();
-            const password = passwordCheckInput.value.trim();
-            const formDataC = new FormData();
-            formDataC.append("password", password); // Add password field
-            formDataC.append("csrf_token", '{{csrf_token()}}'); // Add CSRF token
 
-            const pathId = "{{path.id}}"; // Assuming path_id is stored as a data attribute
+            const password = passwordInput.value.trim();
+            const formData = new FormData();
+            formData.append("password", password);
+            formData.append("csrf_token", '{{csrf_token()}}');
 
-
-            // Perform an AJAX POST request
-            fetch(`{{url_for('linkolearn.check_password', path_id=path.id)}}`, {
+            fetch(`{{url_for('linkolearn.toggle_password', path_id=path.id)}}`, {
                     method: "POST",
-                    headers: {
-                        "X-CSRFToken": '{{csrf_token()}}'
-                    },
-                    body: formDataC,
+                    headers: { "X-CSRFToken": '{{csrf_token()}}' },
+                    body: formData,
                 })
                 .then((response) => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error("Failed to check password");
-                    }
+                    if (response.ok) { return response.json(); }
+                    throw new Error("Failed to toggle password protection.");
                 })
                 .then((data) => {
                     if (data.status === "success") {
-                        alert("Password checked successfully!");
-                        // Optionally reload or update UI dynamically
                         window.location.reload();
                     } else {
-                        alert("Error checking pass");
+                        alert("Error toggling password protection.");
                     }
                 })
-                .catch((error) => {
-                    console.error(error);
-                    // alert("An error occurred while checking."+password);
-                });
+                .catch((error) => console.error(error));
         });
-
-        {% endif %}
+    }
 
     {% endif %}
 
-    // Function to get CSRF token from cookies
-    function getCsrfToken() {
-        const name = "csrf_token=";
-        const decodedCookie = decodeURIComponent(document.cookie);
-        const cookies = decodedCookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            let cookie = cookies[i].trim();
-            if (cookie.indexOf(name) === 0) {
-                return cookie.substring(name.length, cookie.length);
-            }
-        }
-        return "";
+    {% if path.is_password_protected and has_entered_password == False %}
+
+    const passwordCheckButton = document.querySelector("#check-pass-but");
+    const passwordCheckInput = document.querySelector("#check-pass-input");
+
+    if (passwordCheckButton && passwordCheckInput) {
+        passwordCheckButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            const formDataC = new FormData();
+            formDataC.append("password", passwordCheckInput.value.trim());
+            formDataC.append("csrf_token", '{{csrf_token()}}');
+
+            fetch(`{{url_for('linkolearn.check_password', path_id=path.id)}}`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": '{{csrf_token()}}' },
+                    body: formDataC,
+                })
+                .then((response) => {
+                    if (response.ok) { return response.json(); }
+                    throw new Error("Failed to check password");
+                })
+                .then((data) => {
+                    if (data.status === "success") {
+                        window.location.reload();
+                    } else {
+                        alert("Incorrect password.");
+                    }
+                })
+                .catch((error) => console.error(error));
+        });
     }
+
+    {% endif %}
 });
 
+// ---- inline add link (owner/editor) ----
+function toggleAddLinkForm(sectionId) {
+    const form = document.getElementById("add-link-form-" + sectionId);
+    if (form) {
+        form.classList.toggle("hidden");
+        const input = form.querySelector("input[type='text']");
+        if (input && !form.classList.contains("hidden")) input.focus();
+    }
+}
+
+function addLinkToSection(sectionId) {
+    const input = document.getElementById("new-link-url-" + sectionId);
+    const raw = input.value.trim();
+    if (!raw) return;
+
+    const formData = new FormData();
+    formData.append("section_id", sectionId);
+    formData.append("url", raw);
+    formData.append("csrf_token", '{{csrf_token()}}');
+
+    fetch(`{{ url_for('linkolearn.add_link') }}`, {
+        method: "POST",
+        headers: { "X-CSRFToken": '{{csrf_token()}}' },
+        body: formData,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || "Could not add the link.");
+        }
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred while adding the link.");
+    });
+}
+
+// ---- copy link ----
+function copyPathLink(btn) {
+    const label = btn.querySelector(".copy-label");
+    const done = () => {
+        if (!label) return;
+        const prev = label.textContent;
+        label.textContent = "Copied!";
+        setTimeout(() => { label.textContent = prev; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href).then(done).catch(() => prompt("Copy this link:", window.location.href));
+    } else {
+        prompt("Copy this link:", window.location.href);
+    }
+}
+
+// ---- move link modal ----
 function openMoveModal(linkId, sectionId) {
     document.getElementById('link-id').value = linkId;
     document.getElementById('from-section-id').value = sectionId;
@@ -551,7 +632,6 @@ function openMoveModal(linkId, sectionId) {
                 }
                 pathSelect.appendChild(option);
             });
-            // Trigger change event to populate sections for the selected path
             pathSelect.dispatchEvent(new Event('change'));
         });
 
@@ -589,9 +669,7 @@ document.getElementById('confirm-move').addEventListener('click', function() {
     fetch('/linkolearn/move_link', {
         method: 'POST',
         body: formData,
-        headers: {
-            'X-CSRFToken': '{{csrf_token()}}'
-        }
+        headers: { 'X-CSRFToken': '{{csrf_token()}}' }
     })
     .then(response => response.json())
     .then(data => {
@@ -607,6 +685,7 @@ document.getElementById('confirm-move').addEventListener('click', function() {
     });
 });
 
+// ---- link previews ----
 function generatePreview(button, linkId) {
     const searchIcon = button.querySelector('.fa-search');
     const spinnerIcon = button.querySelector('.fa-spinner');
