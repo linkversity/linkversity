@@ -508,6 +508,7 @@ def enterprise_dashboard():
     members = []
     analytics = []
     domains = []
+    team_paths = []
 
     if team:
         members = EnterpriseTeamMember.query.filter_by(team_id=team.id).all()
