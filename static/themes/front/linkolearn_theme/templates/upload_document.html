@@ -1,74 +1,100 @@
 {% extends 'linkolearn_theme/templates/base.html' %}
+{% from 'linkolearn_theme/templates/blocks/visibility.html' import vis_switch %}
 {% block head %}
-<title>Upload Document</title>
+<title>Extract from document · Linkversity</title>
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
 crossorigin="anonymous"></script>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
 <style>
     .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
+        border: 3px solid #f3d5d5;
+        border-top: 3px solid #cc3f3f;
         border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 2s linear infinite;
+        width: 22px;
+        height: 22px;
+        animation: spin 1s linear infinite;
         display: inline-block;
         vertical-align: middle;
-        margin-left: 10px;
+        margin-left: 12px;
     }
-
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    .hidden {
-        display: none;
+    .hidden { display: none; }
+
+    input[type="file"].path-input { padding: 10px 12px; }
+
+    @media (prefers-color-scheme: dark) {
+        .loader { border-color: #4b3436; border-top-color: #ff9d9d; }
     }
 </style>
 {% endblock %}
 {% block body %}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4">Extract links from document</h2>
-        <form id="upload-document-form" enctype="multipart/form-data" class="space-y-4">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <a href="{{ url_for('new.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Create</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Upload</span>
+        </nav>
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Extract links from a document</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">Upload a .txt, .html or .md file and every link inside becomes a path entry.</p>
+            </div>
+            <span class="relative inline-block flex-none">
+                {% if current_user.is_enterprise() %}
+                {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                {% elif current_user.is_pro() %}
+                {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                {% endif %}
+                <i class="em {{ current_user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+            </span>
+        </div>
+    </header>
+
+    <div class="path-card">
+        <form id="upload-document-form" enctype="multipart/form-data" class="space-y-5">
             <div>
-                <label for="existing_path_id" class="block text-sm font-medium text-gray-700">Add to existing path (optional)</label>
-                <select id="existing_path_id" name="existing_path_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                    <option value="none">Create New Path</option>
+                <label for="existing_path_id" class="path-label">Add to an existing path <span class="font-normal text-gray-400">(optional)</span></label>
+                <select id="existing_path_id" name="existing_path_id" class="path-input w-full">
+                    <option value="none">Create a new path</option>
                     {% for path in user_paths %}
                         <option value="{{ path.id }}" {% if selected_path_id|string == path.id|string %}selected{% endif %}>{{ path.title }} ({{ path.slug }})</option>
                     {% endfor %}
                 </select>
             </div>
+
             <div id="path_title_container" {% if selected_path_id %}style="display: none;"{% endif %}>
-                <label for="path_title" class="block text-sm font-medium text-gray-700">Path Title</label>
-                <input type="text" id="path_title" name="path_title"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                       placeholder="e.g. My Awesome Path">
+                <label for="path_title" class="path-label">New path title</label>
+                <input type="text" id="path_title" name="path_title" class="path-input w-full"
+                       placeholder="e.g. Mastering Advanced English">
             </div>
+
             <div>
-                <label for="document" class="block text-sm font-medium text-gray-700">Select Document</label>
-                <input type="file" id="document" name="document" accept=".txt,.html,.md"
-                       class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
-                <p class="mt-1 text-sm text-gray-500">Supported formats: .txt, .html, .md</p>
+                <label for="document" class="path-label">Document</label>
+                <input type="file" id="document" name="document" accept=".txt,.html,.md" class="path-input w-full">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Supported formats: .txt, .html, .md</p>
             </div>
-            <div>
-                <div class="flex items-center">
-                    <input id="disable_preview" name="disable_preview" type="checkbox"
-                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="disable_preview" class="ml-2 block text-sm text-gray-900">
-                        Disable Link Previews
-                    </label>
-                </div>
-            </div>
-            <div class="flex items-center">
-                <button type="submit" id="submit-btn"
-                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Upload and Create Path
+
+            <label for="disable_preview" class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                <input id="disable_preview" name="disable_preview" type="checkbox" class="accent-[#cc3f3f] w-4 h-4">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Disable link previews</span>
+            </label>
+
+            <div class="flex items-center pt-1">
+                <button type="submit" id="submit-btn" class="path-btn-primary">
+                    <i class="fa fa-file-upload"></i> Upload and create path
                 </button>
                 <div id="loading-spinner" class="loader hidden"></div>
             </div>
         </form>
     </div>
+
 </div>
 
 <script type="text/javascript">
@@ -83,7 +109,7 @@ crossorigin="anonymous"></script>
     $("#upload-document-form").submit(function(e) {
         e.preventDefault();
         var formData = new FormData(this);
-        
+
         $("#submit-btn").prop("disabled", true);
         $("#loading-spinner").removeClass("hidden");
 
