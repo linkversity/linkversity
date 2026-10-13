@@ -1,5 +1,6 @@
 {%set active_page='profile'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
+{% from 'linkolearn_theme/templates/blocks/visibility.html' import vis_switch %}
 
 {%block head%}
 <title>{{ user.username }} · Linkversity</title>
@@ -13,7 +14,9 @@
         <div class="flex items-start justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0">
                 <span class="relative inline-block flex-none">
-                    {% if user.is_pro() %}
+                    {% if user.is_enterprise() %}
+                    {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                    {% elif user.is_pro() %}
                     {% include 'linkolearn_theme/templates/blocks/crown.html' %}
                     {% endif %}
                     <i class="em {{ user.emoji_class }} w-16 h-16 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
@@ -119,20 +122,42 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {% for path in user.paths %}
                 {% if path.is_visible or user == current_user %}
-                <a href="{{ path.get_url() }}" class="path-link-card">
-                    <div class="title truncate">{{ path.title or path.slug }}</div>
-                    <div class="sub truncate">/{{ path.path_user.username }}/{{ path.slug }}</div>
-                    {% if path.is_password_protected or not path.is_visible %}
-                    <div class="badges">
-                        {% if path.is_password_protected %}
-                        <span class="path-badge"><i class="fas fa-lock"></i> Locked</span>
-                        {% endif %}
-                        {% if not path.is_visible %}
-                        <span class="path-badge"><i class="fas fa-eye-slash"></i> Private</span>
+                    {% if user == current_user %}
+                    <div class="path-link-card">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <a href="{{ path.get_url() }}" class="title truncate hover:text-[#cc3f3f]">{{ path.title or path.slug }}</a>
+                                <div class="sub truncate">/{{ path.path_user.username }}/{{ path.slug }}</div>
+                            </div>
+                            {{ vis_switch(path) }}
+                        </div>
+                        {% if path.is_password_protected or not path.is_visible %}
+                        <div class="badges">
+                            {% if path.is_password_protected %}
+                            <span class="path-badge"><i class="fas fa-lock"></i> Locked</span>
+                            {% endif %}
+                            {% if not path.is_visible %}
+                            <span class="path-badge"><i class="fas fa-eye-slash"></i> Private</span>
+                            {% endif %}
+                        </div>
                         {% endif %}
                     </div>
+                    {% else %}
+                    <a href="{{ path.get_url() }}" class="path-link-card">
+                        <div class="title truncate">{{ path.title or path.slug }}</div>
+                        <div class="sub truncate">/{{ path.path_user.username }}/{{ path.slug }}</div>
+                        {% if path.is_password_protected or not path.is_visible %}
+                        <div class="badges">
+                            {% if path.is_password_protected %}
+                            <span class="path-badge"><i class="fas fa-lock"></i> Locked</span>
+                            {% endif %}
+                            {% if not path.is_visible %}
+                            <span class="path-badge"><i class="fas fa-eye-slash"></i> Private</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </a>
                     {% endif %}
-                </a>
                 {% endif %}
             {% endfor %}
         </div>

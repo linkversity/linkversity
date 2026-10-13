@@ -139,6 +139,9 @@ def check_password(path_id):
 @login_required
 def toggle_visibility(path_id):
     path = Path.query.get(path_id)
+    if not path.can_edit(current_user):
+        flash("Insufficient permission", "warning")
+        return redirect(url_for("www.index"))
     if path.is_visible == True:
         path.is_visible = False
     elif path.is_visible == False:
@@ -151,6 +154,20 @@ def toggle_visibility(path_id):
             return redirect(url_for("www.index"))
     else:
         return redirect(url_for("www.index"))
+
+
+@module_blueprint.route("/set-visibility", methods=["POST"])
+@login_required
+def set_visibility():
+    data = request.get_json(silent=True) or {}
+    path = Path.query.get(data.get("path_id"))
+    if not path:
+        return jsonify({"success": False, "error": "Path not found"})
+    if not path.can_edit(current_user):
+        return jsonify({"success": False, "error": "Insufficient permission"})
+    path.is_visible = bool(data.get("visible"))
+    path.update()
+    return jsonify({"success": True, "is_visible": path.is_visible})
 
 
 @module_blueprint.route("/settings", methods=["GET"])

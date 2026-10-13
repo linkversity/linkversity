@@ -1,5 +1,6 @@
 {%set active_page='path'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
+{% from 'linkolearn_theme/templates/blocks/visibility.html' import vis_switch %}
 
 {% macro link_row(link, section, can_edit, index) %}
 <li class="links group">
@@ -132,7 +133,9 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 leading-tight break-words">{{ path.title or path.slug }}</h1>
                 <div class="flex items-center flex-wrap gap-2 mt-3">
                     <span class="relative inline-block">
-                        {% if user.is_pro() %}
+                        {% if user.is_enterprise() %}
+                        {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                        {% elif user.is_pro() %}
                         {% include 'linkolearn_theme/templates/blocks/crown.html' %}
                         {% endif %}
                         <a href="{{ user.get_profile_url() }}" title="{{ path.path_user.username }}'s profile">
@@ -184,9 +187,7 @@
                 <i class="fa fa-file-upload"></i> Import
             </a>
             {% endif %}
-            <a href="{{ url_for('linkolearn.toggle_visibility', path_id=path.id, next=path.get_url()) }}" class="path-pill" title="Toggle visibility">
-                <i class="fa fa-globe-africa"></i> {{ 'Public' if path.is_visible else 'Private' }}
-            </a>
+            {{ vis_switch(path) }}
             <span class="stat-elem inline-flex items-center">
                 <button type="button" class="path-pill rounded-r-none border-r-0" id="pass-but" title="Set a password to protect this path">
                     <i class="fa fa-key"></i> {{ 'Password on' if path.is_password_protected else 'Protect' }}
@@ -200,10 +201,11 @@
         {% endif %}
 
         {% if current_user != path.path_user and current_user in path.editors %}
-        <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800">
+        <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center flex-wrap gap-3">
             <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}" class="path-btn-primary">
                 <i class="fa fa-pencil-alt"></i> Edit path
             </a>
+            {{ vis_switch(path) }}
         </div>
         {% endif %}
     </header>
