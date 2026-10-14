@@ -67,6 +67,11 @@
 
 ### Bug fixes
 
+- Sign-in/register flashes no longer render raw HTML: replaced the legacy
+  `notify_*` wrapper (a Bootstrap alert div + inline `<script>`) with plain
+  text + proper categories, so the toast shows clean text in the right
+  color; also drop the empty `flash('')` gray toasts on register
+- Logout flash now shows as a green success toast
 - Path page no longer 500s for non-Pro owners/editors: the upgrade links
   pointed at a non-existent `new.activate` endpoint (now `www.activate`)
 
