@@ -170,6 +170,24 @@ def set_visibility():
     return jsonify({"success": True, "is_visible": path.is_visible})
 
 
+@module_blueprint.route("/set-preview-policy", methods=["POST"])
+@login_required
+def set_preview_policy():
+    data = request.get_json(silent=True) or {}
+    path = Path.query.get(data.get("path_id"))
+    if not path:
+        return jsonify({"success": False, "error": "Path not found"})
+    if not current_user.is_enterprise() or current_user != path.path_user:
+        return jsonify(
+            {"success": False, "error": "Enterprise path owners only"}
+        )
+    path.disable_previews = bool(data.get("disable"))
+    path.update()
+    return jsonify(
+        {"success": True, "disable_previews": path.disable_previews}
+    )
+
+
 @module_blueprint.route("/settings", methods=["GET"])
 @login_required
 def settings():
@@ -456,6 +474,12 @@ def generate_preview():
 
     if not link:
         return jsonify({"success": False, "error": "Link not found"})
+
+    if link.link_section.section_path.disable_previews:
+        return jsonify(
+            {"success": False,
+             "error": "Link previews are disabled on this path"}
+        )
 
     try:
         import requests

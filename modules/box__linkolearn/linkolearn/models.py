@@ -45,6 +45,8 @@ class Path(PkModel):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("enterprise_teams.id"), nullable=True)
     is_visible = db.Column(db.Boolean, default=True)
+    # enterprise option: no preview generation for links added to this path
+    disable_previews = db.Column(db.Boolean, default=False, server_default="0")
 
     # Password for protection
     _password = db.Column(db.String(128), nullable=True)

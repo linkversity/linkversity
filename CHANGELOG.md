@@ -57,6 +57,19 @@
 - Config via env: `DODO_PAYMENTS_API_KEY`, `DODO_PAYMENTS_WEBHOOK_KEY`,
   `DODO_PAYMENTS_ENVIRONMENT`, `DODO_PRODUCT_ID_PRO`, `DODO_PRODUCT_ID_ENTERPRISE`
 
+### Enterprise
+
+- New per-path option for enterprise owners: **disable link previews** —
+  links added to the path stay plain (no title/image fetch). Toggle lives in
+  the path's Manage access card (`POST /linkolearn/set-preview-policy`,
+  owner + enterprise only); the generate-preview buttons disappear and
+  `generate_preview` refuses server-side while it's off
+
+### Bug fixes
+
+- Path page no longer 500s for non-Pro owners/editors: the upgrade links
+  pointed at a non-existent `new.activate` endpoint (now `www.activate`)
+
 ## 1.1.0
 
 ### Refactor

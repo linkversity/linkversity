@@ -1,6 +1,7 @@
 {%set active_page='path'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
 {% from 'linkolearn_theme/templates/blocks/visibility.html' import vis_switch %}
+{% from 'linkolearn_theme/templates/blocks/preview_toggle.html' import preview_switch %}
 
 {% macro link_row(link, section, can_edit, index) %}
 <li class="links group">
@@ -19,13 +20,13 @@
             <button class="path-tool" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="Move link">
                 <i class="fa fa-exchange-alt"></i>
             </button>
-            {% if current_user.is_pro() %}
+            {% if current_user.is_pro() and not path.disable_previews %}
             <button class="path-tool" onclick="generatePreview(this, '{{ link.id }}')" title="Generate preview">
                 <i class="fa fa-search"></i>
                 <i class="fa fa-spinner fa-spin hidden"></i>
             </button>
-            {% else %}
-            <a href="{{ url_for('new.activate') }}" class="path-tool" title="Upgrade to Pro to generate previews">
+            {% elif not current_user.is_pro() and not path.disable_previews %}
+            <a href="{{ url_for('www.activate') }}" class="path-tool" title="Upgrade to Pro to generate previews">
                 <i class="fa fa-star"></i>
             </a>
             {% endif %}
@@ -225,7 +226,7 @@
             <button type="submit" class="path-pill mb-0.5">Add editor</button>
         </form>
         {% else %}
-        <p class="text-xs text-gray-500 dark:text-gray-400">Editors are a Pro feature. <a href="{{ url_for('new.activate') }}" class="text-[#c2410c] hover:underline">Upgrade</a> to collaborate.</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Editors are a Pro feature. <a href="{{ url_for('www.activate') }}" class="text-[#c2410c] hover:underline">Upgrade</a> to collaborate.</p>
         {% endif %}
 
         {% set editors_list = path.editors.all() %}
@@ -242,6 +243,18 @@
                 </a>
             </span>
             {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if current_user.is_enterprise() %}
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3 flex-wrap">
+            <div class="min-w-0">
+                <h5 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide"><i class="fa fa-eye mr-1 text-gray-400"></i>Link previews</h5>
+                <p id="preview-policy-desc" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {{ 'Off — links added to this path stay plain (no title/image fetch)' if path.disable_previews else 'On — generate previews for any link' }}
+                </p>
+            </div>
+            {{ preview_switch(path) }}
         </div>
         {% endif %}
 
