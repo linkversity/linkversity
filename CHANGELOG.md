@@ -43,8 +43,7 @@
 ### Payments (Dodo)
 
 - Dodo Payments integration for self-serve upgrades: hosted checkout for
-  Pro ($3/month billed yearly) and Enterprise ($10/month), created server-side
-  from `/activate`
+  Pro ($3/year) and Enterprise ($10/year), created server-side from `/activate`
 - New routes: `POST /dodo/checkout` (login + CSRF protected), `GET /dodo/return`
   (acknowledges the redirect; never fulfills), `POST /dodo/webhook`
   (CSRF-exempt, signature-verified)
