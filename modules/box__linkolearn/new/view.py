@@ -63,8 +63,14 @@ def scrape_link_metadata(url):
 @module_blueprint.route("/")
 @login_required
 def index():
+    from modules.box__linkolearn.linkolearn.view import user_organizations
+
     team_id = request.args.get("team_id")
-    return render_template("linkolearn_theme/templates/new.html", team_id=team_id)
+    # any user with orgs (owner or member) gets the picker; others get none
+    orgs = user_organizations(current_user)
+    return render_template(
+        "linkolearn_theme/templates/new.html", team_id=team_id, orgs=orgs
+    )
 
 
 @module_blueprint.route("/check-slug", methods=["GET"])
@@ -100,8 +106,11 @@ def add():
         return jsonify({"errmsg": "Slug should not be empty"})
 
     if team_id:
-        if not current_user.is_enterprise() or current_user.team_id != int(team_id):
-            return jsonify({"errmsg": "Invalid team"})
+        from modules.box__linkolearn.linkolearn.view import user_organizations
+
+        valid_org_ids = {o.id for o in user_organizations(current_user)}
+        if int(team_id) not in valid_org_ids:
+            return jsonify({"errmsg": "Invalid organization"})
         exists = Path.query.filter(
             Path.slug == path_link, Path.team_id == int(team_id)
         ).first()

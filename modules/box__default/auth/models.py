@@ -210,6 +210,8 @@ class EnterpriseTeam(PkModel):
     __tablename__ = "enterprise_teams"
 
     name = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(220), nullable=True, unique=True)
+    logo_url = db.Column(db.String(500), nullable=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime(), nullable=False)
 

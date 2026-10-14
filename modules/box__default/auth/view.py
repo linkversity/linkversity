@@ -55,7 +55,7 @@ def register():
                 print('4.1')
                 flash('Usernames may only contain letters, numbers and dashes', 'error')
                 return redirect(url_for('www.index'))
-            if username.lower() in ['contact', 'about', 'privacy-policy']:
+            if username.lower() in ['contact', 'about', 'privacy-policy', 'org']:
                 print('4.2')
                 flash('That username is reserved', 'error')
                 return redirect(url_for('www.index'))

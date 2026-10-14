@@ -155,8 +155,8 @@
                     {{ ns.links }} link{{ '' if ns.links == 1 else 's' }}
                     {% if path.team_id and team %}
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
-                    <a href="{{ url_for('linkolearn.enterprise_dashboard') }}" class="hover:text-gray-900 dark:hover:text-gray-100 inline-flex items-center gap-1">
-                        <i class="fas fa-users"></i> {{ team.name }}
+                    <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" class="hover:text-gray-900 dark:hover:text-gray-100 inline-flex items-center gap-1">
+                        {% if team.logo_url %}<img src="{{ team.logo_url }}" alt="" class="w-4 h-4 rounded object-cover">{% else %}<i class="fas fa-building"></i>{% endif %} {{ team.name }}
                     </a>
                     {% endif %}
                 </p>

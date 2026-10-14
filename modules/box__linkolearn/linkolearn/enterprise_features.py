@@ -37,9 +37,9 @@ class EnterpriseAuditLog(db.Model):
             details=details,
             ip_address=ip_address,
         )
-        log.save()
         from init import db
 
+        db.session.add(log)
         db.session.commit()
         return log
 

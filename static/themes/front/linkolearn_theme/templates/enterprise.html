@@ -88,9 +88,9 @@
         </nav>
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Enterprise dashboard</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Organizations</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
-                    {% if team %}Manage <span class="font-semibold text-gray-700 dark:text-gray-200">{{ team.name }}</span> — members, analytics, domains and team paths.{% else %}Set up your team to get started.{% endif %}
+                    {% if orgs %}{{ orgs|length }} organization{{ '' if orgs|length == 1 else 's' }} — manage logos, members, analytics, domains and paths.{% else %}Create your first organization to get started.{% endif %}
                 </p>
             </div>
             <span class="relative inline-block flex-none">
@@ -104,29 +104,81 @@
         </div>
     </header>
 
-    {% if not team %}
+    {% if not orgs %}
     <div class="path-card">
         <div class="path-empty">
             <div class="glyph"><i class="fas fa-building"></i></div>
-            <h3>Create your enterprise team</h3>
-            <p>Get started with team collaboration and advanced analytics.</p>
-            <form id="createTeamForm" class="max-w-md mx-auto mt-5">
+            <h3>Create your organization</h3>
+            <p>A company or team that owns shared paths — shown with its own logo.</p>
+            <form id="createTeamForm" class="max-w-md mx-auto mt-5 text-left space-y-3">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="text" name="team_name" class="path-input flex-1" placeholder="Team name" required>
-                    <button type="submit" class="path-btn-primary whitespace-nowrap">Create team</button>
+                <div>
+                    <label class="path-label">Organization name</label>
+                    <input type="text" name="team_name" class="path-input w-full" placeholder="e.g. Acme Corp" required>
                 </div>
+                <div>
+                    <label class="path-label">Logo <span class="font-normal text-gray-400">(optional)</span></label>
+                    <input type="file" name="logo" accept="image/*" class="path-input w-full">
+                </div>
+                <button type="submit" class="path-btn-primary w-full">Create organization</button>
             </form>
         </div>
     </div>
     {% else %}
+
+    <!-- org switcher -->
+    <div class="path-card">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Your organizations</h4>
+            <button onclick="openModal('createOrgModal')" class="path-pill"><i class="fa fa-plus text-[10px]"></i> New organization</button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% for org in orgs %}
+            <a href="{{ url_for('linkolearn.enterprise_dashboard', org=org.id) }}"
+               class="path-chip {{ 'ring-2 ring-[#ff8080]' if team and org.id == team.id }}">
+                {% if org.logo_url %}
+                <img src="{{ org.logo_url }}" alt="" class="w-5 h-5 rounded object-cover">
+                {% else %}
+                <i class="fas fa-building text-gray-400"></i>
+                {% endif %}
+                {{ org.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- active org -->
+    <div class="path-card">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-4 min-w-0">
+                {% if team.logo_url %}
+                <img src="{{ team.logo_url }}" alt="{{ team.name }} logo" class="w-14 h-14 rounded-xl object-cover border border-gray-200 dark:border-gray-700">
+                {% else %}
+                <div class="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 text-xl"><i class="fas fa-building"></i></div>
+                {% endif %}
+                <div class="min-w-0">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ team.name }}</h3>
+                    {% if team.slug %}
+                    <a href="{{ url_for('www.org_page', slug=team.slug) }}" class="text-xs text-gray-500 dark:text-gray-400 hover:text-[#cc3f3f]">/org/{{ team.slug }}</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% if current_user.id == team.owner_id %}
+            <form id="logoForm" class="flex items-center gap-2 flex-wrap">
+                <input type="hidden" name="team_id" value="{{ team.id }}">
+                <input type="file" name="logo" accept="image/*" class="text-xs text-gray-500 dark:text-gray-400 max-w-[200px]">
+                <button type="submit" class="path-pill">Change logo</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div class="path-card flex items-center gap-4 !py-4">
             <span class="stat-glyph"><i class="fas fa-users"></i></span>
             <div>
                 <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ members|length + 1 }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Team members</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Members</div>
             </div>
         </div>
         <div class="path-card flex items-center gap-4 !py-4">
@@ -156,7 +208,7 @@
         <!-- Team -->
         <div id="content-team" class="tab-content">
             <div class="flex justify-between items-center mb-3">
-                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Team members</h4>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Members</h4>
                 <button onclick="openModal('addMemberModal')" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Add member</button>
             </div>
             <div class="overflow-x-auto -mx-2">
@@ -271,11 +323,11 @@
             {% endif %}
         </div>
 
-        <!-- Team paths -->
+        <!-- Organization paths -->
         <div id="content-paths" class="tab-content hidden">
             <div class="flex justify-between items-center mb-3">
-                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Team paths</h4>
-                <a href="{{ url_for('new.index') }}?team_id={{ team.id }}" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Create team path</a>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Organization paths</h4>
+                <a href="{{ url_for('new.index') }}?team_id={{ team.id }}" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Create path</a>
             </div>
             {% if team_paths %}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -301,8 +353,8 @@
             {% else %}
             <div class="path-empty">
                 <div class="glyph"><i class="fas fa-book-open"></i></div>
-                <h3>No team paths yet</h3>
-                <p>Create one and your whole team can use it.</p>
+                <h3>No organization paths yet</h3>
+                <p>Create one and your whole organization can use it.</p>
             </div>
             {% endif %}
         </div>
@@ -310,15 +362,41 @@
     {% endif %}
 </div>
 
+<!-- Create organization modal -->
+<div id="createOrgModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="path-card max-w-md w-full !p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">New organization</h3>
+            <button onclick="closeModal('createOrgModal')" class="path-tool" title="Close">&times;</button>
+        </div>
+        <form id="createOrgForm" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div>
+                <label class="path-label">Name</label>
+                <input type="text" name="team_name" class="path-input w-full" placeholder="e.g. Acme Corp" required>
+            </div>
+            <div>
+                <label class="path-label">Logo <span class="font-normal text-gray-400">(optional)</span></label>
+                <input type="file" name="logo" accept="image/*" class="path-input w-full">
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeModal('createOrgModal')" class="path-pill">Cancel</button>
+                <button type="submit" class="path-btn-primary">Create organization</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Add member modal -->
 <div id="addMemberModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4">
     <div class="path-card max-w-md w-full !p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Add team member</h3>
+            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Add member</h3>
             <button onclick="closeModal('addMemberModal')" class="path-tool" title="Close">&times;</button>
         </div>
         <form id="addMemberForm" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <input type="hidden" name="team_id" value="{{ team.id }}">
             <div>
                 <label class="path-label">Username</label>
                 <input type="text" name="username" class="path-input w-full" placeholder="Username" required>
@@ -348,6 +426,7 @@
         </div>
         <form id="addDomainForm" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <input type="hidden" name="team_id" value="{{ team.id }}">
             <div>
                 <label class="path-label">Domain</label>
                 <input type="text" name="domain" class="path-input w-full" placeholder="example.com" required>
@@ -383,6 +462,30 @@ document.getElementById('createTeamForm')?.addEventListener('submit', async (e) 
     e.preventDefault();
     const formData = new FormData(e.target);
     const resp = await fetch('{{ url_for("linkolearn.create_enterprise_team") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+document.getElementById('createOrgForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.create_enterprise_team") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+document.getElementById('logoForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.update_enterprise_logo") }}', {
         method: 'POST',
         body: formData
     });

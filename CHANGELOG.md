@@ -64,9 +64,26 @@
   the path's Manage access card (`POST /linkolearn/set-preview-policy`,
   owner + enterprise only); the generate-preview buttons disappear and
   `generate_preview` refuses server-side while it's off
+- Enterprise is now **companies / organizations**: enterprise users can
+  create any number of orgs (name + optional logo) from the dashboard,
+  switch between them, and attach members, domains and analytics per org
+- Org logos: uploaded on creation or later ("Change logo", owner only),
+  stored under `static/uploads/org_logos/`, shown on the dashboard, on
+  linked path pages and on the public org page
+- Public org pages at `/org/<slug>` list the organization's public paths
+- Create-path page gets an "Organization" picker for org owners/members;
+  slug uniqueness is per-org; members (who aren't on the enterprise plan
+  themselves) can create org paths
+- Path pages show the org badge (logo + name) linking to `/org/<slug>`
+- Org management (members, domains) authorizes by org ownership or an
+  admin member role, not by the global enterprise plan; add-member /
+  add-domain now target the selected org
+- `org` is a reserved username (public org pages live at `/org/...`)
 
 ### Bug fixes
 
+- Enterprise audit logging 500'd every add-member call
+  (`EnterpriseAuditLog.save()` doesn't exist on a plain db.Model)
 - Sign-in/register flashes no longer render raw HTML: replaced the legacy
   `notify_*` wrapper (a Bootstrap alert div + inline `<script>`) with plain
   text + proper categories, so the toast shows clean text in the right

@@ -51,6 +51,20 @@ crossorigin="anonymous"></script>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">This becomes your path URL and must be unique.</p>
         </div>
+        {% if orgs %}
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <label class="path-label" for="path-org">Organization <span class="font-normal text-gray-400">(optional)</span></label>
+            <select id="path-org" class="path-input">
+                <option value="">No organization (personal path)</option>
+                {% for org in orgs %}
+                <option value="{{ org.id }}" {% if team_id and org.id|string == team_id|string %}selected{% endif %}>
+                    {{ org.name }}{% if org.owner_id == current_user.id %} (owner){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">The path will be linked to this organization and shown on its public page.</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- sections -->
@@ -77,6 +91,16 @@ crossorigin="anonymous"></script>
 <script type="text/javascript">
 const urlParams = new URLSearchParams(window.location.search);
 var currentTeamId = urlParams.get('team_id') || null;
+
+const orgSelect = document.getElementById('path-org');
+if (orgSelect) {
+    currentTeamId = orgSelect.value || null;
+    orgSelect.addEventListener('change', () => {
+        currentTeamId = orgSelect.value || null;
+        // slug availability is per-organization — clear the stale verdict
+        $('#slug-status').html('').removeClass('text-red-500 text-green-500');
+    });
+}
 
 function showToast(message, type = 'error') {
     var toast = document.createElement('div');

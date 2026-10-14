@@ -196,6 +196,23 @@ def info():
     return render_template("linkolearn_theme/templates/info.html")
 
 
+@module_blueprint.route("/org/<slug>")
+def org_page(slug):
+    from modules.box__default.auth.models import EnterpriseTeam
+
+    org = EnterpriseTeam.query.filter_by(slug=slug).first_or_404()
+    owner = User.query.get(org.owner_id)
+    public_paths = Path.query.filter_by(team_id=org.id, is_visible=True).all()
+    for p in public_paths:
+        p.owner = User.query.get(p.user_id)
+    return render_template(
+        "linkolearn_theme/templates/org.html",
+        org=org,
+        owner=owner,
+        public_paths=public_paths,
+    )
+
+
 import validators
 
 
