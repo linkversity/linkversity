@@ -236,11 +236,19 @@ def org_page(slug):
     public_paths = Path.query.filter_by(team_id=org.id, is_visible=True).all()
     for p in public_paths:
         p.owner = User.query.get(p.user_id)
+
+    can_create = False
+    if current_user.is_authenticated:
+        from modules.box__linkolearn.linkolearn.view import user_organizations
+
+        can_create = org.id in [o.id for o in user_organizations(current_user)]
+
     return render_template(
         "linkolearn_theme/templates/org.html",
         org=org,
         owner=owner,
         public_paths=public_paths,
+        can_create=can_create,
     )
 
 

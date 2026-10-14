@@ -33,6 +33,9 @@
                     {{ public_paths|length }} public path{{ '' if public_paths|length == 1 else 's' }}
                 </p>
             </div>
+            {% if can_create %}
+            <a href="{{ url_for('new.index') }}?team_id={{ org.id }}" class="path-pill shrink-0 ml-auto"><i class="fa fa-plus text-[10px]"></i> Create path</a>
+            {% endif %}
         </div>
     </header>
 

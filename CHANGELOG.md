@@ -80,6 +80,9 @@
 - Org path pages speak org, not person: breadcrumb is
   Home › Org › path (linking to the org page) and the hero shows the org
   logo + name with "by @creator" underneath
+- Org page (`/org/<slug>`) gets a "Create path" button in the header for
+  signed-in owners/members — links to the create page with the org
+  preselected; hidden for anonymous visitors and non-members
 - Path cards across the site show the organization identity for org
   paths: homepage "Explore latest" and bookmarks cards display the org
   logo (or a building glyph) + org name instead of the owner's avatar;
