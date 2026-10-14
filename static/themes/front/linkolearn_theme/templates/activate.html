@@ -2,6 +2,7 @@
 {%set active_page='activate'%}
 {%block head%}
 <title>Upgrade Plans</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
 <style>
 .plan-card {
     transition: transform 0.2s, box-shadow 0.2s;
@@ -68,8 +69,9 @@
             </div>
             <div class="text-center mb-6">
                 <h3 class="text-xl font-bold text-blue-900">Pro</h3>
-                <p class="text-4xl font-bold text-blue-900 mt-2">$20</p>
-                <p class="text-blue-600">per year</p>
+                <p class="text-4xl font-bold text-blue-900 mt-2">$3</p>
+                <p class="text-blue-600">per month, billed yearly</p>
+                <p class="text-xs text-blue-400 mt-1">$36/year</p>
             </div>
             <ul class="space-y-3">
                 <li class="flex items-center gap-2">
@@ -99,6 +101,12 @@
             </ul>
             <div class="mt-6 pt-6 border-t border-blue-200">
                 {% if not current_user.is_pro() %}
+                {% if dodo_configured %}
+                <button type="button" onclick="dodoCheckout(1)" class="path-btn-primary w-full mb-3">
+                    <i class="fas fa-credit-card"></i> Pay with card — $3/mo yearly
+                </button>
+                <p class="text-center text-xs text-gray-400 mb-3">or activate with a code</p>
+                {% endif %}
                 <form action="/activate" method="POST" class="space-y-3">
                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                     <input 
@@ -128,8 +136,8 @@
             </div>
             <div class="text-center mb-6">
                 <h3 class="text-xl font-bold text-purple-900">Enterprise</h3>
-                <p class="text-4xl font-bold text-purple-900 mt-2">$99</p>
-                <p class="text-purple-600">per year</p>
+                <p class="text-4xl font-bold text-purple-900 mt-2">$10</p>
+                <p class="text-purple-600">per month</p>
             </div>
             <ul class="space-y-3">
                 <li class="flex items-center gap-2">
@@ -159,6 +167,12 @@
             </ul>
             <div class="mt-6 pt-6 border-t border-purple-200">
                 {% if not current_user.is_enterprise() %}
+                {% if dodo_enterprise_configured %}
+                <button type="button" onclick="dodoCheckout(2)" class="path-btn-primary w-full mb-3">
+                    <i class="fas fa-credit-card"></i> Pay with card — $10/mo
+                </button>
+                <p class="text-center text-xs text-gray-400 mb-3">or activate with a code</p>
+                {% endif %}
                 <form action="/activate" method="POST" class="space-y-3">
                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                     <input 
@@ -189,33 +203,49 @@
             <li class="flex items-start gap-4">
                 <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">1</span>
                 <div>
-                    <p class="font-semibold text-gray-900">Send payment via PayPal</p>
-                    <p class="text-gray-600 text-sm">Pro: $20/yr or Enterprise: $99/yr to <strong>arj.python at gmail dot com</strong></p>
+                    <p class="font-semibold text-gray-900">Pick your plan</p>
+                    <p class="text-gray-600 text-sm">Click <strong>Pay with card</strong> on the plan you want</p>
                 </div>
             </li>
             <li class="flex items-start gap-4">
                 <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">2</span>
                 <div>
-                    <p class="font-semibold text-gray-900">Send confirmation email</p>
-                    <p class="text-gray-600 text-sm">Email <strong>arj.python at gmail dot com</strong> with your username and payment proof</p>
+                    <p class="font-semibold text-gray-900">Secure checkout</p>
+                    <p class="text-gray-600 text-sm">Pay by card, PayPal, or local methods on our payment partner's hosted page</p>
                 </div>
             </li>
             <li class="flex items-start gap-4">
                 <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">3</span>
                 <div>
-                    <p class="font-semibold text-gray-900">Receive activation code</p>
-                    <p class="text-gray-600 text-sm">We'll send you a unique code within 24 hours</p>
-                </div>
-            </li>
-            <li class="flex items-start gap-4">
-                <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">4</span>
-                <div>
-                    <p class="font-semibold text-gray-900">Activate your plan</p>
-                    <p class="text-gray-600 text-sm">Enter your code above to unlock your new features</p>
+                    <p class="font-semibold text-gray-900">Automatic activation</p>
+                    <p class="text-gray-600 text-sm">Your plan turns on the moment payment is confirmed — no waiting, no codes</p>
                 </div>
             </li>
         </ol>
+        <p class="text-xs text-gray-500 text-center mt-6">Payments are processed securely by Dodo Payments. If your payment lapses, your account simply returns to the Free plan.</p>
     </div>
 </div>
+
+<script>
+async function dodoCheckout(plan) {
+    const body = new FormData();
+    body.append('plan', plan);
+    try {
+        const resp = await fetch("{{ url_for('www.dodo_checkout') }}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+            body: body
+        });
+        const data = await resp.json();
+        if (resp.ok && data.checkout_url) {
+            window.location.href = data.checkout_url;
+        } else {
+            alert(data.error || 'Could not start checkout');
+        }
+    } catch (e) {
+        alert('Could not start checkout');
+    }
+}
+</script>
 
 {%endblock%}

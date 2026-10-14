@@ -40,6 +40,24 @@
   "extract from document" button
 - Fix every profile page 500ing: `len()` is not a Jinja global — use `|length`
 
+### Payments (Dodo)
+
+- Dodo Payments integration for self-serve upgrades: hosted checkout for
+  Pro ($3/month billed yearly) and Enterprise ($10/month), created server-side
+  from `/activate`
+- New routes: `POST /dodo/checkout` (login + CSRF protected), `GET /dodo/return`
+  (acknowledges the redirect; never fulfills), `POST /dodo/webhook`
+  (CSRF-exempt, signature-verified)
+- Fulfillment happens exclusively from signed webhooks (Standard Webhooks
+  scheme via `client.webhooks.unwrap` on the raw body): `payment.succeeded` /
+  `subscription.active` / `subscription.trialing` upgrade to the plan matching
+  the purchased product; `subscription.cancelled` / `expired` / `on_hold`
+  downgrade to Free, which switches off every plan-gated feature
+- Upgrades are idempotent; events for other products on the same Dodo
+  account are ignored; activation codes keep working as a fallback
+- Config via env: `DODO_PAYMENTS_API_KEY`, `DODO_PAYMENTS_WEBHOOK_KEY`,
+  `DODO_PAYMENTS_ENVIRONMENT`, `DODO_PRODUCT_ID_PRO`, `DODO_PRODUCT_ID_ENTERPRISE`
+
 ## 1.1.0
 
 ### Refactor

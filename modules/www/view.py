@@ -29,7 +29,7 @@ from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
-from init import db
+from init import db, csrf
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
 module_info = {}
@@ -228,7 +228,16 @@ def save_link():
 @module_blueprint.route("/activate", methods=["GET", "POST"])
 @login_required
 def activate():
-    context = {"current_user": current_user}
+    from modules.www import dodo
+
+    context = {
+        "current_user": current_user,
+        "dodo_configured": dodo.is_configured(),
+        "dodo_enterprise_configured": bool(
+            os.environ.get("DODO_PAYMENTS_API_KEY")
+            and os.environ.get("DODO_PRODUCT_ID_ENTERPRISE")
+        ),
+    }
     if request.method == "POST":
         activation_code = request.form.get("code")
 
@@ -245,3 +254,69 @@ def activate():
         return redirect(url_for("www.activate"))
 
     return render_template("linkolearn_theme/templates/activate.html", **context)
+
+
+@module_blueprint.route("/dodo/checkout", methods=["POST"])
+@login_required
+def dodo_checkout():
+    from modules.www import dodo
+
+    if not dodo.is_configured():
+        return jsonify(
+            {"error": "Payments are not configured yet "
+                      "(DODO_PAYMENTS_API_KEY / DODO_PRODUCT_ID_PRO)"}
+        ), 503
+
+    plan = request.form.get("plan", type=int, default=dodo.PRO_PLAN)
+    if plan not in (dodo.PRO_PLAN, dodo.ENTERPRISE_PLAN):
+        plan = dodo.PRO_PLAN
+    try:
+        checkout_url = dodo.create_checkout(current_user, plan=plan)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 502
+    return jsonify({"checkout_url": checkout_url})
+
+
+@module_blueprint.route("/dodo/return", methods=["GET"])
+@login_required
+def dodo_return():
+    # Dodo redirects here with payment_id/subscription_id/status query
+    # params. Fulfillment happens exclusively from the signed webhook —
+    # this page only acknowledges the redirect.
+    plan = request.args.get("plan", "1")
+    plan_name = "Enterprise" if plan == "2" else "Pro"
+    if request.args.get("status") == "succeeded":
+        flash(f"Payment received — activating your {plan_name} plan…", "success")
+    else:
+        flash("Checkout finished — we'll activate your plan as soon as the "
+              "payment is confirmed.", "info")
+    return redirect(url_for("www.activate"))
+
+
+@module_blueprint.route("/dodo/webhook", methods=["POST"])
+@csrf.exempt
+def dodo_webhook():
+    from modules.www import dodo
+
+    # raw bytes exactly as received — the signature covers them
+    raw_body = request.get_data()
+    headers = {
+        "webhook-id": request.headers.get("webhook-id", ""),
+        "webhook-signature": request.headers.get("webhook-signature", ""),
+        "webhook-timestamp": request.headers.get("webhook-timestamp", ""),
+    }
+    try:
+        event = dodo.verify_webhook(raw_body, headers)
+    except Exception:
+        return jsonify({"error": "Invalid signature"}), 401
+
+    try:
+        result = dodo.fulfill_event(event)
+        if result:
+            print(f"[dodo webhook] {result}")
+    except Exception as e:
+        # acknowledge anyway: Dodo retries failed (non-2xx) deliveries, but
+        # a fulfillment error shouldn't loop forever either
+        print(f"[dodo webhook] fulfillment error: {e}")
+
+    return jsonify({"received": True})

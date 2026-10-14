@@ -22,3 +22,4 @@ beautifulsoup4
 requests
 cryptography
 shopyo-auth==1.10.0
+dodopayments[webhooks]
