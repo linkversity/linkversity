@@ -45,7 +45,7 @@ crossorigin="anonymous"></script>
         <div>
             <label class="path-label" for="path-link">Slug</label>
             <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">/{{ current_user.username }}/</span>
+                <span id="slug-prefix" class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">/{{ current_user.username }}/</span>
                 <input type="text" id="path-link" class="path-input" value="" placeholder="mastering-advanced-english" required>
                 <span id="slug-status" class="text-sm whitespace-nowrap"></span>
             </div>
@@ -57,7 +57,7 @@ crossorigin="anonymous"></script>
             <select id="path-org" class="path-input">
                 <option value="">No organization (personal path)</option>
                 {% for org in orgs %}
-                <option value="{{ org.id }}" {% if team_id and org.id|string == team_id|string %}selected{% endif %}>
+                <option value="{{ org.id }}" data-slug="{{ org.slug or '' }}" {% if team_id and org.id|string == team_id|string %}selected{% endif %}>
                     {{ org.name }}{% if org.owner_id == current_user.id %} (owner){% endif %}
                 </option>
                 {% endfor %}
@@ -94,9 +94,20 @@ var currentTeamId = urlParams.get('team_id') || null;
 
 const orgSelect = document.getElementById('path-org');
 if (orgSelect) {
+    const slugPrefix = document.getElementById('slug-prefix');
+    const updatePrefix = () => {
+        if (!slugPrefix) return;
+        const opt = orgSelect.options[orgSelect.selectedIndex];
+        const orgSlug = opt && opt.dataset ? opt.dataset.slug : '';
+        slugPrefix.textContent = orgSlug
+            ? '/org/' + orgSlug + '/'
+            : '/{{ current_user.username }}/';
+    };
     currentTeamId = orgSelect.value || null;
+    updatePrefix();
     orgSelect.addEventListener('change', () => {
         currentTeamId = orgSelect.value || null;
+        updatePrefix();
         // slug availability is per-organization — clear the stale verdict
         $('#slug-status').html('').removeClass('text-red-500 text-green-500');
     });

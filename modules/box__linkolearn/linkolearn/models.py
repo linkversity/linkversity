@@ -107,6 +107,15 @@ class Path(PkModel):
         self.is_password_protected = False
 
     def get_url(self):
+        # org-linked paths live under the organization's public page
+        if self.team_id:
+            from modules.box__default.auth.models import EnterpriseTeam
+
+            team = EnterpriseTeam.query.get(self.team_id)
+            if team and team.slug:
+                return url_for(
+                    "www.org_path", org_slug=team.slug, path_slug=self.slug
+                )
         return url_for(
             "www.path", username=self.path_user.username, path_slug=self.slug
         )

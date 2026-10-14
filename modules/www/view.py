@@ -113,32 +113,22 @@ def user_profile(username):
     return render_template("linkolearn_theme/templates/profile.html", **context)
 
 
-@module_blueprint.route("/<username>/<path_slug>")
-def path(username, path_slug):
-    user = User.query.filter(
-        func.lower(User.username) == func.lower(username)
-    ).first_or_404()
-    path = Path.query.filter(
-        Path.slug == path_slug, Path.user_id == user.id
-    ).first_or_404()
-    if not path.is_visible:
-        if current_user.is_authenticated:
-            if path.path_user == current_user:
-                pass
-            elif current_user in path.editors:
-                pass
-            elif path.is_password_protected:
-                pass
-            else:
-                flash(notify("Path not public!", alert_type="warning"))
-                return redirect(url_for("www.index"))
-        else:
-            if path.is_password_protected:
-                pass
-            else:
-                flash(notify("Path not public!", alert_type="warning"))
-                return redirect(url_for("www.index"))
+def _check_path_access(path):
+    """Flash+redirect when a non-visible path may not be shown, else None."""
+    if path.is_visible:
+        return None
+    if current_user.is_authenticated:
+        if path.path_user == current_user or current_user in path.editors:
+            return None
+        if path.is_password_protected:
+            return None
+    elif path.is_password_protected:
+        return None
+    flash(notify("Path not public!", alert_type="warning"))
+    return redirect(url_for("www.index"))
 
+
+def _render_path(path):
     context = {}
 
     url = path.get_url().replace("/", "_")
@@ -167,13 +157,54 @@ def path(username, path_slug):
 
     context.update(
         {
-            "user": user,
+            "user": path.path_user,
             "path": path,
             "has_entered_password": has_entered_password,
             "session": session,
         }
     )
     return render_template("linkolearn_theme/templates/path.html", **context)
+
+
+@module_blueprint.route("/<username>/<path_slug>")
+def path(username, path_slug):
+    user = User.query.filter(
+        func.lower(User.username) == func.lower(username)
+    ).first_or_404()
+    path = Path.query.filter(
+        Path.slug == path_slug, Path.user_id == user.id
+    ).first_or_404()
+    denied = _check_path_access(path)
+    if denied:
+        return denied
+
+    # org-linked paths have a canonical /org/<org>/<slug> address
+    if path.team_id:
+        from modules.box__default.auth.models import EnterpriseTeam
+
+        team = EnterpriseTeam.query.get(path.team_id)
+        if team and team.slug:
+            return redirect(
+                url_for(
+                    "www.org_path", org_slug=team.slug, path_slug=path.slug
+                )
+            )
+
+    return _render_path(path)
+
+
+@module_blueprint.route("/org/<org_slug>/<path_slug>")
+def org_path(org_slug, path_slug):
+    from modules.box__default.auth.models import EnterpriseTeam
+
+    org = EnterpriseTeam.query.filter_by(slug=org_slug).first_or_404()
+    path = Path.query.filter(
+        Path.slug == path_slug, Path.team_id == org.id
+    ).first_or_404()
+    denied = _check_path_access(path)
+    if denied:
+        return denied
+    return _render_path(path)
 
 
 @module_blueprint.route("/privacy-policy")
