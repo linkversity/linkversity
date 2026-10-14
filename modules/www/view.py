@@ -226,12 +226,15 @@ def save_link():
 
 
 @module_blueprint.route("/activate", methods=["GET", "POST"])
-@login_required
 def activate():
     from modules.www import dodo
 
+    # the pricing page is public; only activating a plan requires a session
+    authenticated = current_user.is_authenticated
     context = {
         "current_user": current_user,
+        "is_pro": bool(authenticated and current_user.is_pro()),
+        "is_enterprise": bool(authenticated and current_user.is_enterprise()),
         "dodo_configured": dodo.is_configured(),
         "dodo_enterprise_configured": bool(
             os.environ.get("DODO_PAYMENTS_API_KEY")
@@ -239,6 +242,8 @@ def activate():
         ),
     }
     if request.method == "POST":
+        if not authenticated:
+            return redirect(url_for("auth.login", next="/activate"))
         activation_code = request.form.get("code")
 
         code_entry = ActivationCode.query.filter_by(code=activation_code).first()
