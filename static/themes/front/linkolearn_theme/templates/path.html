@@ -124,7 +124,11 @@
         <nav class="text-xs text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1.5">
             <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
             <span class="text-gray-300 dark:text-gray-600">›</span>
+            {% if path.team_id and team %}
+            <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" class="hover:text-gray-900 dark:hover:text-gray-100">{{ team.name }}</a>
+            {% else %}
             <a href="{{ url_for('www.user_profile', username=path.path_user.username) }}" class="hover:text-gray-900 dark:hover:text-gray-100">@{{ path.path_user.username }}</a>
+            {% endif %}
             <span class="text-gray-300 dark:text-gray-600">›</span>
             <span class="text-gray-700 dark:text-gray-200 truncate">{{ path.title or path.slug }}</span>
         </nav>
@@ -133,6 +137,17 @@
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 leading-tight break-words">{{ path.title or path.slug }}</h1>
                 <div class="flex items-center flex-wrap gap-2 mt-3">
+                    {% if path.team_id and team %}
+                    <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" title="{{ team.name }}">
+                        {% if team.logo_url %}
+                        <img src="{{ team.logo_url }}" alt="{{ team.name }} logo" class="w-11 h-11 rounded-full object-cover ring-2 ring-white dark:ring-gray-900">
+                        {% else %}
+                        <span class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">{{ team.name }}</a>
+                    <span class="text-sm text-gray-400 dark:text-gray-500">by <a href="{{ path.path_user.get_profile_url() }}" class="hover:text-gray-900 dark:hover:text-white">@{{ path.path_user.username }}</a></span>
+                    {% else %}
                     <span class="relative inline-block">
                         {% if user.is_enterprise() %}
                         {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
@@ -145,6 +160,7 @@
                     </span>
                     <a href="{{ user.get_profile_url() }}" class="text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white">{{ path.path_user.get_first_name() }} {{ path.path_user.get_last_name() }}</a>
                     <span class="text-sm text-gray-400 dark:text-gray-500">@{{ path.path_user.username }}</span>
+                    {% endif %}
                     {% if current_user in path.editors %}
                     <span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fa fa-pencil-alt"></i> Editor</span>
                     {% endif %}

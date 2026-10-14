@@ -77,6 +77,9 @@
 - Org-linked paths now live under the organization: canonical URL is
   `/org/<org>/<path>`; `/<user>/<path>` redirects there; the create-page
   slug prefix shows `/org/<org>/` when an organization is selected
+- Org path pages speak org, not person: breadcrumb is
+  Home › Org › path (linking to the org page) and the hero shows the org
+  logo + name with "by @creator" underneath
 - Path pages show the org badge (logo + name) linking to `/org/<slug>`
 - Org management (members, domains) authorizes by org ownership or an
   admin member role, not by the global enterprise plan; add-member /
