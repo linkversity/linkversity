@@ -119,7 +119,7 @@
         <div class="path-card flex items-center gap-4 !py-4">
             <span class="stat-glyph"><i class="fas fa-chart-bar"></i></span>
             <div>
-                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ analytics|sum(attribute='count') if analytics else 0 }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total clicks</div>
             </div>
         </div>
@@ -201,6 +201,7 @@
                     <thead>
                         <tr>
                             <th>Date</th>
+                            <th>Path</th>
                             <th>Link</th>
                             <th>Clicks</th>
                             <th>Country</th>
@@ -210,11 +211,29 @@
                     <tbody>
                         {% for a in analytics %}
                         <tr>
-                            <td>{{ a.event_date.strftime('%Y-%m-%d') if a.event_date else '-' }}</td>
-                            <td>Link #{{ a.link_id }}</td>
-                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ a.event_count }}</span></td>
+                            <td class="whitespace-nowrap">{{ a.date.strftime('%Y-%m-%d') if a.date else '-' }}</td>
+                            <td>
+                                {% if a.path_url %}
+                                <a href="{{ a.path_url }}" class="font-semibold text-gray-900 dark:text-gray-100 hover:text-[#cc3f3f] break-all">{{ a.path_slug }}</a>
+                                {% elif a.path_slug %}
+                                <span class="font-semibold text-gray-900 dark:text-gray-100 break-all">{{ a.path_slug }}</span>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                                {% if a.section %}
+                                <span class="text-gray-300 dark:text-gray-600 mx-1">|</span><span class="text-gray-500 dark:text-gray-400">{{ a.section }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if a.url %}
+                                <a href="{{ a.url }}" target="_blank" rel="noopener noreferrer" class="text-[#cc3f3f] hover:underline break-all" title="{{ a.label }}">{{ a.url }}</a>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ a.count }}</span></td>
                             <td>{{ a.country or '-' }}</td>
-                            <td>{{ a.device_type or '-' }}</td>
+                            <td>{{ a.device or '-' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

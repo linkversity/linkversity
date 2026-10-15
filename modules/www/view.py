@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 from flask import url_for
 from flask import redirect
@@ -291,12 +292,40 @@ def org_settings(slug):
     )
     domains = EnterpriseCustomDomain.query.filter_by(team_id=org.id).all()
 
+    # resolve each row's link, section and path for the analytics table
+    link_ids = {a.link_id for a in analytics if a.link_id}
+    links = Link.query.filter(Link.id.in_(link_ids)).all() if link_ids else []
+    rows = []
+    for a in analytics:
+        link = next((l for l in links if l.id == a.link_id), None)
+        section = link.link_section if link else None
+        spath = section.section_path if section else None
+        url = label = None
+        if link:
+            url = label = link.url
+            m = re.match(r"\[([^\]]*)\]\(([^)]+)\)", link.url or "")
+            if m:
+                label, url = m.group(1), m.group(2)
+        rows.append(
+            {
+                "date": a.event_date,
+                "count": a.event_count,
+                "country": a.country,
+                "device": a.device_type,
+                "url": url,
+                "label": label,
+                "section": section.title if section else None,
+                "path_slug": spath.slug if spath else None,
+                "path_url": spath.get_url() if spath else None,
+            }
+        )
+
     return render_template(
         "linkolearn_theme/templates/org_settings.html",
         org=org,
         owner=owner,
         members=members,
-        analytics=analytics,
+        analytics=rows,
         domains=domains,
     )
 

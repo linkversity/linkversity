@@ -118,6 +118,10 @@
   same-day dedupe also worked (the old filter compared a DATE against the
   DATETIME column, so every click spawned a fresh row instead of
   incrementing)
+- Analytics rows resolve their link: the table shows Date, Path (linked
+  `/org/<org>/<slug>` plus the section name after a `|`), the actual link
+  URL (markdown links unwrap to the target, the label stays in the
+  tooltip), Clicks, Country, Device instead of the opaque `Link #id`
 - Analytics glyph switched to `fa-chart-bar`: `fa-chart-simple` is a
   Font Awesome 6 icon and the site loads FA 5.15, so it rendered blank
 - New org settings page at `/org/<slug>/settings` (owner or admin member,
