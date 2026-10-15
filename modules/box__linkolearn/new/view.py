@@ -79,15 +79,17 @@ def check_slug():
     slug = request.args.get("slug", "")
     slug = Path.slugify(slug)
     team_id = request.args.get("team_id")
+    exclude_path_id = request.args.get("exclude_path_id")
 
+    query = Path.query.filter(Path.slug == slug)
     if team_id:
-        exists = Path.query.filter(
-            Path.slug == slug, Path.team_id == int(team_id)
-        ).first()
+        query = query.filter(Path.team_id == int(team_id))
     else:
-        exists = Path.query.filter(
-            Path.slug == slug, Path.user_id == current_user.id
-        ).first()
+        query = query.filter(Path.user_id == current_user.id)
+    if exclude_path_id:
+        # edit page checks availability excluding the path being edited
+        query = query.filter(Path.id != int(exclude_path_id))
+    exists = query.first()
 
     return jsonify({"available": not exists, "slug": slug})
 

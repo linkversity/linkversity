@@ -151,8 +151,7 @@ add_section_btn.click(function() {
 });
 
 $(document).on('click', '.btn-close-section', function(e) {
-  var id_to_del = $(this).attr("id").split('-')[1];
-  var delete_target = $(this).parent().parent().parent();
+  var delete_target = $(this).closest('.section');
   delete_target.hide('slow', function() { delete_target.remove(); });
 });
 

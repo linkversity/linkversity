@@ -33,6 +33,11 @@
   showing titles + owner + Locked/Private badges, empty state
 - Create (`/new/`): hero, details card (title + slug with `/username/` prefix
   and live availability check), restyled sections, coral "Create path" button
+- Edit (`/linkolearn/settings/p/<id>/edit`) rebuilt in the same style: breadcrumb
+  header, slug field with org-aware `/org/<org>/` or `/username/` prefix + live
+  availability check (self-excluded via `exclude_path_id`), pre-filled sections
+  as cards, coral "Save changes" + "Back to path" — dark mode included; the old
+  gray profile sidebar, red section bars and blue buttons are gone
 - Profile (`/<username>`): avatar + crown hero, name/@handle/enterprise chips,
   labeled stat pills (paths / private / likes), path-card grid, empty state
 - Fix "Create Path" never submitting: `json_submit.sections` was never
@@ -104,6 +109,9 @@
 - Logout flash now shows as a green success toast
 - Path page no longer 500s for non-Pro owners/editors: the upgrade links
   pointed at a non-existent `new.activate` endpoint (now `www.activate`)
+- Create page's "remove section" (×) deleted the whole sections container
+  instead of one section (three `.parent()`s landed on `#sections`); now
+  uses `closest('.section')` on both the create and edit pages
 
 ## 1.1.0
 
