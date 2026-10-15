@@ -72,19 +72,22 @@ class EnterpriseAnalytics(db.Model):
         country: str = None,
         device_type: str = None,
     ):
+        from init import db
+
         today = datetime.datetime.now().date()
-        existing = cls.query.filter_by(
-            team_id=team_id, link_id=link_id, event_type="click", event_date=today
+        # event_date is a DATETIME column; compare on its date part so
+        # same-day clicks land on the same row
+        existing = cls.query.filter(
+            cls.team_id == team_id,
+            cls.link_id == link_id,
+            cls.event_type == "click",
+            db.func.date(cls.event_date) == str(today),
         ).first()
 
         if existing:
             existing.event_count += 1
-            from init import db
-
             db.session.commit()
         else:
-            from init import db
-
             event = cls(
                 team_id=team_id,
                 link_id=link_id,
@@ -97,7 +100,8 @@ class EnterpriseAnalytics(db.Model):
             )
             db.session.add(event)
             db.session.commit()
-        return existing or event
+            return event
+        return existing
 
     def get_total_clicks(self, link_id: int = None, days: int = 30):
         query = EnterpriseAnalytics.query.filter_by(

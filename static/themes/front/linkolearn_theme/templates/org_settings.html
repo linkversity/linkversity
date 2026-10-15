@@ -117,7 +117,7 @@
             </div>
         </div>
         <div class="path-card flex items-center gap-4 !py-4">
-            <span class="stat-glyph"><i class="fas fa-chart-simple"></i></span>
+            <span class="stat-glyph"><i class="fas fa-chart-bar"></i></span>
             <div>
                 <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total clicks</div>
@@ -136,7 +136,7 @@
     <div class="path-card">
         <div class="inline-flex flex-wrap items-center gap-1 mb-5 bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-full p-1">
             <button onclick="showTab('members')" id="tab-members" class="tab-btn active" type="button"><i class="fas fa-users"></i> Members</button>
-            <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn" type="button"><i class="fas fa-chart-simple"></i> Analytics</button>
+            <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn" type="button"><i class="fas fa-chart-bar"></i> Analytics</button>
             <button onclick="showTab('domains')" id="tab-domains" class="tab-btn" type="button"><i class="fas fa-globe"></i> Domains</button>
         </div>
 
@@ -210,7 +210,7 @@
                     <tbody>
                         {% for a in analytics %}
                         <tr>
-                            <td>{{ a.event_date }}</td>
+                            <td>{{ a.event_date.strftime('%Y-%m-%d') if a.event_date else '-' }}</td>
                             <td>Link #{{ a.link_id }}</td>
                             <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ a.event_count }}</span></td>
                             <td>{{ a.country or '-' }}</td>
@@ -222,7 +222,7 @@
             </div>
             {% else %}
             <div class="path-empty">
-                <div class="glyph"><i class="fas fa-chart-simple"></i></div>
+                <div class="glyph"><i class="fas fa-chart-bar"></i></div>
                 <h3>No analytics yet</h3>
                 <p>Stats appear once your organization's links start getting clicks.</p>
             </div>

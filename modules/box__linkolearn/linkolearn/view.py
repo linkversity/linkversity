@@ -560,6 +560,40 @@ def remove_all_previews():
     return jsonify({"success": True, "cleared": cleared})
 
 
+@module_blueprint.route("/track-click", methods=["POST"])
+def track_click():
+    """Record a click on an org path link for the org's analytics.
+
+    Called from the path page via keepalive fetch, so no login (public
+    visitors click too). Only org paths are tracked.
+    """
+    data = request.get_json(silent=True) or {}
+    link = Link.query.get(data.get("link_id"))
+    if not link or not link.link_section:
+        return jsonify({"success": False})
+    path = link.link_section.section_path
+    if not path or not path.team_id:
+        return jsonify({"success": False, "error": "Not an organization path"})
+
+    ua = request.user_agent.string or ""
+    ua_l = ua.lower()
+    if "tablet" in ua_l or "ipad" in ua_l:
+        device = "Tablet"
+    elif "mobile" in ua_l:
+        device = "Mobile"
+    else:
+        device = "Desktop"
+
+    EnterpriseAnalytics.track_click(
+        team_id=path.team_id,
+        link_id=link.id,
+        referrer=(request.referrer or None),
+        user_agent=ua[:500] or None,
+        device_type=device,
+    )
+    return jsonify({"success": True})
+
+
 ALLOWED_LOGO_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 
 

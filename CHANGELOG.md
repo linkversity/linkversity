@@ -111,6 +111,15 @@
   `/linkolearn/enterprise/` now only lists organizations (logo, name, link
   to the public page, Settings pill for owner/admins, New organization);
   the stats row and the Team/Analytics/Domains/Paths tabs are gone
+- Analytics actually record now: `EnterpriseAnalytics.track_click` existed
+  but was never called. Org path pages fire a keepalive fetch on link
+  click (`POST /linkolearn/track-click`, public + CSRF) which logs the
+  click per org with referrer, user agent and a parsed device type; the
+  same-day dedupe also worked (the old filter compared a DATE against the
+  DATETIME column, so every click spawned a fresh row instead of
+  incrementing)
+- Analytics glyph switched to `fa-chart-bar`: `fa-chart-simple` is a
+  Font Awesome 6 icon and the site loads FA 5.15, so it rendered blank
 - New org settings page at `/org/<slug>/settings` (owner or admin member,
   others are bounced back to the org page): the dashboard's per-org
   management moved here wholesale — stats row (members, total clicks,

@@ -10,9 +10,9 @@
         <div class="min-w-0 flex-1">
             {% if link.url.startswith('[') %}
                 {% set extract = path.extract_link(link.url) %}
-                <a href="{{ extract.href }}" target="_blank" rel="noopener noreferrer" class="path-link">{{ extract.text }}</a>
+                <a href="{{ extract.href }}" target="_blank" rel="noopener noreferrer" class="path-link" data-link-id="{{ link.id }}">{{ extract.text }}</a>
             {% else %}
-                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="path-link break-all">{{ link.url }}</a>
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="path-link break-all" data-link-id="{{ link.id }}">{{ link.url }}</a>
             {% endif %}
         </div>
         {% if can_edit %}
@@ -676,5 +676,25 @@ document.getElementById('remove-all-previews-btn')?.addEventListener('click', as
         alert('Could not remove previews');
     }
 });
+
+{% if path.team_id %}
+// org analytics: count link clicks without delaying the navigation
+document.addEventListener('click', function (e) {
+    const a = e.target.closest && e.target.closest('a.path-link[data-link-id]');
+    if (!a || a.dataset.lvTracked) return;
+    a.dataset.lvTracked = '1';
+    try {
+        fetch("{{ url_for('linkolearn.track_click') }}", {
+            method: 'POST',
+            keepalive: true,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ link_id: parseInt(a.dataset.linkId, 10) })
+        });
+    } catch (err) { /* tracking must never block the click */ }
+});
+{% endif %}
 </script>
 {%endblock%}
