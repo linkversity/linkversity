@@ -151,13 +151,18 @@
     <div class="path-card">
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-4 min-w-0">
+                {% set org_url = url_for('www.org_page', slug=team.slug) if team.slug else '' %}
+                {% if org_url %}<a href="{{ org_url }}" title="Open /org/{{ team.slug }}">{% endif %}
                 {% if team.logo_url %}
                 <img src="{{ team.logo_url }}" alt="{{ team.name }} logo" class="w-14 h-14 rounded-xl object-cover border border-gray-200 dark:border-gray-700">
                 {% else %}
                 <div class="w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 text-xl"><i class="fas fa-building"></i></div>
                 {% endif %}
+                {% if org_url %}</a>{% endif %}
                 <div class="min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ team.name }}</h3>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
+                        {% if org_url %}<a href="{{ org_url }}" class="hover:text-[#cc3f3f]">{{ team.name }}</a>{% else %}{{ team.name }}{% endif %}
+                    </h3>
                     {% if team.slug %}
                     <a href="{{ url_for('www.org_page', slug=team.slug) }}" class="text-xs text-gray-500 dark:text-gray-400 hover:text-[#cc3f3f]">/org/{{ team.slug }}</a>
                     {% endif %}
