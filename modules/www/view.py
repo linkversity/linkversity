@@ -242,10 +242,15 @@ def org_page(slug):
         p.owner = User.query.get(p.user_id)
 
     can_create = False
+    can_manage = False
     if current_user.is_authenticated:
-        from modules.box__linkolearn.linkolearn.view import user_organizations
+        from modules.box__linkolearn.linkolearn.view import (
+            _authorized_org,
+            user_organizations,
+        )
 
         can_create = org.id in [o.id for o in user_organizations(current_user)]
+        can_manage = _authorized_org(org.id) is not None
 
     return render_template(
         "linkolearn_theme/templates/org.html",
@@ -253,6 +258,35 @@ def org_page(slug):
         owner=owner,
         public_paths=public_paths,
         can_create=can_create,
+        can_manage=can_manage,
+    )
+
+
+@module_blueprint.route("/org/<slug>/settings")
+@login_required
+def org_settings(slug):
+    """Members management and logo for one organization, owner/admin only."""
+    from modules.box__default.auth.models import EnterpriseTeam
+    from modules.box__linkolearn.linkolearn.enterprise_features import (
+        EnterpriseTeamMember,
+    )
+    from modules.box__linkolearn.linkolearn.view import _authorized_org
+
+    org = EnterpriseTeam.query.filter_by(slug=slug).first_or_404()
+    if _authorized_org(org.id) is None:
+        flash("Insufficient permission", "warning")
+        return redirect(url_for("www.org_page", slug=slug))
+
+    owner = User.query.get(org.owner_id)
+    members = EnterpriseTeamMember.query.filter_by(team_id=org.id).all()
+    for m in members:
+        m.user = User.query.get(m.user_id)
+
+    return render_template(
+        "linkolearn_theme/templates/org_settings.html",
+        org=org,
+        owner=owner,
+        members=members,
     )
 
 

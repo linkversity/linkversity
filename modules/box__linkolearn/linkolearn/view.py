@@ -645,43 +645,13 @@ def enterprise_dashboard():
         return redirect(url_for("linkolearn.dashboard"))
 
     orgs = user_organizations(current_user)
-
-    # active org: ?org= when the user belongs to it, else the first one
-    org_id = request.args.get("org", type=int)
-    active = next((o for o in orgs if o.id == org_id), None) or (
-        orgs[0] if orgs else None
-    )
-
-    team = None
-    members = []
-    analytics = []
-    domains = []
-    team_paths = []
-
-    if active:
-        team = active
-        members = EnterpriseTeamMember.query.filter_by(team_id=team.id).all()
-        for m in members:
-            m.user = User.query.get(m.user_id)
-        analytics = (
-            EnterpriseAnalytics.query.filter_by(team_id=team.id)
-            .order_by(EnterpriseAnalytics.event_date.desc())
-            .limit(30)
-            .all()
-        )
-        domains = EnterpriseCustomDomain.query.filter_by(team_id=team.id).all()
-        team_paths = Path.query.filter_by(team_id=team.id).all()
-        for p in team_paths:
-            p.owner = User.query.get(p.user_id)
+    # orgs the viewer may open the settings page for (owner or admin member)
+    manageable = {o.id for o in orgs if _authorized_org(o.id)}
 
     return render_template(
         "linkolearn_theme/templates/enterprise.html",
         orgs=orgs,
-        team=team,
-        members=members,
-        analytics=analytics,
-        domains=domains,
-        team_paths=team_paths,
+        manageable=manageable,
     )
 
 

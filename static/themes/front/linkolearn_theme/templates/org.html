@@ -33,8 +33,15 @@
                     {{ public_paths|length }} public path{{ '' if public_paths|length == 1 else 's' }}
                 </p>
             </div>
-            {% if can_create %}
-            <a href="{{ url_for('new.index') }}?team_id={{ org.id }}" class="path-pill shrink-0 ml-auto"><i class="fa fa-plus text-[10px]"></i> Create path</a>
+            {% if can_create or can_manage %}
+            <div class="flex items-center gap-2 shrink-0 ml-auto">
+                {% if can_manage %}
+                <a href="{{ url_for('www.org_settings', slug=org.slug) }}" class="path-pill"><i class="fa fa-cog text-[10px]"></i> Settings</a>
+                {% endif %}
+                {% if can_create %}
+                <a href="{{ url_for('new.index') }}?team_id={{ org.id }}" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Create path</a>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </header>

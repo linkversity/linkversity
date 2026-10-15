@@ -107,6 +107,16 @@
   `Path.is_org_member()` opens private org paths to any member, and the path
   page toolbar, edit page, add/move link and visibility switch all follow
   `can_edit`; viewers get read access but no edit controls
+- Per-org management moved out of the enterprise dashboard:
+  `/linkolearn/enterprise/` now only lists organizations (logo, name, link
+  to the public page, Settings pill for owner/admins, New organization);
+  the stats row and the Team/Analytics/Domains/Paths tabs are gone
+- New org settings page at `/org/<slug>/settings` (owner or admin member,
+  others are bounced back to the org page): add member by username with a
+  role, members table with remove, change logo; a note spells out that
+  members get access to all paths in the org
+- The public org page header gets a **Settings** pill beside Create path,
+  shown to owners and admin members
 
 ### Bug fixes
 

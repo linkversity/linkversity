@@ -1,0 +1,173 @@
+{% set active_page='org' %}
+{% extends 'linkolearn_theme/templates/base.html' %}
+
+{% block head %}
+<title>Settings · {{ org.name }} · {{ APP_NAME }}</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
+<style>
+    .data-table { width: 100%; text-align: left; font-size: 13.5px; }
+    .data-table thead tr {
+        border-bottom: 1px solid #e5e7eb;
+        color: #6b7280;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+    .data-table th { padding: 10px 14px; font-weight: 600; }
+    .data-table td { padding: 12px 14px; color: #374151; border-bottom: 1px solid #f3f4f6; }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table tbody tr:hover { background: #fafafa; }
+    @media (prefers-color-scheme: dark) {
+        .data-table thead tr { border-bottom-color: #262b36; color: #9ca3af; }
+        .data-table td { color: #d1d5db; border-bottom-color: #1c212b; }
+        .data-table tbody tr:hover { background: #12151a; }
+    }
+
+    .row-action {
+        color: #cc3f3f;
+        font-size: 12.5px;
+        font-weight: 600;
+        transition: color .15s ease;
+    }
+    .row-action:hover { color: #a02f2f; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <a href="{{ url_for('www.org_page', slug=org.slug) }}" class="hover:text-gray-900 dark:hover:text-gray-100">{{ org.name }}</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Settings</span>
+        </nav>
+        <div class="flex items-center gap-5">
+            {% if org.logo_url %}
+            <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-16 h-16 rounded-2xl object-cover border border-gray-200 dark:border-gray-700 shrink-0">
+            {% else %}
+            <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 text-xl shrink-0"><i class="fas fa-building"></i></div>
+            {% endif %}
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 truncate">Org settings</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5 truncate">
+                    {{ org.name }}
+                    {% if org.slug %}
+                    <span class="text-gray-300 dark:text-gray-600 mx-1">|</span>
+                    <a href="{{ url_for('www.org_page', slug=org.slug) }}" class="hover:text-[#cc3f3f]">/org/{{ org.slug }}</a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Members -->
+    <div class="path-card">
+        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1"><i class="fa fa-users mr-1.5 text-gray-400"></i>Members</h4>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Adding people to this organization grants them access to all paths in it.</p>
+
+        <form id="addMemberForm" class="flex items-end gap-2 flex-wrap mb-5">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <input type="hidden" name="team_id" value="{{ org.id }}">
+            <div class="flex-1 min-w-[180px]">
+                <label for="member-name" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Add member by username</label>
+                <input type="text" id="member-name" name="username" class="path-input" placeholder="username" required>
+            </div>
+            <div>
+                <label for="member-role" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Role</label>
+                <select id="member-role" name="role" class="path-input">
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+            </div>
+            <button type="submit" class="path-pill mb-0.5">Add member</button>
+        </form>
+
+        <div class="overflow-x-auto -mx-2">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="font-semibold text-gray-900 dark:text-gray-100">{{ owner.username if owner else 'Unknown' }}{% if owner and owner.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}</td>
+                        <td><span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-crown"></i> Owner</span></td>
+                        <td>{{ org.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td></td>
+                    </tr>
+                    {% for member in members %}
+                    <tr>
+                        <td class="font-semibold text-gray-900 dark:text-gray-100">{% if member.user %}{{ member.user.username }}{% if member.user.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}{% else %}User #{{ member.user_id }}{% endif %}</td>
+                        <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ member.role|title }}</span></td>
+                        <td>{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
+                        <td><button onclick="removeMember({{ member.id }})" class="row-action">Remove</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Logo (owner only) -->
+    {% if current_user.id == org.owner_id %}
+    <div class="path-card">
+        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3"><i class="fa fa-image mr-1.5 text-gray-400"></i>Logo</h4>
+        <form id="logoForm" class="flex items-end gap-2 flex-wrap">
+            <input type="hidden" name="team_id" value="{{ org.id }}">
+            <div class="flex-1 min-w-[180px]">
+                <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Change logo</label>
+                <input type="file" name="logo" accept="image/*" class="path-input" required>
+            </div>
+            <button type="submit" class="path-pill mb-0.5">Upload</button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+document.getElementById('addMemberForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_member") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+document.getElementById('logoForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.update_enterprise_logo") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
+async function removeMember(id) {
+    if (!confirm('Remove this member from the organization? They lose access to its paths.')) return;
+    const resp = await fetch(`/linkolearn/enterprise/remove-member/${id}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+}
+</script>
+
+{% endblock %}
