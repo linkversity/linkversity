@@ -214,6 +214,9 @@
             <a href="{{ url_for('linkolearn.delete_path', path_id=path.id) }}" class="path-pill danger" onclick="return confirm('Are you sure you want to delete this item?');" title="Delete this path">
                 <i class="fa fa-trash"></i> Delete
             </a>
+            {% if current_user.is_enterprise() %}
+            {{ preview_switch(path) }}
+            {% endif %}
         </div>
         {% endif %}
 

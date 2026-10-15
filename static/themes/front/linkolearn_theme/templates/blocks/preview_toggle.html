@@ -1,5 +1,6 @@
 {% macro preview_switch(path) %}
 <button type="button" class="vis-switch {{ 'on' if not path.disable_previews }}" role="switch"
+        data-lv-preview-switch
         aria-checked="{{ 'false' if path.disable_previews else 'true' }}"
         onclick="lvTogglePreviews({{ path.id }}, this)"
         title="{{ 'Link previews are off on this path' if path.disable_previews else 'Link previews are on for this path' }}">
@@ -9,7 +10,8 @@
 </button>
 <script>
 window.lvTogglePreviews = window.lvTogglePreviews || async function(pathId, btn) {
-    const off = btn.classList.contains('on') === false;
+    // currently On → click turns it Off (disable: true), and vice versa
+    const off = btn.classList.contains('on');
     try {
         const resp = await fetch("{{ url_for('linkolearn.set_preview_policy') }}", {
             method: 'POST',
@@ -25,13 +27,16 @@ window.lvTogglePreviews = window.lvTogglePreviews || async function(pathId, btn)
             return;
         }
         const disabled = data.disable_previews;
-        btn.classList.toggle('on', !disabled);
-        btn.setAttribute('aria-checked', String(!disabled));
-        btn.querySelector('.vis-label').textContent = disabled ? 'Off' : 'On';
-        btn.querySelector('i').className = 'fa ' + (disabled ? 'fa-eye-slash' : 'fa-eye');
-        btn.title = disabled
-            ? 'Link previews are off on this path'
-            : 'Link previews are on for this path';
+        // keep every preview switch on the page in sync (toolbar + manage card)
+        document.querySelectorAll('[data-lv-preview-switch]').forEach(function(b) {
+            b.classList.toggle('on', !disabled);
+            b.setAttribute('aria-checked', String(!disabled));
+            b.querySelector('.vis-label').textContent = disabled ? 'Off' : 'On';
+            b.querySelector('i').className = 'fa ' + (disabled ? 'fa-eye-slash' : 'fa-eye');
+            b.title = disabled
+                ? 'Link previews are off on this path'
+                : 'Link previews are on for this path';
+        });
         const desc = document.getElementById('preview-policy-desc');
         if (desc) {
             desc.textContent = disabled
