@@ -5,6 +5,48 @@
 <title>Settings · {{ org.name }} · {{ APP_NAME }}</title>
 {% include 'linkolearn_theme/templates/blocks/brand.html' %}
 <style>
+    .tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        border: 1px solid transparent;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .tab-btn:hover { color: #111827; }
+    .tab-btn.active {
+        background: #fff;
+        border-color: #e5e7eb;
+        color: #111827;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, .05);
+    }
+    @media (prefers-color-scheme: dark) {
+        .tab-btn { color: #9ca3af; }
+        .tab-btn:hover { color: #f3f4f6; }
+        .tab-btn.active { background: #16191e; border-color: #262b36; color: #f3f4f6; box-shadow: none; }
+    }
+
+    .stat-glyph {
+        width: 44px;
+        height: 44px;
+        flex: none;
+        border-radius: 12px;
+        background: #f7f7f8;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+        font-size: 17px;
+    }
+    @media (prefers-color-scheme: dark) {
+        .stat-glyph { background: #16191e; border-color: #262b36; color: #6b7280; }
+    }
+
     .data-table { width: 100%; text-align: left; font-size: 13.5px; }
     .data-table thead tr {
         border-bottom: 1px solid #e5e7eb;
@@ -30,6 +72,8 @@
         transition: color .15s ease;
     }
     .row-action:hover { color: #a02f2f; }
+
+    .modal-backdrop { background: rgba(17, 24, 39, .6); }
 </style>
 {% endblock %}
 
@@ -63,56 +107,171 @@
         </div>
     </header>
 
-    <!-- Members -->
-    <div class="path-card">
-        <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1"><i class="fa fa-users mr-1.5 text-gray-400"></i>Members</h4>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Adding people to this organization grants them access to all paths in it.</p>
-
-        <form id="addMemberForm" class="flex items-end gap-2 flex-wrap mb-5">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <input type="hidden" name="team_id" value="{{ org.id }}">
-            <div class="flex-1 min-w-[180px]">
-                <label for="member-name" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Add member by username</label>
-                <input type="text" id="member-name" name="username" class="path-input" placeholder="username" required>
-            </div>
+    <!-- stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-users"></i></span>
             <div>
-                <label for="member-role" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Role</label>
-                <select id="member-role" name="role" class="path-input">
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                    <option value="viewer">Viewer</option>
-                </select>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ members|length + 1 }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Members</div>
             </div>
-            <button type="submit" class="path-pill mb-0.5">Add member</button>
-        </form>
+        </div>
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-chart-simple"></i></span>
+            <div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ analytics|sum(attribute='event_count') if analytics else 0 }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total clicks</div>
+            </div>
+        </div>
+        <div class="path-card flex items-center gap-4 !py-4">
+            <span class="stat-glyph"><i class="fas fa-globe"></i></span>
+            <div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-gray-50 leading-none">{{ domains|length }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Custom domains</div>
+            </div>
+        </div>
+    </div>
 
-        <div class="overflow-x-auto -mx-2">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Joined</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="font-semibold text-gray-900 dark:text-gray-100">{{ owner.username if owner else 'Unknown' }}{% if owner and owner.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}</td>
-                        <td><span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-crown"></i> Owner</span></td>
-                        <td>{{ org.created_at.strftime('%Y-%m-%d') }}</td>
-                        <td></td>
-                    </tr>
-                    {% for member in members %}
-                    <tr>
-                        <td class="font-semibold text-gray-900 dark:text-gray-100">{% if member.user %}{{ member.user.username }}{% if member.user.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}{% else %}User #{{ member.user_id }}{% endif %}</td>
-                        <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ member.role|title }}</span></td>
-                        <td>{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
-                        <td><button onclick="removeMember({{ member.id }})" class="row-action">Remove</button></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <!-- management -->
+    <div class="path-card">
+        <div class="inline-flex flex-wrap items-center gap-1 mb-5 bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-full p-1">
+            <button onclick="showTab('members')" id="tab-members" class="tab-btn active" type="button"><i class="fas fa-users"></i> Members</button>
+            <button onclick="showTab('analytics')" id="tab-analytics" class="tab-btn" type="button"><i class="fas fa-chart-simple"></i> Analytics</button>
+            <button onclick="showTab('domains')" id="tab-domains" class="tab-btn" type="button"><i class="fas fa-globe"></i> Domains</button>
+        </div>
+
+        <!-- Members -->
+        <div id="content-members" class="tab-content">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Adding people to this organization grants them access to all paths in it.</p>
+
+            <form id="addMemberForm" class="flex items-end gap-2 flex-wrap mb-5">
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                <input type="hidden" name="team_id" value="{{ org.id }}">
+                <div class="flex-1 min-w-[180px]">
+                    <label for="member-name" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Add member by username</label>
+                    <input type="text" id="member-name" name="username" class="path-input" placeholder="username" required>
+                </div>
+                <div>
+                    <label for="member-role" class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Role</label>
+                    <select id="member-role" name="role" class="path-input">
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+                <button type="submit" class="path-pill mb-0.5">Add member</button>
+            </form>
+
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{{ owner.username if owner else 'Unknown' }}{% if owner and owner.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}</td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-crown"></i> Owner</span></td>
+                            <td>{{ org.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td></td>
+                        </tr>
+                        {% for member in members %}
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{% if member.user %}{{ member.user.username }}{% if member.user.id == current_user.id %} <span class="text-gray-400 font-normal">(you)</span>{% endif %}{% else %}User #{{ member.user_id }}{% endif %}</td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ member.role|title }}</span></td>
+                            <td>{{ member.joined_at.strftime('%Y-%m-%d') }}</td>
+                            <td><button onclick="removeMember({{ member.id }})" class="row-action">Remove</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div id="content-analytics" class="tab-content hidden">
+            <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">Link analytics</h4>
+            {% if analytics %}
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Link</th>
+                            <th>Clicks</th>
+                            <th>Country</th>
+                            <th>Device</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in analytics %}
+                        <tr>
+                            <td>{{ a.event_date }}</td>
+                            <td>Link #{{ a.link_id }}</td>
+                            <td><span class="path-chip !py-1 !px-2.5 !text-[11px]">{{ a.event_count }}</span></td>
+                            <td>{{ a.country or '-' }}</td>
+                            <td>{{ a.device_type or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="path-empty">
+                <div class="glyph"><i class="fas fa-chart-simple"></i></div>
+                <h3>No analytics yet</h3>
+                <p>Stats appear once your organization's links start getting clicks.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Domains -->
+        <div id="content-domains" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100">Custom domains</h4>
+                <button onclick="openModal('addDomainModal')" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Add domain</button>
+            </div>
+            {% if domains %}
+            <div class="overflow-x-auto -mx-2">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th>Status</th>
+                            <th>SSL</th>
+                            <th>Added</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in domains %}
+                        <tr>
+                            <td class="font-semibold text-gray-900 dark:text-gray-100">{{ domain.domain }}</td>
+                            <td>
+                                {% if domain.is_verified %}<span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-check"></i> Verified</span>
+                                {% else %}<span class="path-chip !py-1 !px-2.5 !text-[11px]"><i class="fas fa-clock"></i> Pending</span>{% endif %}
+                            </td>
+                            <td>
+                                {% if domain.ssl_enabled %}<i class="fa fa-lock text-gray-400"></i>{% else %}<i class="fa fa-lock-open text-gray-300 dark:text-gray-600"></i>{% endif %}
+                            </td>
+                            <td>{{ domain.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td><button onclick="removeDomain({{ domain.id }})" class="row-action">Remove</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="path-empty">
+                <div class="glyph"><i class="fas fa-globe"></i></div>
+                <h3>No custom domains</h3>
+                <p>Add a domain to serve your organization's paths from it.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -133,7 +292,47 @@
 
 </div>
 
+<!-- Add domain modal -->
+<div id="addDomainModal" class="fixed inset-0 modal-backdrop hidden items-center justify-center z-50 p-4">
+    <div class="path-card max-w-md w-full !p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Add custom domain</h3>
+            <button onclick="closeModal('addDomainModal')" class="path-tool" title="Close">&times;</button>
+        </div>
+        <form id="addDomainForm" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <input type="hidden" name="team_id" value="{{ org.id }}">
+            <div>
+                <label class="path-label">Domain</label>
+                <input type="text" name="domain" class="path-input w-full" placeholder="example.com" required>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Enter the domain without http://</p>
+            </div>
+            <div class="flex justify-end gap-2 pt-1">
+                <button type="button" onclick="closeModal('addDomainModal')" class="path-pill">Cancel</button>
+                <button type="submit" class="path-btn-primary">Add domain</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('content-' + tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.getElementById(id).classList.add('flex');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.getElementById(id).classList.remove('flex');
+}
+
 document.getElementById('addMemberForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -158,9 +357,32 @@ document.getElementById('logoForm')?.addEventListener('submit', async (e) => {
     else alert(data.error);
 });
 
+document.getElementById('addDomainForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resp = await fetch('{{ url_for("linkolearn.add_enterprise_domain") }}', {
+        method: 'POST',
+        body: formData
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+});
+
 async function removeMember(id) {
     if (!confirm('Remove this member from the organization? They lose access to its paths.')) return;
     const resp = await fetch(`/linkolearn/enterprise/remove-member/${id}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+    });
+    const data = await resp.json();
+    if (data.success) location.reload();
+    else alert(data.error);
+}
+
+async function removeDomain(id) {
+    if (!confirm('Remove this domain?')) return;
+    const resp = await fetch(`/linkolearn/enterprise/remove-domain/${id}/`, {
         method: 'POST',
         headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
     });

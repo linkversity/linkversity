@@ -268,6 +268,8 @@ def org_settings(slug):
     """Members management and logo for one organization, owner/admin only."""
     from modules.box__default.auth.models import EnterpriseTeam
     from modules.box__linkolearn.linkolearn.enterprise_features import (
+        EnterpriseAnalytics,
+        EnterpriseCustomDomain,
         EnterpriseTeamMember,
     )
     from modules.box__linkolearn.linkolearn.view import _authorized_org
@@ -281,12 +283,21 @@ def org_settings(slug):
     members = EnterpriseTeamMember.query.filter_by(team_id=org.id).all()
     for m in members:
         m.user = User.query.get(m.user_id)
+    analytics = (
+        EnterpriseAnalytics.query.filter_by(team_id=org.id)
+        .order_by(EnterpriseAnalytics.event_date.desc())
+        .limit(30)
+        .all()
+    )
+    domains = EnterpriseCustomDomain.query.filter_by(team_id=org.id).all()
 
     return render_template(
         "linkolearn_theme/templates/org_settings.html",
         org=org,
         owner=owner,
         members=members,
+        analytics=analytics,
+        domains=domains,
     )
 
 

@@ -112,9 +112,13 @@
   to the public page, Settings pill for owner/admins, New organization);
   the stats row and the Team/Analytics/Domains/Paths tabs are gone
 - New org settings page at `/org/<slug>/settings` (owner or admin member,
-  others are bounced back to the org page): add member by username with a
-  role, members table with remove, change logo; a note spells out that
-  members get access to all paths in the org
+  others are bounced back to the org page): the dashboard's per-org
+  management moved here wholesale — stats row (members, total clicks,
+  custom domains) plus Members / Analytics / Domains tabs (add member by
+  username with role, members table with remove, link-click table,
+  add/remove custom domain), change logo below; a note spells out that
+  members get access to all paths in the org (the Paths tab stays out,
+  the org page already lists them)
 - The public org page header gets a **Settings** pill beside Create path,
   shown to owners and admin members
 
