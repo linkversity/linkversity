@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 
 from shopyo.api.models import PkModel
-from modules.box__default.auth.models import User
+from modules.box__default.auth.models import EnterpriseTeam, User
 from modules.box__linkolearn.linkolearn.enterprise_features import EnterpriseTeamMember
 from init import db
 
@@ -74,15 +74,41 @@ class Path(PkModel):
         if user in self.editors:
             self.editors.remove(user)
 
-    def can_edit(self, user):
-        if user == self.path_user or user in self.editors:
+    def is_org_member(self, user):
+        """True when the user belongs to this path's organization (any role)."""
+        if not self.team_id or user is None:
+            return False
+        if not getattr(user, "is_authenticated", False):
+            return False
+        team = EnterpriseTeam.query.get(self.team_id)
+        if team and team.owner_id == user.id:
             return True
-        if self.team_id and user.team_id == self.team_id:
-            member = EnterpriseTeamMember.query.filter_by(
+        return (
+            EnterpriseTeamMember.query.filter_by(
                 team_id=self.team_id, user_id=user.id
             ).first()
-            return member and member.role in ["admin", "member"]
-        return False
+            is not None
+        )
+
+    def can_edit(self, user):
+        """Owner, explicit editor, or org member with an admin/member role.
+
+        Adding someone to the organization grants them access to every
+        path owned by that organization.
+        """
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        if user == self.path_user or user in self.editors:
+            return True
+        if not self.team_id:
+            return False
+        team = EnterpriseTeam.query.get(self.team_id)
+        if team and team.owner_id == user.id:
+            return True
+        member = EnterpriseTeamMember.query.filter_by(
+            team_id=self.team_id, user_id=user.id
+        ).first()
+        return member is not None and member.role in ("admin", "member")
 
     def is_team_path(self):
         return self.team_id is not None

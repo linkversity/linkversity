@@ -118,7 +118,11 @@ def _check_path_access(path):
     if path.is_visible:
         return None
     if current_user.is_authenticated:
-        if path.path_user == current_user or current_user in path.editors:
+        if (
+            path.path_user == current_user
+            or current_user in path.editors
+            or path.is_org_member(current_user)
+        ):
             return None
         if path.is_password_protected:
             return None

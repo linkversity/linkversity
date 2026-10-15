@@ -218,7 +218,7 @@
         </div>
         {% endif %}
 
-        {% if current_user != path.path_user and current_user in path.editors %}
+        {% if current_user != path.path_user and path.can_edit(current_user) %}
         <div class="mt-5 pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center flex-wrap gap-3">
             <a href="{{ url_for('linkolearn.edit_path', path_id=path.id) }}" class="path-btn-primary">
                 <i class="fa fa-pencil-alt"></i> Edit path
@@ -266,8 +266,8 @@
     {% endif %}
 
     <!-- ============ sections ============ -->
-    {% if current_user == path.path_user or current_user in path.editors or not path.is_password_protected or has_entered_password %}
-        {{ render_sections(path, current_user in path.editors or current_user == path.path_user) }}
+    {% if path.can_edit(current_user) or not path.is_password_protected or has_entered_password %}
+        {{ render_sections(path, path.can_edit(current_user)) }}
     {% else %}
     <div class="path-card text-center py-12">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 mb-3">

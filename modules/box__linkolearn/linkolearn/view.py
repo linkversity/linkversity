@@ -280,10 +280,9 @@ def delete_path(path_id):
 @login_required
 def edit_path(path_id):
     path = Path.query.get(path_id)
-    if not (path.path_user == current_user):
-        if not (current_user in path.editors):
-            flash("Insufficient permission", "warning")
-            return redirect(path.get_url())
+    if not path or not path.can_edit(current_user):
+        flash("Insufficient permission", "warning")
+        return redirect(path.get_url() if path else url_for("www.index"))
 
     if request.method == "GET":
         context = {}
@@ -457,7 +456,7 @@ def move_link():
         return jsonify({"success": False, "error": "Invalid data"})
 
     path = to_section.section_path
-    if not (current_user == path.path_user or current_user in path.editors):
+    if not path.can_edit(current_user):
         return jsonify({"success": False, "error": "Permission denied"})
 
     link.section_id = to_section.id

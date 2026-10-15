@@ -101,6 +101,12 @@
   admin member role, not by the global enterprise plan; add-member /
   add-domain now target the selected org
 - `org` is a reserved username (public org pages live at `/org/...`)
+- Team membership grants access to **all** paths in the org: `Path.can_edit`
+  now resolves membership directly from `EnterpriseTeamMember` rows (owner,
+  admin or member role) instead of the legacy single `user.team_id` pointer,
+  `Path.is_org_member()` opens private org paths to any member, and the path
+  page toolbar, edit page, add/move link and visibility switch all follow
+  `can_edit`; viewers get read access but no edit controls
 
 ### Bug fixes
 
