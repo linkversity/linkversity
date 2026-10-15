@@ -1,0 +1,51 @@
+{% macro preview_switch(path) %}
+<button type="button" class="vis-switch {{ 'on' if not path.disable_previews }}" role="switch"
+        data-lv-preview-switch
+        aria-checked="{{ 'false' if path.disable_previews else 'true' }}"
+        onclick="lvTogglePreviews({{ path.id }}, this)"
+        title="{{ 'Link previews are off on this path' if path.disable_previews else 'Link previews are on for this path' }}">
+    <span class="track"></span>
+    <i class="fa {{ 'fa-eye' if not path.disable_previews else 'fa-eye-slash' }}"></i>
+    <span class="vis-label">{{ 'On' if not path.disable_previews else 'Off' }}</span>
+</button>
+<script>
+window.lvTogglePreviews = window.lvTogglePreviews || async function(pathId, btn) {
+    // currently On → click turns it Off (disable: true), and vice versa
+    const off = btn.classList.contains('on');
+    try {
+        const resp = await fetch("{{ url_for('linkolearn.set_preview_policy') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ path_id: pathId, disable: off })
+        });
+        const data = await resp.json();
+        if (!data.success) {
+            alert(data.error || 'Could not update preview setting');
+            return;
+        }
+        const disabled = data.disable_previews;
+        // keep every preview switch on the page in sync (toolbar + manage card)
+        document.querySelectorAll('[data-lv-preview-switch]').forEach(function(b) {
+            b.classList.toggle('on', !disabled);
+            b.setAttribute('aria-checked', String(!disabled));
+            b.querySelector('.vis-label').textContent = disabled ? 'Off' : 'On';
+            b.querySelector('i').className = 'fa ' + (disabled ? 'fa-eye-slash' : 'fa-eye');
+            b.title = disabled
+                ? 'Link previews are off on this path'
+                : 'Link previews are on for this path';
+        });
+        const desc = document.getElementById('preview-policy-desc');
+        if (desc) {
+            desc.textContent = disabled
+                ? 'Off | links added to this path stay plain (no title/image fetch)'
+                : 'On | generate previews for any link';
+        }
+    } catch (e) {
+        alert('Could not update preview setting');
+    }
+};
+</script>
+{% endmacro %}

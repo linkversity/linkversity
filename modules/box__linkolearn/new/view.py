@@ -63,8 +63,14 @@ def scrape_link_metadata(url):
 @module_blueprint.route("/")
 @login_required
 def index():
+    from modules.box__linkolearn.linkolearn.view import user_organizations
+
     team_id = request.args.get("team_id")
-    return render_template("linkolearn_theme/templates/new.html", team_id=team_id)
+    # any user with orgs (owner or member) gets the picker; others get none
+    orgs = user_organizations(current_user)
+    return render_template(
+        "linkolearn_theme/templates/new.html", team_id=team_id, orgs=orgs
+    )
 
 
 @module_blueprint.route("/check-slug", methods=["GET"])
@@ -73,15 +79,17 @@ def check_slug():
     slug = request.args.get("slug", "")
     slug = Path.slugify(slug)
     team_id = request.args.get("team_id")
+    exclude_path_id = request.args.get("exclude_path_id")
 
+    query = Path.query.filter(Path.slug == slug)
     if team_id:
-        exists = Path.query.filter(
-            Path.slug == slug, Path.team_id == int(team_id)
-        ).first()
+        query = query.filter(Path.team_id == int(team_id))
     else:
-        exists = Path.query.filter(
-            Path.slug == slug, Path.user_id == current_user.id
-        ).first()
+        query = query.filter(Path.user_id == current_user.id)
+    if exclude_path_id:
+        # edit page checks availability excluding the path being edited
+        query = query.filter(Path.id != int(exclude_path_id))
+    exists = query.first()
 
     return jsonify({"available": not exists, "slug": slug})
 
@@ -100,8 +108,11 @@ def add():
         return jsonify({"errmsg": "Slug should not be empty"})
 
     if team_id:
-        if not current_user.is_enterprise() or current_user.team_id != int(team_id):
-            return jsonify({"errmsg": "Invalid team"})
+        from modules.box__linkolearn.linkolearn.view import user_organizations
+
+        valid_org_ids = {o.id for o in user_organizations(current_user)}
+        if int(team_id) not in valid_org_ids:
+            return jsonify({"errmsg": "Invalid organization"})
         exists = Path.query.filter(
             Path.slug == path_link, Path.team_id == int(team_id)
         ).first()
@@ -166,8 +177,7 @@ def add():
     path.path_user = current_user
     path.save()
 
-    next_url = url_for("www.path", username=current_user.username, path_slug=path.slug)
-    # next_url = f"{current_user.username}/{path.slug}"
+    next_url = path.get_url()
     return jsonify({"goto": next_url})
 
 

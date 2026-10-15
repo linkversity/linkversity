@@ -1,4 +1,7 @@
 from shopyo.api.module import ModuleHelp
+import os
+import uuid
+
 from flask import render_template
 from flask import url_for
 from flask import redirect
@@ -6,6 +9,7 @@ from flask import flash
 from flask import request
 from flask import jsonify
 from flask import session
+from flask import current_app
 
 # from shopyo.api.html import notify_success
 # from shopyo.api.forms import flash_errors
@@ -170,6 +174,24 @@ def set_visibility():
     return jsonify({"success": True, "is_visible": path.is_visible})
 
 
+@module_blueprint.route("/set-preview-policy", methods=["POST"])
+@login_required
+def set_preview_policy():
+    data = request.get_json(silent=True) or {}
+    path = Path.query.get(data.get("path_id"))
+    if not path:
+        return jsonify({"success": False, "error": "Path not found"})
+    if not current_user.is_enterprise() or current_user != path.path_user:
+        return jsonify(
+            {"success": False, "error": "Enterprise path owners only"}
+        )
+    path.disable_previews = bool(data.get("disable"))
+    path.update()
+    return jsonify(
+        {"success": True, "disable_previews": path.disable_previews}
+    )
+
+
 @module_blueprint.route("/settings", methods=["GET"])
 @login_required
 def settings():
@@ -258,10 +280,9 @@ def delete_path(path_id):
 @login_required
 def edit_path(path_id):
     path = Path.query.get(path_id)
-    if not (path.path_user == current_user):
-        if not (current_user in path.editors):
-            flash("Insufficient permission", "warning")
-            return redirect(path.get_url())
+    if not path or not path.can_edit(current_user):
+        flash("Insufficient permission", "warning")
+        return redirect(path.get_url() if path else url_for("www.index"))
 
     if request.method == "GET":
         context = {}
@@ -435,7 +456,7 @@ def move_link():
         return jsonify({"success": False, "error": "Invalid data"})
 
     path = to_section.section_path
-    if not (current_user == path.path_user or current_user in path.editors):
+    if not path.can_edit(current_user):
         return jsonify({"success": False, "error": "Permission denied"})
 
     link.section_id = to_section.id
@@ -456,6 +477,12 @@ def generate_preview():
 
     if not link:
         return jsonify({"success": False, "error": "Link not found"})
+
+    if link.link_section.section_path.disable_previews:
+        return jsonify(
+            {"success": False,
+             "error": "Link previews are disabled on this path"}
+        )
 
     try:
         import requests
@@ -511,6 +538,139 @@ def remove_preview():
     return jsonify({"success": True})
 
 
+@module_blueprint.route("/remove-all-previews", methods=["POST"])
+@login_required
+def remove_all_previews():
+    data = request.get_json(silent=True) or {}
+    path = Path.query.get(data.get("path_id"))
+    if not path:
+        return jsonify({"success": False, "error": "Path not found"})
+    if not (current_user == path.path_user or current_user in path.editors):
+        return jsonify({"success": False, "error": "Permission denied"})
+
+    links = Link.query.join(Section).filter(Section.path_id == path.id).all()
+    cleared = 0
+    for link in links:
+        if link.title or link.description or link.image_url:
+            link.title = None
+            link.description = None
+            link.image_url = None
+            cleared += 1
+    db.session.commit()
+    return jsonify({"success": True, "cleared": cleared})
+
+
+@module_blueprint.route("/track-click", methods=["POST"])
+def track_click():
+    """Record a click on an org path link for the org's analytics.
+
+    Called from the path page via keepalive fetch, so no login (public
+    visitors click too). Only org paths are tracked.
+    """
+    data = request.get_json(silent=True) or {}
+    link = Link.query.get(data.get("link_id"))
+    if not link or not link.link_section:
+        return jsonify({"success": False})
+    path = link.link_section.section_path
+    if not path or not path.team_id:
+        return jsonify({"success": False, "error": "Not an organization path"})
+
+    ua = request.user_agent.string or ""
+    ua_l = ua.lower()
+    if "tablet" in ua_l or "ipad" in ua_l:
+        device = "Tablet"
+    elif "mobile" in ua_l:
+        device = "Mobile"
+    else:
+        device = "Desktop"
+
+    EnterpriseAnalytics.track_click(
+        team_id=path.team_id,
+        link_id=link.id,
+        referrer=(request.referrer or None),
+        user_agent=ua[:500] or None,
+        device_type=device,
+    )
+    return jsonify({"success": True})
+
+
+ALLOWED_LOGO_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+
+
+def user_organizations(user):
+    """Orgs the user owns or is a member of, owned ones first."""
+    owned = (
+        EnterpriseTeam.query.filter_by(owner_id=user.id)
+        .order_by(EnterpriseTeam.created_at)
+        .all()
+    )
+    member_ids = [
+        m.team_id
+        for m in EnterpriseTeamMember.query.filter_by(user_id=user.id).all()
+    ]
+    member_of = []
+    if member_ids:
+        member_of = (
+            EnterpriseTeam.query.filter(
+                EnterpriseTeam.id.in_(member_ids),
+                EnterpriseTeam.owner_id != user.id,
+            )
+            .order_by(EnterpriseTeam.created_at)
+            .all()
+        )
+    return owned + member_of
+
+
+def _authorized_org(team_id=None):
+    """Org a management action applies to: owner or member with admin role."""
+    team_id = team_id or current_user.team_id
+    if not team_id:
+        return None
+    team = EnterpriseTeam.query.get(team_id)
+    if not team:
+        return None
+    if team.owner_id == current_user.id:
+        return team
+    member = EnterpriseTeamMember.query.filter_by(
+        team_id=team.id, user_id=current_user.id
+    ).first()
+    if member and member.role == "admin":
+        return team
+    return None
+
+
+def _save_org_logo(file, team_id):
+    """Persist an uploaded org logo under static/uploads, return its URL."""
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_LOGO_EXTS:
+        raise ValueError("Logo must be a PNG, JPG, GIF, WebP or SVG image")
+    file.stream.seek(0, os.SEEK_END)
+    if file.stream.tell() > 2 * 1024 * 1024:
+        raise ValueError("Logo must be smaller than 2 MB")
+    file.stream.seek(0)
+    base_dir = current_app.config.get("BASE_DIR")
+    rel_dir = os.path.join("static", "uploads", "org_logos")
+    os.makedirs(os.path.join(base_dir, rel_dir), exist_ok=True)
+    name = f"org_{team_id}_{uuid.uuid4().hex[:8]}{ext}"
+    file.save(os.path.join(base_dir, rel_dir, name))
+    return f"/static/uploads/org_logos/{name}"
+
+
+def _unique_org_slug(name):
+    base = Path.slugify(name) or "org"
+    used = {
+        row[0]
+        for row in db.session.query(EnterpriseTeam.slug)
+        .filter(EnterpriseTeam.slug.isnot(None))
+        .all()
+    }
+    slug, n = base, 2
+    while slug in used:
+        slug = f"{base}-{n}"
+        n += 1
+    return slug
+
+
 @module_blueprint.route("/enterprise/", methods=["GET"])
 @login_required
 def enterprise_dashboard():
@@ -518,37 +678,14 @@ def enterprise_dashboard():
         flash("Enterprise plan required", "error")
         return redirect(url_for("linkolearn.dashboard"))
 
-    team = None
-    if current_user.team_id:
-        team = EnterpriseTeam.query.get(current_user.team_id)
-
-    members = []
-    analytics = []
-    domains = []
-    team_paths = []
-
-    if team:
-        members = EnterpriseTeamMember.query.filter_by(team_id=team.id).all()
-        for m in members:
-            m.user = User.query.get(m.user_id)
-        analytics = (
-            EnterpriseAnalytics.query.filter_by(team_id=team.id)
-            .order_by(EnterpriseAnalytics.event_date.desc())
-            .limit(30)
-            .all()
-        )
-        domains = EnterpriseCustomDomain.query.filter_by(team_id=team.id).all()
-        team_paths = Path.query.filter_by(team_id=team.id).all()
-        for p in team_paths:
-            p.owner = User.query.get(p.user_id)
+    orgs = user_organizations(current_user)
+    # orgs the viewer may open the settings page for (owner or admin member)
+    manageable = {o.id for o in orgs if _authorized_org(o.id)}
 
     return render_template(
         "linkolearn_theme/templates/enterprise.html",
-        team=team,
-        members=members,
-        analytics=analytics,
-        domains=domains,
-        team_paths=team_paths,
+        orgs=orgs,
+        manageable=manageable,
     )
 
 
@@ -558,22 +695,61 @@ def create_enterprise_team():
     if not current_user.is_enterprise():
         return jsonify({"success": False, "error": "Enterprise plan required"})
 
-    if current_user.team_id and EnterpriseTeam.query.get(current_user.team_id):
-        return jsonify({"success": False, "error": "Team already exists"})
-
-    team_name = request.form.get("team_name")
+    team_name = (request.form.get("team_name") or "").strip()
     if not team_name:
-        return jsonify({"success": False, "error": "Team name required"})
+        return jsonify({"success": False, "error": "Organization name required"})
 
-    team = current_user.create_enterprise_team(team_name)
+    team = EnterpriseTeam(
+        name=team_name,
+        slug=_unique_org_slug(team_name),
+        owner_id=current_user.id,
+    )
+    team.save()
+
+    logo = request.files.get("logo")
+    if logo and logo.filename:
+        try:
+            team.logo_url = _save_org_logo(logo, team.id)
+            team.save()
+        except ValueError as e:
+            return jsonify({"success": False, "error": str(e)})
+
+    # keep the legacy pointer: the first org becomes the default team
+    if not current_user.team_id:
+        current_user.team_id = team.id
+        current_user.save()
+
     return jsonify({"success": True, "team_id": team.id})
+
+
+@module_blueprint.route("/enterprise/update-logo/", methods=["POST"])
+@login_required
+def update_enterprise_logo():
+    team = EnterpriseTeam.query.get(request.form.get("team_id", type=int))
+    if not team:
+        return jsonify({"success": False, "error": "Organization not found"})
+    if team.owner_id != current_user.id:
+        return jsonify(
+            {"success": False,
+             "error": "Only the organization owner can change the logo"}
+        )
+    logo = request.files.get("logo")
+    if not logo or not logo.filename:
+        return jsonify({"success": False, "error": "Choose an image first"})
+    try:
+        team.logo_url = _save_org_logo(logo, team.id)
+        team.save()
+    except ValueError as e:
+        return jsonify({"success": False, "error": str(e)})
+    return jsonify({"success": True, "logo_url": team.logo_url})
 
 
 @module_blueprint.route("/enterprise/add-member/", methods=["POST"])
 @login_required
 def add_enterprise_member():
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
+    team = _authorized_org(request.form.get("team_id", type=int))
+    if not team:
+        return jsonify({"success": False, "error": "Not allowed for this organization"})
 
     username = request.form.get("username")
     role = request.form.get("role", "member")
@@ -583,18 +759,19 @@ def add_enterprise_member():
         return jsonify({"success": False, "error": "User not found"})
 
     existing = EnterpriseTeamMember.query.filter_by(
-        team_id=current_user.team_id, user_id=user.id
+        team_id=team.id, user_id=user.id
     ).first()
     if existing:
         return jsonify({"success": False, "error": "User already in team"})
 
-    member = EnterpriseTeamMember.add_member(current_user.team_id, user.id, role)
+    member = EnterpriseTeamMember.add_member(team.id, user.id, role)
 
-    user.team_id = current_user.team_id
+    if not user.team_id:
+        user.team_id = team.id
     db.session.commit()
 
     EnterpriseAuditLog.log_action(
-        team_id=current_user.team_id,
+        team_id=team.id,
         user_id=current_user.id,
         action="member_added",
         details=f"Added {username} as {role}",
@@ -606,15 +783,14 @@ def add_enterprise_member():
 @module_blueprint.route("/enterprise/remove-member/<int:member_id>/", methods=["POST"])
 @login_required
 def remove_enterprise_member(member_id):
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
     member = EnterpriseTeamMember.query.get(member_id)
-    if not member or member.team_id != current_user.team_id:
+    if not member:
         return jsonify({"success": False, "error": "Member not found"})
+    if not _authorized_org(member.team_id):
+        return jsonify({"success": False, "error": "Not allowed for this organization"})
 
     user = User.query.get(member.user_id)
-    if user:
+    if user and user.team_id == member.team_id:
         user.team_id = None
 
     db.session.delete(member)
@@ -626,8 +802,9 @@ def remove_enterprise_member(member_id):
 @module_blueprint.route("/enterprise/add-domain/", methods=["POST"])
 @login_required
 def add_enterprise_domain():
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
+    team = _authorized_org(request.form.get("team_id", type=int))
+    if not team:
+        return jsonify({"success": False, "error": "Not allowed for this organization"})
 
     domain = request.form.get("domain")
     if not domain:
@@ -637,10 +814,10 @@ def add_enterprise_domain():
     if existing:
         return jsonify({"success": False, "error": "Domain already in use"})
 
-    custom_domain = EnterpriseCustomDomain.add_domain(current_user.team_id, domain)
+    custom_domain = EnterpriseCustomDomain.add_domain(team.id, domain)
 
     EnterpriseAuditLog.log_action(
-        team_id=current_user.team_id,
+        team_id=team.id,
         user_id=current_user.id,
         action="domain_added",
         details=f"Added domain {domain}",
@@ -652,11 +829,8 @@ def add_enterprise_domain():
 @module_blueprint.route("/enterprise/remove-domain/<int:domain_id>/", methods=["POST"])
 @login_required
 def remove_enterprise_domain(domain_id):
-    if not current_user.is_enterprise() or not current_user.team_id:
-        return jsonify({"success": False, "error": "Enterprise plan required"})
-
     domain = EnterpriseCustomDomain.query.get(domain_id)
-    if not domain or domain.team_id != current_user.team_id:
+    if not domain or not _authorized_org(domain.team_id):
         return jsonify({"success": False, "error": "Domain not found"})
 
     db.session.delete(domain)

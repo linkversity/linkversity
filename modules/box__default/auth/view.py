@@ -15,9 +15,6 @@ from flask_login import login_user
 from flask_login import logout_user
 from sqlalchemy import func
 
-from shopyo.api.html import notify_danger
-from shopyo.api.html import notify_success
-from shopyo.api.html import notify_warning
 from shopyo.api.security import get_safe_redirect
 
 from sqlalchemy import func
@@ -56,21 +53,18 @@ def register():
             username = reg_form.username.data
             if not username.replace('-', '').isalnum():
                 print('4.1')
-                flash('')
-                flash(notify_warning('Username must have only alphanumeric and - characters'))
+                flash('Usernames may only contain letters, numbers and dashes', 'error')
                 return redirect(url_for('www.index'))
-            if username.lower() in ['contact', 'about', 'privacy-policy']:
+            if username.lower() in ['contact', 'about', 'privacy-policy', 'org']:
                 print('4.2')
-                flash('')
-                flash(notify_warning('Username must cannot be in reserved keywords'))
+                flash('That username is reserved', 'error')
                 return redirect(url_for('www.index'))
             user = User.query.filter(
                 func.lower(User.username) == func.lower(username)
                 ).first()
             if (not user is None):
                 print('4.3')
-                flash('')
-                flash(notify_warning('Username exists'))
+                flash('That username is already taken', 'error')
                 return redirect(url_for('www.index'))
             user = User.create(
                 password=password,
@@ -170,7 +164,7 @@ def login():
         if user is None or not user.check_password(password):
             if request.is_json:
                 return jsonify({"message": "Invalid email/username or password"}), 401
-            flash(notify_danger("please check your user id and password"))
+            flash("Please check your user id and password", "error")
             return redirect(url_for("auth.login"))
         
         login_user(user)
@@ -243,7 +237,7 @@ def api_login():
 @login_required
 def logout():
     logout_user()
-    flash("Successfully logged out")
+    flash("Successfully logged out", "success")
 
     if "next" not in request.args:
         next_url = url_for("www.index")

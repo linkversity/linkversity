@@ -1,0 +1,77 @@
+{%set active_page='org'%}
+{%extends 'linkolearn_theme/templates/base.html'%}
+
+{% block head %}
+<title>{{ org.name }} · {{ APP_NAME }}</title>
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
+{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">Organizations</span>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200">{{ org.name }}</span>
+        </nav>
+        <div class="flex items-start gap-5">
+            {% if org.logo_url %}
+            <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-20 h-20 rounded-2xl object-cover border border-gray-200 dark:border-gray-700 shrink-0">
+            {% else %}
+            <div class="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-400 text-2xl shrink-0"><i class="fas fa-building"></i></div>
+            {% endif %}
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 truncate">{{ org.name }}</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+                    {% if owner %}
+                    <a href="{{ url_for('www.user_profile', username=owner.username) }}" class="hover:text-gray-900 dark:hover:text-gray-100">@{{ owner.username }}</a>
+                    <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
+                    {% endif %}
+                    {{ public_paths|length }} public path{{ '' if public_paths|length == 1 else 's' }}
+                </p>
+            </div>
+            {% if can_create or can_manage %}
+            <div class="flex items-center gap-2 shrink-0 ml-auto">
+                {% if can_manage %}
+                <a href="{{ url_for('www.org_settings', slug=org.slug) }}" class="path-pill"><i class="fa fa-cog text-[10px]"></i> Settings</a>
+                {% endif %}
+                {% if can_create %}
+                <a href="{{ url_for('new.index') }}?team_id={{ org.id }}" class="path-pill"><i class="fa fa-plus text-[10px]"></i> Create path</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if public_paths %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% for path in public_paths %}
+        {% set ns = namespace(links=0) %}
+        {% for s in path.sections %}{% set ns.links = ns.links + s.links|length %}{% endfor %}
+        <div class="path-link-card">
+            <div class="min-w-0">
+                <a href="{{ path.get_url() }}" class="title truncate hover:text-[#cc3f3f]">{{ path.slug }}</a>
+                <div class="sub truncate">by {{ path.owner.username if path.owner else 'Unknown' }}</div>
+            </div>
+            <div class="badges">
+                <span class="path-badge"><i class="fas fa-list"></i> {{ path.sections|length }} section{{ '' if path.sections|length == 1 else 's' }}</span>
+                <span class="path-badge"><i class="fas fa-link"></i> {{ ns.links }} link{{ '' if ns.links == 1 else 's' }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="path-card">
+        <div class="path-empty">
+            <div class="glyph"><i class="fas fa-book-open"></i></div>
+            <h3>No public paths yet</h3>
+            <p>Paths this organization publishes will appear here.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

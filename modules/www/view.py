@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 from flask import url_for
 from flask import redirect
@@ -113,32 +114,26 @@ def user_profile(username):
     return render_template("linkolearn_theme/templates/profile.html", **context)
 
 
-@module_blueprint.route("/<username>/<path_slug>")
-def path(username, path_slug):
-    user = User.query.filter(
-        func.lower(User.username) == func.lower(username)
-    ).first_or_404()
-    path = Path.query.filter(
-        Path.slug == path_slug, Path.user_id == user.id
-    ).first_or_404()
-    if not path.is_visible:
-        if current_user.is_authenticated:
-            if path.path_user == current_user:
-                pass
-            elif current_user in path.editors:
-                pass
-            elif path.is_password_protected:
-                pass
-            else:
-                flash(notify("Path not public!", alert_type="warning"))
-                return redirect(url_for("www.index"))
-        else:
-            if path.is_password_protected:
-                pass
-            else:
-                flash(notify("Path not public!", alert_type="warning"))
-                return redirect(url_for("www.index"))
+def _check_path_access(path):
+    """Flash+redirect when a non-visible path may not be shown, else None."""
+    if path.is_visible:
+        return None
+    if current_user.is_authenticated:
+        if (
+            path.path_user == current_user
+            or current_user in path.editors
+            or path.is_org_member(current_user)
+        ):
+            return None
+        if path.is_password_protected:
+            return None
+    elif path.is_password_protected:
+        return None
+    flash(notify("Path not public!", alert_type="warning"))
+    return redirect(url_for("www.index"))
 
+
+def _render_path(path):
     context = {}
 
     url = path.get_url().replace("/", "_")
@@ -167,13 +162,54 @@ def path(username, path_slug):
 
     context.update(
         {
-            "user": user,
+            "user": path.path_user,
             "path": path,
             "has_entered_password": has_entered_password,
             "session": session,
         }
     )
     return render_template("linkolearn_theme/templates/path.html", **context)
+
+
+@module_blueprint.route("/<username>/<path_slug>")
+def path(username, path_slug):
+    user = User.query.filter(
+        func.lower(User.username) == func.lower(username)
+    ).first_or_404()
+    path = Path.query.filter(
+        Path.slug == path_slug, Path.user_id == user.id
+    ).first_or_404()
+    denied = _check_path_access(path)
+    if denied:
+        return denied
+
+    # org-linked paths have a canonical /org/<org>/<slug> address
+    if path.team_id:
+        from modules.box__default.auth.models import EnterpriseTeam
+
+        team = EnterpriseTeam.query.get(path.team_id)
+        if team and team.slug:
+            return redirect(
+                url_for(
+                    "www.org_path", org_slug=team.slug, path_slug=path.slug
+                )
+            )
+
+    return _render_path(path)
+
+
+@module_blueprint.route("/org/<org_slug>/<path_slug>")
+def org_path(org_slug, path_slug):
+    from modules.box__default.auth.models import EnterpriseTeam
+
+    org = EnterpriseTeam.query.filter_by(slug=org_slug).first_or_404()
+    path = Path.query.filter(
+        Path.slug == path_slug, Path.team_id == org.id
+    ).first_or_404()
+    denied = _check_path_access(path)
+    if denied:
+        return denied
+    return _render_path(path)
 
 
 @module_blueprint.route("/privacy-policy")
@@ -194,6 +230,104 @@ def about():
 @module_blueprint.route("/info")
 def info():
     return render_template("linkolearn_theme/templates/info.html")
+
+
+@module_blueprint.route("/org/<slug>")
+def org_page(slug):
+    from modules.box__default.auth.models import EnterpriseTeam
+
+    org = EnterpriseTeam.query.filter_by(slug=slug).first_or_404()
+    owner = User.query.get(org.owner_id)
+    public_paths = Path.query.filter_by(team_id=org.id, is_visible=True).all()
+    for p in public_paths:
+        p.owner = User.query.get(p.user_id)
+
+    can_create = False
+    can_manage = False
+    if current_user.is_authenticated:
+        from modules.box__linkolearn.linkolearn.view import (
+            _authorized_org,
+            user_organizations,
+        )
+
+        can_create = org.id in [o.id for o in user_organizations(current_user)]
+        can_manage = _authorized_org(org.id) is not None
+
+    return render_template(
+        "linkolearn_theme/templates/org.html",
+        org=org,
+        owner=owner,
+        public_paths=public_paths,
+        can_create=can_create,
+        can_manage=can_manage,
+    )
+
+
+@module_blueprint.route("/org/<slug>/settings")
+@login_required
+def org_settings(slug):
+    """Members management and logo for one organization, owner/admin only."""
+    from modules.box__default.auth.models import EnterpriseTeam
+    from modules.box__linkolearn.linkolearn.enterprise_features import (
+        EnterpriseAnalytics,
+        EnterpriseCustomDomain,
+        EnterpriseTeamMember,
+    )
+    from modules.box__linkolearn.linkolearn.view import _authorized_org
+
+    org = EnterpriseTeam.query.filter_by(slug=slug).first_or_404()
+    if _authorized_org(org.id) is None:
+        flash("Insufficient permission", "warning")
+        return redirect(url_for("www.org_page", slug=slug))
+
+    owner = User.query.get(org.owner_id)
+    members = EnterpriseTeamMember.query.filter_by(team_id=org.id).all()
+    for m in members:
+        m.user = User.query.get(m.user_id)
+    analytics = (
+        EnterpriseAnalytics.query.filter_by(team_id=org.id)
+        .order_by(EnterpriseAnalytics.event_date.desc())
+        .limit(30)
+        .all()
+    )
+    domains = EnterpriseCustomDomain.query.filter_by(team_id=org.id).all()
+
+    # resolve each row's link, section and path for the analytics table
+    link_ids = {a.link_id for a in analytics if a.link_id}
+    links = Link.query.filter(Link.id.in_(link_ids)).all() if link_ids else []
+    rows = []
+    for a in analytics:
+        link = next((l for l in links if l.id == a.link_id), None)
+        section = link.link_section if link else None
+        spath = section.section_path if section else None
+        url = label = None
+        if link:
+            url = label = link.url
+            m = re.match(r"\[([^\]]*)\]\(([^)]+)\)", link.url or "")
+            if m:
+                label, url = m.group(1), m.group(2)
+        rows.append(
+            {
+                "date": a.event_date,
+                "count": a.event_count,
+                "country": a.country,
+                "device": a.device_type,
+                "url": url,
+                "label": label,
+                "section": section.title if section else None,
+                "path_slug": spath.slug if spath else None,
+                "path_url": spath.get_url() if spath else None,
+            }
+        )
+
+    return render_template(
+        "linkolearn_theme/templates/org_settings.html",
+        org=org,
+        owner=owner,
+        members=members,
+        analytics=rows,
+        domains=domains,
+    )
 
 
 import validators
@@ -291,9 +425,9 @@ def dodo_return():
     plan = request.args.get("plan", "1")
     plan_name = "Enterprise" if plan == "2" else "Pro"
     if request.args.get("status") == "succeeded":
-        flash(f"Payment received — activating your {plan_name} plan…", "success")
+        flash(f"Payment received: activating your {plan_name} plan…", "success")
     else:
-        flash("Checkout finished — we'll activate your plan as soon as the "
+        flash("Checkout finished: we'll activate your plan as soon as the "
               "payment is confirmed.", "info")
     return redirect(url_for("www.activate"))
 

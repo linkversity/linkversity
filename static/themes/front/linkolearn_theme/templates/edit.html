@@ -1,234 +1,212 @@
-
 {%extends 'linkolearn_theme/templates/base.html'%}
+
 {%block head%}
-<title>{{path.slug.replace('-', ' ')}}</title>
+<title>Edit {{ path.slug.replace('-', ' ') }} · Linkversity</title>
 
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
 crossorigin="anonymous"></script>
+
+{% include 'linkolearn_theme/templates/blocks/brand.html' %}
 {%endblock%}
+
 {%block body%}
-{%set user=path.path_user%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg flex flex-col md:flex-row min-h-[300px]">
-        <!-- Profile Section -->
-        <div class="w-full md:w-1/6 bg-gray-100 flex flex-col items-center p-6 relative">
+{%set user = path.path_user%}
+{%set org = path.get_org()%}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
-                {% if current_user.is_pro() %}
-                <div class="absolute transform translate-x-[90%] -translate-y-[20%]">
-                    <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" version="1.1" id="svg2" sodipodi:docname="crown-svgrepo-com (2).svg" inkscape:version="1.4 (1:1.4+202410161351+e7c3feb100)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"> <defs id="defs2" /> <sodipodi:namedview id="namedview2" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="1.03875" inkscape:cx="399.51865" inkscape:cy="400" inkscape:window-width="1880" inkscape:window-height="1048" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg2" /> <path d="M19.6872 14.0931L19.8706 12.3884C19.9684 11.4789 20.033 10.8783 19.9823 10.4999L20 10.5C20.8284 10.5 21.5 9.82843 21.5 9C21.5 8.17157 20.8284 7.5 20 7.5C19.1716 7.5 18.5 8.17157 18.5 9C18.5 9.37466 18.6374 9.71724 18.8645 9.98013C18.5384 10.1814 18.1122 10.606 17.4705 11.2451L17.4705 11.2451C16.9762 11.7375 16.729 11.9837 16.4533 12.0219C16.3005 12.043 16.1449 12.0213 16.0038 11.9592C15.7492 11.847 15.5794 11.5427 15.2399 10.934L13.4505 7.7254C13.241 7.34987 13.0657 7.03557 12.9077 6.78265C13.556 6.45187 14 5.77778 14 5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5C10 5.77778 10.444 6.45187 11.0923 6.78265C10.9343 7.03559 10.759 7.34984 10.5495 7.7254L8.76006 10.934C8.42056 11.5427 8.25081 11.847 7.99621 11.9592C7.85514 12.0213 7.69947 12.043 7.5467 12.0219C7.27097 11.9837 7.02381 11.7375 6.5295 11.2451C5.88787 10.606 5.46156 10.1814 5.13553 9.98012C5.36264 9.71724 5.5 9.37466 5.5 9C5.5 8.17157 4.82843 7.5 4 7.5C3.17157 7.5 2.5 8.17157 2.5 9C2.5 9.82843 3.17157 10.5 4 10.5L4.01771 10.4999C3.96702 10.8783 4.03162 11.4789 4.12945 12.3884L4.3128 14.0931C4.41458 15.0393 4.49921 15.9396 4.60287 16.75H19.3971C19.5008 15.9396 19.5854 15.0393 19.6872 14.0931Z" fill="#1C274C" id="path1" style="fill:#ffcc00" /> <path d="M10.9121 21H13.0879C15.9239 21 17.3418 21 18.2879 20.1532C18.7009 19.7835 18.9623 19.1172 19.151 18.25H4.84896C5.03765 19.1172 5.29913 19.7835 5.71208 20.1532C6.65817 21 8.07613 21 10.9121 21Z" fill="#1C274C" id="path2" style="fill:#ffcc00" /> </svg>
-                
-                </div>
+    <header class="path-card">
+        <nav class="text-xs text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+            <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            {% if org %}
+            <a href="{{ url_for('www.org_page', slug=org.slug) if org.slug else url_for('linkolearn.enterprise_dashboard') }}" class="hover:text-gray-900 dark:hover:text-gray-100">{{ org.name }}</a>
+            {% else %}
+            <a href="{{ url_for('www.user_profile', username=user.username) }}" class="hover:text-gray-900 dark:hover:text-gray-100">@{{ user.username }}</a>
+            {% endif %}
+            <span class="text-gray-300 dark:text-gray-600">›</span>
+            <span class="text-gray-700 dark:text-gray-200 truncate">{{ path.slug }}</span>
+        </nav>
+        <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Edit path</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">Update the URL slug and sections of this path.</p>
+            </div>
+            <span class="relative inline-block flex-none">
+                {% if org %}
+                <a href="{{ url_for('www.org_page', slug=org.slug) if org.slug else url_for('linkolearn.enterprise_dashboard') }}" title="{{ org.name }}">
+                    {% if org.logo_url %}
+                    <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-11 h-11 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600">
+                    {% else %}
+                    <span class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
+                    {% endif %}
+                </a>
+                {% else %}
+                {% if user.is_enterprise() %}
+                {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                {% elif user.is_pro() %}
+                {% include 'linkolearn_theme/templates/blocks/crown.html' %}
                 {% endif %}
-            <i class="em {{user.emoji_class}} w-20 h-20 p-1 rounded-full mb-4 ring-2 ring-gray-300 dark:ring-gray-500"></i>
-            
-
-            <h2 class="text-lg font-semibold text-center">{{path.path_user.get_first_name()}}</h2>
-            <h2 class="text-lg font-semibold text-center">{{path.path_user.get_last_name()}}</h2>
-            {%if path.path_user == current_user%}
-            <br>
-            <a href="/linkolearn/settings">
-                <button type="button" class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
-                    <i class="fa fa-wrench"></i>
-                </button>
-            </a>
-            {%endif%}
+                <i class="em {{ user.emoji_class }} w-11 h-11 rounded-full ring-2 ring-white dark:ring-gray-900"></i>
+                {% endif %}
+            </span>
         </div>
-        <!-- Info Section -->
-        <div class="w-full md:w-5/6 flex flex-col flex-grow">
-            <!-- Top Section -->
-            <div class="p-6 border-b flex-grow">
-                {% set username = path.path_user.username %}
-                <h3 class="text-3xl font-semibold text-gray-800">
-                    <a href="{{ url_for('www.user_profile', username=username) }}" class="text-blue-600 hover:text-blue-800">
-                        {{ username }}
-                    </a>
-                    <span class="text-gray-600">/ {{ path.slug }}</span>
-                </h3>
-                <br>
-                <div class="space-y-2">
+    </header>
 
-                        <button id="add-section-btn" type="button" class="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 me-2 mb-2">
-                            <i class="fa fa-plus"></i>&nbsp;
+    <!-- details -->
+    <div class="path-card">
+        <div>
+            <label class="path-label" for="path-link">Slug</label>
+            <div class="flex items-center gap-2">
+                <span id="slug-prefix" class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{% if org and org.slug %}/org/{{ org.slug }}/{% else %}/{{ user.username }}/{% endif %}</span>
+                <input type="text" id="path-link" class="path-input" value="{{ path.slug }}" placeholder="mastering-advanced-english" required>
+                <span id="slug-status" class="text-sm whitespace-nowrap"></span>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">This becomes your path URL and must be unique.</p>
+        </div>
+    </div>
 
-                            Add section
-                            </button>
+    <!-- sections -->
+    <div class="path-card">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100">Sections</h4>
+            <button id="add-section-btn" type="button" class="path-pill">
+                <i class="fa fa-plus text-[10px]"></i> Add section
+            </button>
+        </div>
+
+        <div id="sections" class="space-y-4">
+            {% set last_id = namespace(last_id=0) %}
+            {% for section in path.sections %}
+            <div id="section-{{ section.id }}" class="section path-card !p-4">
+                <div class="flex justify-between items-center mb-2.5">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Section</span>
+                    <button id="close-{{ section.id }}" type="button" class="path-tool btn-close-section" title="Remove section">&times;</button>
                 </div>
+                <input id="section-title-{{ section.id }}" type="text" class="section-title path-input mb-2" value="{{ section.title or '' }}" placeholder="Section title (e.g. Getting Started)">
+                <textarea id="section-links-{{ section.id }}" class="section-links path-input" rows="5" placeholder="Enter URLs or markdown links:&#10;http://example.com&#10;[Link Text](http://example.com)">{{ sectionlinks2str(section.links) | safe }}</textarea>
             </div>
-            <!-- Bottom Section -->
-            <div class="p-6 flex-grow">
-<form class="space-y-6">
-
-
-    <div class="flex items-center space-x-2">
-        <span class="text-gray-500 text-sm">/{{current_user.username}}/</span>
-        <input type="text" id="path-link" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-full" value="{{path.slug}}" placeholder="e.g mastering-advanced-english">
-    </div>
-
-    <h4 class="text-lg font-semibold text-gray-800">Sections</h4>
-
-    <div id="sections" class="space-y-4">
-        {% set last_id = namespace(last_id=0) %}
-        {% for section in path.sections %}
-        <div id="section-{{section.id}}" class="section bg-white shadow-md rounded-lg border border-gray-200">
-            <div class="bg-red-500 text-white px-4 py-2 rounded-t-lg flex justify-end">
-                <button 
-                    id="close-{{section.id}}" 
-                    type="button" 
-                    class="text-white hover:text-gray-300 focus:outline-none btn-close-section">
-                    &times;
-                </button>
-            </div>
-            <div class="p-4 space-y-3">
-                <label class="block text-sm font-medium text-gray-700">Section name</label>
-                <input id="section-title-{{section.id}}" type="text" class="section-title border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full text-sm" value="{{ section.title }}">
-                
-                <label class="block text-sm font-medium text-gray-700">Links</label>
-                <textarea class="section-links border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full text-sm" rows="5">{{ sectionlinks2str(section.links) | safe }}</textarea>
-            </div>
+            {% set last_id.last_id = section.id %}
+            {% endfor %}
         </div>
-        {% set last_id.last_id = section.id %}
-        {% endfor %}
-    </div>
 
-    <button 
-        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full sm:w-auto"
-        type="button"
-        id="submit-button">
-        Submit
-    </button>
-</form>
-
-            </div>
+        <div class="flex items-center flex-wrap gap-3 mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <button class="path-btn-primary" type="button" id="submit-button">Save changes</button>
+            <a href="{{ path.get_url() }}" class="path-pill"><i class="fa fa-arrow-left text-[10px]"></i> Back to path</a>
         </div>
     </div>
+
 </div>
 
-
-
 <script type="text/javascript">
-function section(section_id) {
-  return `
-    <div id="section-${section_id}" class="bg-white shadow-md rounded-lg border border-gray-200 section">
-      <div class="bg-red-500 text-white px-4 py-2 rounded-t-lg flex justify-end">
-        <button 
-          id="close-${section_id}" 
-          type="button" 
-          class="text-white hover:text-gray-300 focus:outline-none btn-close-section">
-          &times;
-        </button>
-      </div>
-      <div class="p-4 space-y-3">
-        <label class="block text-sm font-medium text-gray-700">Section name</label>
-        <input id="section-title-${section_id}" type="text" 
-          class="section-title border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full text-sm">
-        
-        <label class="block text-sm font-medium text-gray-700">Links</label>
-        <textarea class="section-links border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full text-sm" 
-          rows="5"
-          placeholder="http://www.x.com&#10;http://www.y.com&#10;[Some text](http://www.z.com)">
-        </textarea>
-      </div>
-    </div>`;
+function showToast(message, type = 'error') {
+    var toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-white dark:bg-gray-900 border shadow-lg animate-fade-in';
+    toast.className += (type === 'success')
+        ? ' border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100'
+        : ' border-red-300 dark:border-red-800 text-red-600 dark:text-red-400';
+    toast.innerHTML = (type === 'success' ? '<i class="fa fa-check text-green-500"></i> ' : '<i class="fa fa-exclamation-circle"></i> ') + message;
+    document.body.appendChild(toast);
+    setTimeout(function() {
+        toast.remove();
+    }, 3000);
 }
 
-  var min_sections = 1;
-  var current_section_id = 1+1;
-  var sections_div = $('#sections');
-  var add_section_btn = $('#add-section-btn');
-  var rem_section_btn = $('#rem-section-btn');
+function section(section_id) {
+  return '<div id="section-' + section_id + '" class="section path-card !p-4">' +
+    '<div class="flex justify-between items-center mb-2.5">' +
+    '<span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Section</span>' +
+    '<button id="close-' + section_id + '" type="button" class="path-tool btn-close-section" title="Remove section">&times;</button>' +
+    '</div>' +
+    '<input id="section-title-' + section_id + '" type="text" class="section-title path-input mb-2" placeholder="Section title (e.g. Getting Started)">' +
+    '<textarea id="section-links-' + section_id + '" class="section-links path-input" rows="5" placeholder="Enter URLs or markdown links:\nhttp://example.com\n[Link Text](http://example.com)"></textarea>' +
+    '</div>';
+}
 
-  // Initialise
-  // sections_div.append( section(current_section_id) );
-  // current_section_id += 1;
+var current_section_id = {{ last_id.last_id }} + 1;
+var sections_div = $('#sections');
+var add_section_btn = $('#add-section-btn');
 
-  // On add section button click
-  add_section_btn.click(function() {
-    sections_div.append( section(current_section_id) );
-    current_section_id += 1;
+add_section_btn.click(function() {
+  sections_div.append(section(current_section_id));
+  current_section_id++;
+});
 
+$(document).on('click', '.btn-close-section', function(e) {
+  var delete_target = $(this).closest('.section');
+  delete_target.hide('slow', function() { delete_target.remove(); });
+});
 
-  });
-
-
-  /*
-  REMOVE BUTTON
-    if not equal min_section
-      if confirmed delete
-        hide and remove element
-  */
-  $(document).on('click','.btn-close-section',function(e) {
-    var id_to_del = $(this).attr("id").split('-')[1];
-    var section_title = $('#section-title-' + id_to_del).val();
-    if (id_to_del != min_sections){
-      var to_delete = confirm("Do you want to delete the section with title: "+section_title);
-      var delete_target = $(this).parent().parent();
-      if (to_delete){
-        var id_to_del = parseInt(id_to_del);
-        
-          delete_target.hide('slow', function(){ 
-            delete_target.remove();
-          });
-        
-      }
+$('#path-link').on('blur', function() {
+    var slug = $(this).val();
+    if (!slug.trim()) {
+        $('#slug-status').html('').removeClass('text-red-500 text-green-500');
+        return;
     }
-  });
+    var teamParam = {% if org %}'&team_id={{ org.id }}'{% else %}''{% endif %};
+    $.ajax({
+        url: '{{ url_for("new.check_slug") }}?slug=' + encodeURIComponent(slug) + '&exclude_path_id={{ path.id }}' + teamParam,
+        success: function(data) {
+            if (data.available) {
+                $('#slug-status').html('<span class="text-green-600 dark:text-green-400 font-semibold">✓ Available</span>');
+            } else {
+                $('#slug-status').html('<span class="text-red-500 font-semibold">✗ Taken</span>');
+            }
+        }
+    });
+});
 
+$("#submit-button").click(function(){
+    var json_submit = { sections: [] };
 
-  /*
-  POST DATA
-    fetch title value
-    fetch link value
-    loop over sections
-      add json info to array
-    add data to post 
-    post
-    if errors
-      alert errors
-    else
-      redirect to newly created page
-  */
-
-  $("#submit-button").click(function(){
-    var json_submit = {};
-
-    var path_title = $('#path-name').val();
     var path_link = $('#path-link').val();
 
-    // json_submit['path_title'] = path_title;
-    json_submit['path_link'] = path_link;
-    json_submit['sections'] = [];
+    if (!path_link.trim()) {
+        showToast('Please enter a path slug');
+        return;
+    }
 
+    var sectionCount = 0;
+    var hasLinks = false;
     $( ".section" ).each(function( index ) {
-      var section = {};
       var section_title = $( this ).find( ".section-title" ).val();
       var section_links = $( this ).find( ".section-links" ).val();
-      section['section_title'] = section_title;
-      section['section_links'] = section_links;
-      json_submit['sections'].push(section);
+      if (section_title || section_links) {
+        sectionCount++;
+        if (section_links.trim()) hasLinks = true;
+        var section = {};
+        section['section_title'] = section_title;
+        section['section_links'] = section_links;
+        json_submit['sections'].push(section);
+      }
     });
 
-    console.log(json_submit);
+    if (sectionCount === 0 || !hasLinks) {
+        showToast('Please keep at least one section with links');
+        return;
+    }
 
-    // POST
+    json_submit['path_link'] = path_link;
+
+    $('#submit-button').prop('disabled', true).html('Saving…');
 
     $.ajax({
         type: "POST",
-        url: "/linkolearn/settings/p/{{path.id}}/edit",
+        url: "{{ url_for('linkolearn.edit_path', path_id=path.id) }}",
         data: JSON.stringify(json_submit),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(data){
-            // alert(data);
-            // window.location.reload();
-            if('error'in data){
-              alert('Permission error!');
-              alert(JSON.stringify(data));
+            if (data && data.goto) {
+                showToast('Path saved!', 'success');
+                window.location.href = data.goto;
+            } else {
+                showToast('Something went wrong. Please try again.');
+                $('#submit-button').prop('disabled', false).html('Save changes');
             }
-            window.location.href = data['goto'];
-            return false;
         },
-        failure: function(errMsg) {
-            alert(errMsg);
+        error: function(xhr) {
+            showToast('Something went wrong. Please try again.');
+            $('#submit-button').prop('disabled', false).html('Save changes');
         },
         beforeSend: function(xhr, settings) {
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
