@@ -347,9 +347,9 @@ def dodo_return():
     plan = request.args.get("plan", "1")
     plan_name = "Enterprise" if plan == "2" else "Pro"
     if request.args.get("status") == "succeeded":
-        flash(f"Payment received — activating your {plan_name} plan…", "success")
+        flash(f"Payment received: activating your {plan_name} plan…", "success")
     else:
-        flash("Checkout finished — we'll activate your plan as soon as the "
+        flash("Checkout finished: we'll activate your plan as soon as the "
               "payment is confirmed.", "info")
     return redirect(url_for("www.activate"))
 

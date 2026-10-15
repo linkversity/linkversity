@@ -108,7 +108,7 @@ if (orgSelect) {
     orgSelect.addEventListener('change', () => {
         currentTeamId = orgSelect.value || null;
         updatePrefix();
-        // slug availability is per-organization — clear the stale verdict
+        // slug availability is per-organization: clear the stale verdict
         $('#slug-status').html('').removeClass('text-red-500 text-green-500');
     });
 }

@@ -90,7 +90,7 @@
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">Organizations</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
-                    {% if orgs %}{{ orgs|length }} organization{{ '' if orgs|length == 1 else 's' }} — manage logos, members, analytics, domains and paths.{% else %}Create your first organization to get started.{% endif %}
+                    {% if orgs %}{{ orgs|length }} organization{{ '' if orgs|length == 1 else 's' }} | manage logos, members, analytics, domains and paths.{% else %}Create your first organization to get started.{% endif %}
                 </p>
             </div>
             <span class="relative inline-block flex-none">
@@ -109,7 +109,7 @@
         <div class="path-empty">
             <div class="glyph"><i class="fas fa-building"></i></div>
             <h3>Create your organization</h3>
-            <p>A company or team that owns shared paths — shown with its own logo.</p>
+            <p>A company or team that owns shared paths, shown with its own logo.</p>
             <form id="createTeamForm" class="max-w-md mx-auto mt-5 text-left space-y-3">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <div>

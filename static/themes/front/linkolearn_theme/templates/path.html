@@ -93,7 +93,7 @@
             {% else %}
             <div class="text-center py-8 text-gray-400 dark:text-gray-500 mt-2">
                 <i class="fa fa-link text-xl mb-2 block"></i>
-                <p class="text-sm">{% if can_edit %}No links yet — add the first one.{% else %}No links yet.{% endif %}</p>
+                <p class="text-sm">{% if can_edit %}No links yet: add the first one.{% else %}No links yet.{% endif %}</p>
             </div>
             {% endif %}
         </section>
@@ -267,7 +267,7 @@
             <div class="min-w-0">
                 <h5 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide"><i class="fa fa-eye mr-1 text-gray-400"></i>Link previews</h5>
                 <p id="preview-policy-desc" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ 'Off — links added to this path stay plain (no title/image fetch)' if path.disable_previews else 'On — generate previews for any link' }}
+                    {{ 'Off | links added to this path stay plain (no title/image fetch)' if path.disable_previews else 'On | generate previews for any link' }}
                 </p>
             </div>
             {{ preview_switch(path) }}

@@ -2,7 +2,7 @@
 <button type="button" class="vis-switch {{ 'on' if path.is_visible }}" role="switch"
         aria-checked="{{ 'true' if path.is_visible else 'false' }}"
         onclick="lvToggleVis({{ path.id }}, this)"
-        title="{{ 'Public — anyone with the link can view' if path.is_visible else 'Private — only you and people you share with can view' }}">
+        title="{{ 'Public | anyone with the link can view' if path.is_visible else 'Private | only you and people you share with can view' }}">
     <span class="track"></span>
     <i class="fa {{ 'fa-globe' if path.is_visible else 'fa-lock' }}"></i>
     <span class="vis-label">{{ 'Public' if path.is_visible else 'Private' }}</span>
@@ -29,8 +29,8 @@ window.lvToggleVis = window.lvToggleVis || async function(pathId, btn) {
         btn.querySelector('.vis-label').textContent = data.is_visible ? 'Public' : 'Private';
         btn.querySelector('i').className = 'fa ' + (data.is_visible ? 'fa-globe' : 'fa-lock');
         btn.title = data.is_visible
-            ? 'Public — anyone with the link can view'
-            : 'Private — only you and people you share with can view';
+            ? 'Public | anyone with the link can view'
+            : 'Private | only you and people you share with can view';
     } catch (e) {
         alert('Could not update visibility');
     }

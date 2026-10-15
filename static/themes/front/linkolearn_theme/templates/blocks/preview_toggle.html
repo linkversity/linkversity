@@ -35,8 +35,8 @@ window.lvTogglePreviews = window.lvTogglePreviews || async function(pathId, btn)
         const desc = document.getElementById('preview-policy-desc');
         if (desc) {
             desc.textContent = disabled
-                ? 'Off — links added to this path stay plain (no title/image fetch)'
-                : 'On — generate previews for any link';
+                ? 'Off | links added to this path stay plain (no title/image fetch)'
+                : 'On | generate previews for any link';
         }
     } catch (e) {
         alert('Could not update preview setting');
