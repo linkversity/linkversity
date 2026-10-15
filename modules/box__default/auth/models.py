@@ -234,6 +234,9 @@ class EnterpriseSettings(PkModel):
     analytics_enabled = db.Column(db.Boolean, default=True)
     audit_log_enabled = db.Column(db.Boolean, default=True)
     max_team_members = db.Column(db.Integer, default=10)
+    created_at = db.Column(
+        db.DateTime(), nullable=False, server_default=db.func.current_timestamp()
+    )
 
     def set_encryption_key(self):
         from modules.box__linkolearn.linkolearn.encryption import (
