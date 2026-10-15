@@ -135,6 +135,17 @@
 - The public org page header gets a **Settings** pill beside Create path,
   shown to owners and admin members
 
+### Migrations
+
+- New revision `37910fefe751`: conditionally adds `paths.disable_previews`
+  and `enterprise_teams.slug`/`logo_url` (skipped when already present,
+  e.g. the dev box that got them by hand), backfills org slugs from the
+  name and puts a unique constraint on `enterprise_teams.slug`
+- `EnterpriseSettings.created_at` added to the model so it matches the
+  real table (autogenerate had flagged it as a column to drop)
+- The dev database is now alembic-managed: stamped at `afbf65aa806f`,
+  upgraded to head; `flask db migrate` reports no drift
+
 ### Bug fixes
 
 - Enterprise audit logging 500'd every add-member call
