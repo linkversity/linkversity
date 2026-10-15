@@ -265,18 +265,6 @@
         </div>
         {% endif %}
 
-        {% if current_user.is_enterprise() %}
-        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3 flex-wrap">
-            <div class="min-w-0">
-                <h5 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide"><i class="fa fa-eye mr-1 text-gray-400"></i>Link previews</h5>
-                <p id="preview-policy-desc" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {{ 'Off | links added to this path stay plain (no title/image fetch)' if path.disable_previews else 'On | generate previews for any link' }}
-                </p>
-            </div>
-            {{ preview_switch(path) }}
-        </div>
-        {% endif %}
-
         {% if path.team_id and team and is_team_member %}
         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             <h5 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2"><i class="fas fa-crown text-[#ffcc00] mr-1"></i>Team</h5>
