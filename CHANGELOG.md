@@ -116,6 +116,10 @@
 - Create page's "remove section" (×) deleted the whole sections container
   instead of one section (three `.parent()`s landed on `#sections`); now
   uses `closest('.section')` on both the create and edit pages
+- Enterprise link-preview toggle was a silent no-op: it sent the CURRENT
+  state instead of the desired one, so the server never changed anything;
+  fixed and synced across all instances, and the switch now also sits in
+  the path owner toolbar next to Delete
 
 ## 1.1.0
 
