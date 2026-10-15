@@ -23,6 +23,9 @@
 - Fix the page 500ing: `len()` is not a Jinja global — use `|length`
 - Owners are no longer locked out of viewing their own password-protected
   path; fix `remove_editor` raising a NameError for non-premium users
+- Slug is the canonical display on path pages: tab title, `og:title`,
+  breadcrumb crumb, hero H1 (and the org-page card / edit-page header)
+  show the URL slug instead of `path.title`, which silently overrode it
 
 ### App pages
 

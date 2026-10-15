@@ -1,7 +1,7 @@
 {%extends 'linkolearn_theme/templates/base.html'%}
 
 {%block head%}
-<title>Edit {{ (path.title or path.slug).replace('-', ' ') }} · Linkversity</title>
+<title>Edit {{ path.slug.replace('-', ' ') }} · Linkversity</title>
 
 <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
 crossorigin="anonymous"></script>
@@ -24,7 +24,7 @@ crossorigin="anonymous"></script>
             <a href="{{ url_for('www.user_profile', username=user.username) }}" class="hover:text-gray-900 dark:hover:text-gray-100">@{{ user.username }}</a>
             {% endif %}
             <span class="text-gray-300 dark:text-gray-600">›</span>
-            <span class="text-gray-700 dark:text-gray-200 truncate">{{ path.title or path.slug }}</span>
+            <span class="text-gray-700 dark:text-gray-200 truncate">{{ path.slug }}</span>
         </nav>
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">

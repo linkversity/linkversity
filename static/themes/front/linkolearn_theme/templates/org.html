@@ -46,7 +46,7 @@
         {% for s in path.sections %}{% set ns.links = ns.links + s.links|length %}{% endfor %}
         <div class="path-link-card">
             <div class="min-w-0">
-                <a href="{{ path.get_url() }}" class="title truncate hover:text-[#cc3f3f]">{{ path.title or path.slug }}</a>
+                <a href="{{ path.get_url() }}" class="title truncate hover:text-[#cc3f3f]">{{ path.slug }}</a>
                 <div class="sub truncate">by {{ path.owner.username if path.owner else 'Unknown' }}</div>
             </div>
             <div class="badges">
