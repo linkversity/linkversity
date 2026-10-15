@@ -40,7 +40,8 @@
   header, slug field with org-aware `/org/<org>/` or `/username/` prefix + live
   availability check (self-excluded via `exclude_path_id`), pre-filled sections
   as cards, coral "Save changes" + "Back to path" — dark mode included; the old
-  gray profile sidebar, red section bars and blue buttons are gone
+  gray profile sidebar, red section bars and blue buttons are gone; the header
+  avatar shows the company logo for org paths, the creator's emoji otherwise
 - Profile (`/<username>`): avatar + crown hero, name/@handle/enterprise chips,
   labeled stat pills (paths / private / likes), path-card grid, empty state
 - Fix "Create Path" never submitting: `json_submit.sections` was never
