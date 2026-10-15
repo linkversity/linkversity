@@ -140,7 +140,7 @@
                     {% if path.team_id and team %}
                     <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" title="{{ team.name }}">
                         {% if team.logo_url %}
-                        <img src="{{ team.logo_url }}" alt="{{ team.name }} logo" class="w-11 h-11 rounded-full object-cover ring-2 ring-white dark:ring-gray-900">
+                        <img src="{{ team.logo_url }}" alt="{{ team.name }} logo" class="w-11 h-11 rounded-full object-cover border border-gray-200 dark:border-gray-700 ring-2 ring-white dark:ring-gray-900">
                         {% else %}
                         <span class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
                         {% endif %}
