@@ -1,4 +1,6 @@
-## 1.2.0
+## 1.5.0
+
+Unreleased: everything below shipped after the 1.4.0 tag.
 
 ### Chrome extension
 
@@ -26,6 +28,13 @@
 - Slug is the canonical display on path pages: tab title, `og:title`,
   breadcrumb crumb, hero H1 (and the org-page card / edit-page header)
   show the URL slug instead of `path.title`, which silently overrode it
+- Manage access moved into a modal off the owner toolbar (button beside
+  the link-preview switch on org/pro paths): add-editor-by-username
+  form, editor chips with remove and the org Team panel; free personal
+  paths keep the inline card
+- New "Remove previews" toolbar pill (Pro and above): confirms, then
+  wipes title/description/image_url from every link on the path in one
+  go (`POST /linkolearn/remove-all-previews`, owner or editor only)
 
 ### App pages
 
@@ -48,6 +57,8 @@
   initialized (TypeError on the first push); remove the duplicated
   "extract from document" button
 - Fix every profile page 500ing: `len()` is not a Jinja global — use `|length`
+- Homepage: "Add to Chrome" pill (Chrome-blue, `fa-chrome`) linking to the
+  Chrome Web Store listing, beside Connect to Slack
 
 ### Payments (Dodo)
 
@@ -101,6 +112,8 @@
   admin member role, not by the global enterprise plan; add-member /
   add-domain now target the selected org
 - `org` is a reserved username (public org pages live at `/org/...`)
+- The org logo (or building glyph) on the dashboard org card links to
+  the public org page, like the name beside it
 - Team membership grants access to **all** paths in the org: `Path.can_edit`
   now resolves membership directly from `EnterpriseTeamMember` rows (owner,
   admin or member role) instead of the legacy single `user.team_id` pointer,
