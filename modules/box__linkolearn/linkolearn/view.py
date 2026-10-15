@@ -539,6 +539,28 @@ def remove_preview():
     return jsonify({"success": True})
 
 
+@module_blueprint.route("/remove-all-previews", methods=["POST"])
+@login_required
+def remove_all_previews():
+    data = request.get_json(silent=True) or {}
+    path = Path.query.get(data.get("path_id"))
+    if not path:
+        return jsonify({"success": False, "error": "Path not found"})
+    if not (current_user == path.path_user or current_user in path.editors):
+        return jsonify({"success": False, "error": "Permission denied"})
+
+    links = Link.query.join(Section).filter(Section.path_id == path.id).all()
+    cleared = 0
+    for link in links:
+        if link.title or link.description or link.image_url:
+            link.title = None
+            link.description = None
+            link.image_url = None
+            cleared += 1
+    db.session.commit()
+    return jsonify({"success": True, "cleared": cleared})
+
+
 ALLOWED_LOGO_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 
 

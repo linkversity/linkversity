@@ -210,6 +210,11 @@
                 <i class="fa fa-users-cog"></i> Manage access
             </button>
             {% endif %}
+            {% if current_user.is_pro() %}
+            <button type="button" id="remove-all-previews-btn" class="path-pill" title="Remove preview cards from every link on this path">
+                <i class="fa fa-eye-slash"></i> Remove previews
+            </button>
+            {% endif %}
         </div>
         {% endif %}
 
@@ -649,5 +654,27 @@ function closeModal(id) {
     el.classList.add('hidden');
     el.classList.remove('flex');
 }
+
+document.getElementById('remove-all-previews-btn')?.addEventListener('click', async function() {
+    if (!confirm('Remove all link previews on this path?')) return;
+    try {
+        const resp = await fetch("{{ url_for('linkolearn.remove_all_previews') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ path_id: {{ path.id }} })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Could not remove previews');
+        }
+    } catch (e) {
+        alert('Could not remove previews');
+    }
+});
 </script>
 {%endblock%}
