@@ -1,3 +1,10 @@
+## 1.5.1
+
+- Public path page no longer 500s for logged-out visitors: `AnonymousUser`
+  was missing `is_pro()` / `is_enterprise()` / `is_enterprise_admin()`, so
+  the unconditional `current_user.is_pro()` in the manage-access modal
+  raised an UndefinedError
+
 ## 1.5.0
 
 Unreleased: everything below shipped after the 1.4.0 tag.
