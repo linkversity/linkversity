@@ -1,3 +1,31 @@
+## 1.7.0
+
+### ChatGPT integration
+
+- New `apiv1` module (`/api/v1`): REST endpoints backing the ChatGPT/MCP
+  integration — public collection search/detail/links, connected-user
+  collections and links, a read-only study-plan preparation endpoint and an
+  integration status endpoint; pagination, search over titles/slugs/section
+  titles, in-memory rate limiting (120 req/min per token/IP), CSRF-exempt;
+  access rules mirror `Path.can_edit()` (owner, editor, org owner, org
+  admin/member) and never trust a user id from the caller — identity comes
+  only from the bearer token; password-protected collections expose metadata
+  but never links through the API
+- OAuth 2.0 provider (`apiv1/oauth.py`): authorization-code flow with PKCE
+  (S256/plain), RFC 7591 dynamic client registration, single-use 5-minute
+  authorization codes, hashed 7-day access / 90-day refresh tokens, consent
+  screen, userinfo endpoint and `/.well-known` discovery metadata; the API
+  accepts OAuth access tokens everywhere a bearer token is accepted and
+  enforces the `collections:read` scope (migration `a0698e947742` adds the
+  `oauth_*` tables)
+- New `mcp-server/`: standalone FastMCP process (streamable-http, stateless)
+  exposing five tools — `search_public_collections`, `get_public_collection`,
+  `list_my_collections`, `get_collection_links`, `create_study_plan` — that
+  call the Flask API over HTTP and forward the caller's bearer token
+- New `cha-gpt plugin/` folder: portable ChatGPT plugin package
+  (`plugin.json`, `mcp.json` with OAuth declaration, logo/composer assets)
+  ready to zip and upload
+
 ## 1.6.0
 
 ### PWA
