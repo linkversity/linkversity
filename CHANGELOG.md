@@ -1,3 +1,25 @@
+## 1.6.0
+
+### PWA
+
+- Install Linkversity as an app: the homepage CTA row gains an "Install app"
+  pill, shown only once the browser fires `beforeinstallprompt` (installable
+  and not already installed); it triggers the native prompt and hides itself
+  on install or dismissal
+- Manifest now declares real icon sizes — generated `icon-192.png`,
+  `icon-512.png` and a `maskable-512` from the logo, replacing a single
+  300x300 PNG that was mislabelled as 72-512px (Chrome needs genuine 192 +
+  512 icons to offer installation); added `id`, `lang` and `dir`
+- `base.html` gains `theme-color` and `apple-touch-icon` plus the
+  `apple-mobile-web-app-*` metas, so iOS add-to-home-screen gets the right
+  icon, title and standalone chrome; service-worker registration is deferred
+  to `window.load`
+- Rework the service worker: it cached `/` once and served cache-first
+  forever with no update path, pinning visitors to a frozen homepage; it is
+  now network-first for navigations (fresh HTML online, cached shell
+  offline) and cache-first for static assets, with `skipWaiting` /
+  `clients.claim` and cleanup of superseded caches (cache name bumped to v2)
+
 ## 1.5.1
 
 - Public path page no longer 500s for logged-out visitors: `AnonymousUser`

@@ -1,7 +1,10 @@
 {
+  "id": "/",
   "name": "Linkversity",
   "short_name": "Linkversity",
   "description": "Learn By links",
+  "lang": "en",
+  "dir": "ltr",
   "theme_color": "#eb6864",
   "background_color": "#eb6864",
   "display": "standalone",
@@ -10,44 +13,22 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/static/linkversity.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
+      "src": "/static/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/static/linkversity.png",
-      "sizes": "310x310",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/linkversity.png",
+      "src": "/static/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "share_target": {
