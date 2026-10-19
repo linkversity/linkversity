@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "linkversity",
+  "version": "0.1.0",
+  "description": "Discover Linkversity collections, access your saved learning resources, and generate study plans from ChatGPT.",
+  "author": {
+    "name": "Linkversity"
+  },
+  "homepage": "https://linkversity.lol",
+  "license": "MIT",
+  "keywords": ["learning", "collections", "study plans", "links", "education"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Linkversity",
+        "shortDescription": "Discover collections and generate study plans",
+        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity.",
+        "developerName": "Linkversity",
+        "category": "Education",
+        "capabilities": ["Read"],
+        "websiteURL": "https://linkversity.lol",
+        "privacyPolicyURL": "https://linkversity.lol/privacy-policy",
+        "defaultPrompt": [
+          "Find public Linkversity collections about machine learning",
+          "Turn this Linkversity collection into a study plan for a beginner with 3 hours a week"
+        ],
+        "brandColor": "#eb6864",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}
