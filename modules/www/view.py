@@ -222,6 +222,11 @@ def contact():
     return render_template("linkolearn_theme/templates/info/contact.html")
 
 
+@module_blueprint.route("/terms")
+def terms():
+    return render_template("linkolearn_theme/templates/info/terms.html")
+
+
 @module_blueprint.route("/about")
 def about():
     return render_template("linkolearn_theme/templates/info/about.html")
