@@ -1,0 +1,12 @@
+{
+        "display_string": "API v1",
+        "module_name":"apiv1",
+        "type": "show",
+        "fa-icon": "fa fa-plug",
+        "url_prefix": "/api/v1",
+        "author": {
+            "name":"",
+            "website":"",
+            "mail":""
+        }
+}
