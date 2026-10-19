@@ -131,17 +131,14 @@
                 - It is <a href="https://github.com/linkversity/linkversity" class="underline">OpenSource</a><br><br>
                 <a href="https://www.producthunt.com/posts/contriblearn?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light&t=1738394199733" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
                 <br>
-    <a href="/activate" class="inline-flex items-center px-4 py-2 text-base font-semibold text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out" style="background-color: #ff8080;">
-        <i class="fas fa-crown mr-2"></i> Buy Premium
+    <a href="{{ url_for('slack.install') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4A154B] hover:bg-[#3a1039] shadow-sm hover:shadow-md transition-all duration-200">
+        <i class="fab fa-slack"></i> Connect to Slack
     </a>
-    <a href="{{ url_for('slack.install') }}" class="inline-flex items-center px-4 py-2 text-base font-semibold text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out ml-2" style="background-color: #4A154B;">
-        <i class="fab fa-slack mr-2"></i> Connect to Slack
+    <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4285F4] hover:bg-[#3b78e7] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
+        <i class="fab fa-chrome"></i> Add to Chrome
     </a>
-    <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 text-base font-semibold text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out ml-2" style="background-color: #4285F4;">
-        <i class="fab fa-chrome mr-2"></i> Add to Chrome
-    </a>
-    <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center px-4 py-2 text-base font-semibold text-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out ml-2" style="background-color: #eb6864;">
-        <i class="fas fa-download mr-2"></i> Install app
+    <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#eb6864] hover:bg-[#e05551] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
+        <i class="fas fa-download"></i> Install app
     </button>
             </p>
         </div>
