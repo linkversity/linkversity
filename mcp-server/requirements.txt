@@ -1,2 +1,3 @@
-mcp[cli]>=1.30.0
+# mcp 2.x renamed FastMCP to MCPServer - stay on the v1 API for now
+mcp[cli]>=1.30.0,<2
 requests

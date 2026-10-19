@@ -13,6 +13,24 @@ import os
 
 import requests
 from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.transport_security import TransportSecuritySettings
+
+# DNS-rebinding protection: only accept requests for the public host
+# (nginx proxies /mcp with Host: linkversity.lol) and localhost for probes.
+_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=True,
+    allowed_hosts=[
+        h
+        for h in (
+            os.environ.get("LINKVERSITY_MCP_ALLOWED_HOST", "linkversity.lol"),
+            "www.linkversity.lol",
+            "127.0.0.1:*",
+            "localhost:*",
+            "[::1]:*",
+        )
+        if h
+    ],
+)
 
 mcp = FastMCP(
     "Linkversity",
@@ -27,6 +45,7 @@ mcp = FastMCP(
     ),
     host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
     port=int(os.environ.get("LINKVERSITY_MCP_PORT", "8001")),
+    transport_security=_security,
     stateless_http=True,
 )
 
