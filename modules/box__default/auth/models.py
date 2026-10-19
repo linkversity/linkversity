@@ -57,6 +57,15 @@ class AnonymousUser(AnonymousUserMixin):
     def roles(self):
         return []
 
+    def is_pro(self):
+        return False
+
+    def is_enterprise(self):
+        return False
+
+    def is_enterprise_admin(self):
+        return False
+
     def __repr__(self):
         return f"<AnonymousUser {self.username}>"
 
