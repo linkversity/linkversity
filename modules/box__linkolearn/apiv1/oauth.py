@@ -196,6 +196,21 @@ def protected_resource_metadata():
     )
 
 
+# OpenAI plugin-domain verification challenge. The portal requires the exact
+# token as plain text at the origin-root well-known URL (not JSON).
+# Set the token on the server, never commit it:
+#   Environment="LINKVERSITY_OPENAI_CHALLENGE_TOKEN=<token from the portal>"
+_OPENAI_CHALLENGE_TOKEN = os.environ.get("LINKVERSITY_OPENAI_CHALLENGE_TOKEN", "")
+
+
+@wellknown_blueprint.route("/.well-known/openai-apps-challenge")
+@csrf.exempt
+def openai_apps_challenge():
+    if not _OPENAI_CHALLENGE_TOKEN:
+        return "Not configured", 404
+    return _OPENAI_CHALLENGE_TOKEN, 200, {"Content-Type": "text/plain"}
+
+
 # --------------------------------------------------------------------------
 # dynamic client registration (RFC 7591)
 # --------------------------------------------------------------------------
