@@ -14,16 +14,17 @@
       "interface": {
         "displayName": "Linkversity",
         "shortDescription": "Collections and study plans",
-        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity. The plugin only reads your data - it never changes your collections.",
+        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, save new links or create new collections straight from the chat, and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity.",
         "developerName": "Linkversity",
         "category": "Education & Research",
-        "capabilities": ["Search collections", "Read collections", "Build study plans"],
+        "capabilities": ["Search collections", "Read collections", "Save links", "Build study plans"],
         "websiteURL": "https://linkversity.lol",
         "supportURL": "https://linkversity.lol/contact",
         "privacyPolicyURL": "https://linkversity.lol/privacy-policy",
         "termsOfServiceURL": "https://linkversity.lol/terms",
         "defaultPrompt": [
           "Find public Linkversity collections about machine learning",
+          "Save this article to my Linkversity collection",
           "Turn this Linkversity collection into a study plan for a beginner with 3 hours a week"
         ],
         "brandColor": "#eb6864",

@@ -28,7 +28,7 @@ from shopyo.api.models import PkModel
 
 from init import csrf, db
 
-SCOPE_SUPPORTED = ["collections:read"]
+SCOPE_SUPPORTED = ["collections:read", "collections:write"]
 ACCESS_TOKEN_TTL = datetime.timedelta(days=7)
 REFRESH_TOKEN_TTL = datetime.timedelta(days=90)
 AUTH_CODE_TTL = datetime.timedelta(minutes=5)
@@ -292,6 +292,7 @@ _CONSENT_HTML = """<!doctype html>
  <p>This will let {{ client.name }}:</p>
  <div class="scopes">
    &#8226; Read your collections and the links inside them<br>
+   &#8226; Save new links and create collections on your behalf<br>
    &#8226; Build study plans from your saved resources
  </div>
  <p style="font-size:.85rem">Scope: <code>{{ scope }}</code></p>

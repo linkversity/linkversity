@@ -25,6 +25,15 @@ _READONLY = ToolAnnotations(
     openWorldHint=False,
 )
 
+# Additive writes (create collection, save link): not read-only, but nothing
+# is overwritten or destroyed, so destructive stays false. Bounded private
+# workspace => openWorld false.
+_WRITE = ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    openWorldHint=False,
+)
+
 # DNS-rebinding protection: only accept requests for the public host
 # (nginx proxies /mcp with Host: linkversity.lol) and localhost for probes.
 _security = TransportSecuritySettings(
@@ -204,6 +213,44 @@ def create_study_plan(
         "fallback": True,
         "links": links,
     }
+
+
+@mcp.tool(annotations=_WRITE)
+def create_collection(title: str, section_title: str = "", ctx: Context | None = None) -> dict:
+    """Create a new collection in the connected user's Linkversity account.
+
+    Requires a connected account. The collection starts private; the user can
+    make it public on the Linkversity website. Returns the new collection's
+    ID, title and canonical URL - save links to it with save_link.
+    """
+    payload = {"title": title}
+    if section_title:
+        payload["section_title"] = section_title
+    return _post("/api/v1/me/collections", payload, ctx)
+
+
+@mcp.tool(annotations=_WRITE)
+def save_link(
+    collection_id: int,
+    url: str,
+    section_title: str = "",
+    title: str = "",
+    ctx: Context | None = None,
+) -> dict:
+    """Save a URL into one of the connected user's Linkversity collections.
+
+    Requires a connected account with collections:write permission. The
+    section is created if it does not exist yet; without a section_title the
+    link goes into the collection's first section. Saving a URL that is
+    already in the collection is a no-op and returns the existing link.
+    Pass title/description to pre-fill the saved link's metadata.
+    """
+    payload = {"url": url}
+    if section_title:
+        payload["section_title"] = section_title
+    if title:
+        payload["title"] = title
+    return _post(f"/api/v1/me/collections/{collection_id}/links", payload, ctx)
 
 
 if __name__ == "__main__":
