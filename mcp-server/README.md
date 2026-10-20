@@ -18,6 +18,29 @@ python server.py
 
 Endpoint: `http://0.0.0.0:8001/mcp` (streamable-http, stateless).
 
+## Environment variables
+
+All optional; defaults shown. Set them in the systemd unit (see
+`Environment=` lines in `~/code/notes/linkversity/linkversity-mcp.service`)
+or export them when running by hand.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `LINKVERSITY_API_URL` | `http://127.0.0.1:5000` | Base URL of the Flask app the tools call. Production: `https://linkversity.lol` |
+| `LINKVERSITY_MCP_HOST` | `0.0.0.0` | Bind address. Use `127.0.0.1` in production - nginx is the only intended client |
+| `LINKVERSITY_MCP_PORT` | `8001` | Listen port (must match the nginx `proxy_pass`) |
+| `LINKVERSITY_API_TIMEOUT` | `15` | Seconds before a Flask API call is aborted |
+| `LINKVERSITY_MCP_ALLOWED_HOST` | `linkversity.lol` | Public hostname accepted in the `Host` header (DNS-rebinding protection). Extra hosts can't be added here - edit `allowed_hosts` in `server.py` for more |
+| `LINKVERSITY_API_TOKEN` | *(unset)* | **Dev only.** Fallback bearer token forwarded to the API when the incoming MCP request has no `Authorization` header. Leave unset in production - it would apply to every unauthenticated caller |
+
+Minimum for production:
+
+```ini
+Environment="LINKVERSITY_API_URL=https://linkversity.lol"
+Environment="LINKVERSITY_MCP_HOST=127.0.0.1"
+Environment="LINKVERSITY_MCP_ALLOWED_HOST=linkversity.lol"
+```
+
 ## Auth
 
 - **Public tools** (`search_public_collections`, `get_public_collection`,
@@ -38,12 +61,22 @@ this process. Example nginx:
 location /mcp {
     proxy_pass http://127.0.0.1:8001/mcp;
     proxy_http_version 1.1;
+
     proxy_set_header Host $host;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    # streamable-http / SSE - buffering MUST be off or responses stall
+    proxy_buffering off;
     proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
 }
 ```
+
+Full ready-to-paste files:
+`~/code/notes/linkversity/linkversity-mcp.nginx` and
+`~/code/notes/linkversity/linkversity-mcp.service`.
 
 Then the public MCP URL is `https://linkversity.lol/mcp` and matches
 `cha-gpt plugin/mcp.json`.

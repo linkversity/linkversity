@@ -13,6 +13,34 @@ import os
 
 import requests
 from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.transport_security import TransportSecuritySettings
+from mcp.types import ToolAnnotations
+
+# Explicit annotation objects (ChatGPT submission requires explicit boolean
+# readOnly/destructive/openWorld hints on every tool). All Linkversity tools
+# only read a bounded catalog - they never write or reach the open web.
+_READONLY = ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    openWorldHint=False,
+)
+
+# DNS-rebinding protection: only accept requests for the public host
+# (nginx proxies /mcp with Host: linkversity.lol) and localhost for probes.
+_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=True,
+    allowed_hosts=[
+        h
+        for h in (
+            os.environ.get("LINKVERSITY_MCP_ALLOWED_HOST", "linkversity.lol"),
+            "www.linkversity.lol",
+            "127.0.0.1:*",
+            "localhost:*",
+            "[::1]:*",
+        )
+        if h
+    ],
+)
 
 mcp = FastMCP(
     "Linkversity",
@@ -27,6 +55,7 @@ mcp = FastMCP(
     ),
     host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
     port=int(os.environ.get("LINKVERSITY_MCP_PORT", "8001")),
+    transport_security=_security,
     stateless_http=True,
 )
 
@@ -88,7 +117,7 @@ def _wrap(r: requests.Response):
     return body
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READONLY)
 def search_public_collections(query: str, limit: int = 10) -> dict:
     """Find public Linkversity collections about a topic.
 
@@ -101,13 +130,13 @@ def search_public_collections(query: str, limit: int = 10) -> dict:
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READONLY)
 def get_public_collection(collection_id: int) -> dict:
     """Get the details of one public Linkversity collection by its ID."""
     return _get(f"/api/v1/public/collections/{collection_id}")
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READONLY)
 def list_my_collections(ctx: Context | None = None) -> dict:
     """List the connected user's own Linkversity collections.
 
@@ -117,7 +146,7 @@ def list_my_collections(ctx: Context | None = None) -> dict:
     return _get("/api/v1/me/collections", {"per_page": 50}, ctx)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READONLY)
 def get_collection_links(
     collection_id: int, page: int = 1, per_page: int = 20, ctx: Context | None = None
 ) -> dict:
@@ -143,7 +172,7 @@ def get_collection_links(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations=_READONLY)
 def create_study_plan(
     collection_id: int,
     experience_level: str = "beginner",
