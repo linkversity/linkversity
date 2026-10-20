@@ -7,11 +7,11 @@
       "extensions": {
         "com.openai": {
           "auth": {
-            "type": "oauth",
-            "authorization_url": "https://linkversity.lol/oauth/authorize",
-            "token_url": "https://linkversity.lol/oauth/token",
-            "scope": "collections:read",
-            "pkce_method": "S256"
+            "type": "mixed",
+            "client": {
+              "mode": "dcr"
+            },
+            "baseScopes": ["collections:read"]
           }
         }
       }

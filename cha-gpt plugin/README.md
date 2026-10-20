@@ -39,23 +39,25 @@ ChatGPT scans `mcp.json` and connects to the server. One MCP server per plugin.
 
 ## Auth
 
-OAuth 2.0 (authorization code + PKCE S256) is implemented in the Flask app
-(`modules/box__linkolearn/apiv1/oauth.py`):
+Auth is declared in `mcp.json` under the server's
+`extensions["com.openai"].auth` (field names are case-sensitive camelCase):
 
-| Endpoint | Purpose |
-| --- | --- |
-| `/.well-known/oauth-authorization-server` | discovery metadata |
-| `/.well-known/oauth-protected-resource` | resource metadata |
-| `POST /oauth/register` | dynamic client registration (RFC 7591) |
-| `GET /oauth/authorize` | consent screen (user logs in, approves) |
-| `POST /oauth/token` | code / refresh-token exchange |
-| `GET /oauth/userinfo` | identity for a bearer token |
+- `type: "mixed"` - the public tools work without signing in; the personal
+  tools (`list_my_collections`, `create_study_plan` on your own collections)
+  trigger OAuth
+- `client.mode: "dcr"` - ChatGPT registers itself through our RFC 7591
+  dynamic client registration (`POST /oauth/register`); no client credentials
+  in the package
+- endpoint URLs are **not** hardcoded - the OAuth discovery document
+  (`/.well-known/oauth-authorization-server`) supplies authorize/token/
+  registration endpoints, per the docs' "omit overrides when discovery
+  supplies them"
+- `baseScopes: ["collections:read"]` - the only scope the API issues
 
-Flow: ChatGPT hits `/oauth/register`, sends the user to `/oauth/authorize`,
-exchanges the code (with PKCE verifier) at `/oauth/token`, then forwards the
-resulting `Authorization: Bearer` header on every MCP call. The MCP server
-passes it straight through to the Flask API, which validates the token and
-enforces the `collections:read` scope.
+Flow: ChatGPT discovers OAuth from the MCP endpoint, registers a client, sends
+the user to the consent screen, exchanges the code (PKCE S256) at
+`/oauth/token`, then forwards the bearer token on MCP calls. The MCP server
+passes it through; the Flask API validates it and enforces the scope.
 
 Apply the DB migration first (adds the `oauth_*` tables):
 
@@ -65,8 +67,11 @@ FLASK_APP=app.py flask db upgrade
 
 Notes:
 
-- `mcp.json` declares the OAuth endpoints; replace the domain if yours differs.
+- `mcp.json` must stay schema-clean: `type`/`url` plus the documented
+  `extensions.com.openai.auth` object only - unknown or snake_case fields
+  make the portal reject the whole file ("does not reference any MCP
+  server" → misclassified as skills-only, which they no longer accept)
 - Tokens are stored hashed (SHA-256); access tokens expire in 7 days, refresh
-  tokens in 90 days; authorization codes are single-use and expire in 5 min.
+  tokens in 90 days; authorization codes are single-use and expire in 5 min
 - API-key auth is not supported by the submission portal's connection form;
-  OAuth is the supported path.
+  OAuth is the supported path
