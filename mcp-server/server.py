@@ -49,6 +49,15 @@ _security = TransportSecuritySettings(
         )
         if h
     ],
+    # Browsers (and OpenAI's server-side plugin scanner) send an Origin
+    # header on cross-origin POSTs; any origin not listed gets a 403 and
+    # the portal scan fails with "could not connect".
+    allowed_origins=[
+        "https://chatgpt.com",
+        "https://www.chatgpt.com",
+        "https://chat.openai.com",
+        "https://platform.openai.com",
+    ],
 )
 
 mcp = FastMCP(
