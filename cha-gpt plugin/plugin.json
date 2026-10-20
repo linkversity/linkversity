@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "linkversity",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Discover Linkversity collections, access your saved learning resources, and generate study plans from ChatGPT.",
   "author": {
     "name": "Linkversity"
