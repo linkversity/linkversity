@@ -63,17 +63,16 @@ _security = TransportSecuritySettings(
 mcp = FastMCP(
     "Linkversity",
     instructions=(
-        "Discover Linkversity collections and build study plans. Use "
-        "search_public_collections to find public collections by topic, "
-        "get_public_collection / get_collection_links to read their contents, "
-        "list_my_collections + get_collection_links for a connected account, "
-        "and create_study_plan to fetch a collection's resources in a study "
-        "sequence for a given experience level and weekly time budget. "
-        "To save a link, prefer save_link_to_collection: it works by "
-        "collection name and creates the collection and/or section "
-        "automatically when they do not exist yet; save_link and "
-        "create_collection are the lower-level building blocks. "
-        "Every resource includes the Linkversity source URL - cite it."
+        "Linkversity is a link manager: collections of saved links, grouped "
+        "into sections. Use search_public_collections to find public "
+        "collections by topic and get_public_collection / "
+        "get_collection_links to read their contents. With a connected "
+        "account, list_my_collections lists the user's collections, "
+        "save_link_to_collection saves a URL by collection name (creating "
+        "the collection or section if it does not exist yet), and "
+        "save_link / create_collection are the lower-level building "
+        "blocks. Every resource includes the Linkversity source URL - cite "
+        "it."
     ),
     host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
     port=int(os.environ.get("LINKVERSITY_MCP_PORT", "8001")),
@@ -192,40 +191,6 @@ def get_collection_links(
         {"page": page, "per_page": per_page},
         ctx,
     )
-
-
-@mcp.tool(annotations=_READONLY)
-def create_study_plan(
-    collection_id: int,
-    experience_level: str = "beginner",
-    hours_per_week: int = 5,
-    ctx: Context | None = None,
-) -> dict:
-    """Fetch a Linkversity collection's resources sequenced for a study plan.
-
-    Retrieve the resources here, then write the actual plan yourself: order
-    the sections, spread them across the requested hours_per_week, and tailor
-    the explanations to the experience_level. This is read-only - it never
-    modifies the collection.
-    """
-    payload = {
-        "experience_level": experience_level,
-        "hours_per_week": hours_per_week,
-    }
-    result = _post(
-        f"/api/v1/me/collections/{collection_id}/study-plan", payload, ctx
-    )
-    if "error" not in result:
-        return result
-    # not connected / not authorized -> fall back to public links
-    links = get_collection_links(collection_id, ctx=ctx)
-    return {
-        "collection_id": collection_id,
-        "experience_level": experience_level,
-        "hours_per_week": hours_per_week,
-        "fallback": True,
-        "links": links,
-    }
 
 
 @mcp.tool(annotations=_WRITE)

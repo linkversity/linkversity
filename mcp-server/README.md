@@ -45,7 +45,7 @@ Environment="LINKVERSITY_MCP_ALLOWED_HOST=linkversity.lol"
 
 - **Public tools** (`search_public_collections`, `get_public_collection`,
   `get_collection_links` on a public collection) need no auth.
-- **Personal tools** (`list_my_collections`, `create_study_plan` on your own
+- **Personal tools** (`list_my_collections` on your own
   collections): if the incoming MCP request carries `Authorization: Bearer
   <token>`, it is forwarded to the Flask API. OAuth access tokens issued by
   the app (`/oauth/*`) work out of the box - the API resolves them directly.
@@ -89,7 +89,6 @@ Then the public MCP URL is `https://linkversity.lol/mcp` and matches
 | `get_public_collection` | `GET /api/v1/public/collections/{id}` | none |
 | `list_my_collections` | `GET /api/v1/me/collections` | user (read) |
 | `get_collection_links` | `GET /api/v1/{public,me}/collections/{id}/links` | optional |
-| `create_study_plan` | `POST /api/v1/me/collections/{id}/study-plan` | user (read) |
 | `create_collection` | `POST /api/v1/me/collections` | user (write) |
 | `save_link` | `POST /api/v1/me/collections/{id}/links` | user (write) |
 | `save_link_to_collection` | `GET /api/v1/me/collections` + `POST ...` (match by name, create on miss) | user (write) |
