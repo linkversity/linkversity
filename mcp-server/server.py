@@ -69,6 +69,10 @@ mcp = FastMCP(
         "list_my_collections + get_collection_links for a connected account, "
         "and create_study_plan to fetch a collection's resources in a study "
         "sequence for a given experience level and weekly time budget. "
+        "To save a link, prefer save_link_to_collection: it works by "
+        "collection name and creates the collection and/or section "
+        "automatically when they do not exist yet; save_link and "
+        "create_collection are the lower-level building blocks. "
         "Every resource includes the Linkversity source URL - cite it."
     ),
     host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
@@ -222,6 +226,55 @@ def create_study_plan(
         "fallback": True,
         "links": links,
     }
+
+
+@mcp.tool(annotations=_WRITE)
+def save_link_to_collection(
+    collection: str,
+    url: str,
+    section_title: str = "",
+    title: str = "",
+    ctx: Context | None = None,
+) -> dict:
+    """Save a URL into the connected user's collection *by name* (one call).
+
+    Matches the user's collection by title, case-insensitive. If no
+    collection matches, one is created (private, its first section is
+    section_title). A missing section is created too. Use this when the
+    user names a collection (e.g. "save this to my Backend collection");
+    use save_link only when the user already gave you a collection ID.
+    """
+    name = (collection or "").strip()
+    if not name or len(name) > 200:
+        return {"error": "collection name is required (max 200 chars)"}
+    listing = _get("/api/v1/me/collections", {"per_page": 100}, ctx)
+    if isinstance(listing, dict) and "error" in listing:
+        return listing  # not connected / bad token - surface as-is
+    items = listing.get("items", []) if isinstance(listing, dict) else []
+    match = next(
+        (c for c in items if (c.get("title") or "").casefold() == name.casefold()),
+        None,
+    )
+    created_collection = False
+    if match is None:
+        payload = {"title": name}
+        if section_title:
+            payload["section_title"] = section_title
+        match = _post("/api/v1/me/collections", payload, ctx)
+        if not isinstance(match, dict) or "error" in match or "id" not in match:
+            return match if isinstance(match, dict) else {"error": "could not create collection"}
+        created_collection = True
+    link_payload = {"url": url}
+    if section_title:
+        link_payload["section_title"] = section_title
+    if title:
+        link_payload["title"] = title
+    saved = _post(f"/api/v1/me/collections/{match['id']}/links", link_payload, ctx)
+    if isinstance(saved, dict):
+        saved.setdefault("collection", {"id": match["id"], "title": match.get("title")})
+        if created_collection:
+            saved["note"] = (saved.get("note", "") + "; collection was created").strip("; ")
+    return saved
 
 
 @mcp.tool(annotations=_WRITE)
