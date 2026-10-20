@@ -87,9 +87,16 @@ Then the public MCP URL is `https://linkversity.lol/mcp` and matches
 | --- | --- | --- |
 | `search_public_collections` | `GET /api/v1/public/collections` | none |
 | `get_public_collection` | `GET /api/v1/public/collections/{id}` | none |
-| `list_my_collections` | `GET /api/v1/me/collections` | user |
+| `list_my_collections` | `GET /api/v1/me/collections` | user (read) |
 | `get_collection_links` | `GET /api/v1/{public,me}/collections/{id}/links` | optional |
-| `create_study_plan` | `POST /api/v1/me/collections/{id}/study-plan` | user |
+| `create_study_plan` | `POST /api/v1/me/collections/{id}/study-plan` | user (read) |
+| `create_collection` | `POST /api/v1/me/collections` | user (write) |
+| `save_link` | `POST /api/v1/me/collections/{id}/links` | user (write) |
+| `save_link_to_collection` | `GET /api/v1/me/collections` + `POST ...` (match by name, create on miss) | user (write) |
+
+Read tools require the `collections:read` scope; write tools require
+`collections:write` (both are in `baseScopes` and shown on the consent
+screen). Missing scope returns `403 insufficient_scope`.
 
 ## Test with MCP Inspector
 

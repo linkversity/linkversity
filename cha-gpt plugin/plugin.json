@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "linkversity",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Discover Linkversity collections, access your saved learning resources, and generate study plans from ChatGPT.",
   "author": {
     "name": "Linkversity"
@@ -14,7 +14,7 @@
       "interface": {
         "displayName": "Linkversity",
         "shortDescription": "Collections and study plans",
-        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, save new links or create new collections straight from the chat, and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity.",
+        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, save new links or create new collections straight from the chat - just name the collection and it is created automatically if it does not exist yet - and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity.",
         "developerName": "Linkversity",
         "category": "Education & Research",
         "capabilities": ["Search collections", "Read collections", "Save links", "Build study plans"],
