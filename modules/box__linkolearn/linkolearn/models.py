@@ -33,11 +33,41 @@ path_editor_bridge = db.Table(
 )
 
 
+# User-pickable cover icons for paths (Font Awesome 5 free solid classes).
+# Whitelist: anything stored here is later echoed into a `fas {{icon}}`
+# class attribute, so the backend must only ever persist values from this
+# list - never a raw client string. "" means "auto" (crc32-derived pick).
+PATH_ICONS = [
+    ("", "Auto"),
+    ("fa-route", "Route"),
+    ("fa-book-open", "Book"),
+    ("fa-graduation-cap", "Study"),
+    ("fa-code", "Code"),
+    ("fa-palette", "Design"),
+    ("fa-flask", "Science"),
+    ("fa-lightbulb", "Ideas"),
+    ("fa-rocket", "Launch"),
+    ("fa-globe", "World"),
+    ("fa-microscope", "Research"),
+    ("fa-calculator", "Numbers"),
+    ("fa-language", "Language"),
+    ("fa-briefcase", "Business"),
+    ("fa-heartbeat", "Health"),
+    ("fa-camera", "Photo"),
+    ("fa-compass", "Explore"),
+    ("fa-laptop-code", "DevOps"),
+    ("fa-trophy", "Goals"),
+]
+PATH_ICON_CLASSES = {cls for cls, _ in PATH_ICONS}
+
+
 class Path(PkModel):
     __tablename__ = "paths"
 
     slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
+    # chosen cover icon (FA5 class from PATH_ICONS); NULL/"" = auto-derived
+    cover_icon = db.Column(db.String(50), nullable=True)
     sections = db.relationship(
         "Section", backref="section_path", lazy=True, cascade="all, delete-orphan"
     )

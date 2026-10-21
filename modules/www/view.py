@@ -28,6 +28,7 @@ from sqlalchemy import func
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import ActivationCode
+from modules.box__linkolearn.linkolearn.models import PATH_ICON_CLASSES
 from modules.box__default.auth.models import User
 from flask import jsonify
 from init import db, csrf
@@ -79,14 +80,15 @@ def index():
         """
         import zlib
 
-        # (gradient start, gradient end, FA5 icon)
+        # (gradient start, gradient end, FA5 icon) - used when the path has no
+        # user-chosen cover_icon ("auto"). fa-music swapped for fa-rocket.
         TINTS = [
             ("#FF385C", "#FF8A5B", "fa-route"),
             ("#2C5C80", "#79B7D6", "fa-code"),
             ("#2F6B45", "#82BB92", "fa-book-open"),
             ("#8A6220", "#DDB567", "fa-palette"),
             ("#4A4778", "#A5A2D4", "fa-flask"),
-            ("#8C3B57", "#D899B0", "fa-music"),
+            ("#8C3B57", "#D899B0", "fa-rocket"),
             ("#96432A", "#E5A07F", "fa-graduation-cap"),
             ("#3E6E7E", "#8FC0CC", "fa-lightbulb"),
         ]
@@ -112,6 +114,11 @@ def index():
 
                 seed = zlib.crc32((p.slug or str(p.id)).encode("utf-8"))
                 c1, c2, icon = TINTS[seed % len(TINTS)]
+
+                # user-chosen cover icon wins over the auto-derived one
+                chosen = (p.cover_icon or "").strip()
+                if chosen in PATH_ICON_CLASSES and chosen:
+                    icon = chosen
 
                 title = (p.title or p.slug or "").strip() or p.slug
                 monogram = next((c.upper() for c in title if c.isalnum()), "?")

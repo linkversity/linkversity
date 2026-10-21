@@ -23,6 +23,8 @@ from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import LikeList
+from modules.box__linkolearn.linkolearn.models import PATH_ICON_CLASSES
+from modules.box__linkolearn.linkolearn.models import PATH_ICONS
 
 mhelp = ModuleHelp(__file__, __name__)
 globals()[mhelp.blueprint_str] = mhelp.blueprint
@@ -69,7 +71,10 @@ def index():
     # any user with orgs (owner or member) gets the picker; others get none
     orgs = user_organizations(current_user)
     return render_template(
-        "linkolearn_theme/templates/new.html", team_id=team_id, orgs=orgs
+        "linkolearn_theme/templates/new.html",
+        team_id=team_id,
+        orgs=orgs,
+        PATH_ICONS=PATH_ICONS,
     )
 
 
@@ -127,6 +132,9 @@ def add():
     path.bookmark_list = BookmarkList()
     path.title = json_submit.get("path_title", path_link.replace("-", " ").title())
     path.slug = path_link
+    # cover icon: must be one of PATH_ICONS, else auto (crc32-derived)
+    path_icon = (json_submit.get("path_icon") or "").strip()
+    path.cover_icon = path_icon if path_icon in PATH_ICON_CLASSES else ""
     if team_id:
         path.team_id = int(team_id)
 

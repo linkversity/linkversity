@@ -24,6 +24,8 @@ from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import LikeList
 from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import Emoji
+from modules.box__linkolearn.linkolearn.models import PATH_ICONS
+from modules.box__linkolearn.linkolearn.models import PATH_ICON_CLASSES
 from modules.box__linkolearn.linkolearn.enterprise_features import (
     EnterpriseAuditLog,
     EnterpriseAnalytics,
@@ -287,7 +289,9 @@ def edit_path(path_id):
     if request.method == "GET":
         context = {}
 
-        context.update({"path": path, "sectionlinks2str": sectionlinks2str})
+        context.update(
+            {"path": path, "sectionlinks2str": sectionlinks2str, "PATH_ICONS": PATH_ICONS}
+        )
         return render_template("linkolearn_theme/templates/edit.html", **context)
     if request.method == "POST":
         json_submit = request.get_json()
@@ -298,6 +302,10 @@ def edit_path(path_id):
         path.sections = []
         # path.title = path_title
         path.slug = path_link
+        # cover icon: whitelist only, never a raw client string (it is echoed
+        # into a `fas {{icon}}` class attribute on the landing cards)
+        path_icon = (json_submit.get("path_icon") or "").strip()
+        path.cover_icon = path_icon if path_icon in PATH_ICON_CLASSES else ""
 
         for sec in sections:
             section = Section()
