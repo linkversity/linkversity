@@ -9,7 +9,10 @@ If the incoming MCP request carries an Authorization: Bearer header, it is
 forwarded to the Flask API so personal tools see the connected user.
 """
 
+import hashlib
+import json
 import os
+import time
 
 import requests
 from mcp.server.fastmcp import FastMCP, Context
@@ -280,5 +283,160 @@ def save_link(
     return _post(f"/api/v1/me/collections/{collection_id}/links", payload, ctx)
 
 
+# --------------------------------------------------------------------------
+# auth gate: HTTP 401 + Bearer challenge for personal tool calls
+# --------------------------------------------------------------------------
+#
+# MCP clients only start their OAuth flow when a request comes back as
+# HTTP 401 with a `WWW-Authenticate: Bearer ...` challenge. Answering 200
+# with an "invalid or missing access token" JSON-RPC payload (what this
+# server used to do) leaves the client believing the account is connected:
+# the TUI shows "connected" while every personal tool silently fails.
+
+_PERSONAL_TOOLS = {
+    "list_my_collections",
+    "save_link_to_collection",
+    "create_collection",
+    "save_link",
+}
+
+# token -> (valid, monotonic deadline); userinfo round-trip is skipped
+# while a verdict is fresh (tools/call traffic is otherwise one extra hop
+# per personal call)
+_token_cache: dict[str, tuple[bool, float]] = {}
+_TOKEN_CACHE_TTL = 60.0
+
+
+def _token_is_valid(token: str) -> bool:
+    """Ask the API whether the bearer token resolves (cached60s).
+
+    If the API is unreachable, assume valid: the tool call should surface
+    the connectivity error instead of a misleading auth challenge.
+    """
+    key = hashlib.sha256(token.encode()).hexdigest()
+    now = time.monotonic()
+    hit = _token_cache.get(key)
+    if hit is not None and hit[1] > now:
+        return hit[0]
+    try:
+        r = requests.get(
+            f"{API_BASE_URL}/oauth/userinfo",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            },
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException:
+        return True
+    ok = r.status_code == 200
+    _token_cache[key] = (ok, now + _TOKEN_CACHE_TTL)
+    return ok
+
+
+def _bearer_from_scope(scope) -> str:
+    for name, value in scope.get("headers", []):
+        if name.lower() == b"authorization":
+            auth = value.decode("latin-1")
+            if auth.lower().startswith("bearer "):
+                return auth[7:].strip()
+    return ""
+
+
+class _AuthGate:
+    """ASGI middleware answering personal tool calls with401 when unauthed."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or scope.get("method") != "POST":
+            await self.app(scope, receive, send)
+            return
+
+        # buffer the body (the downstream app reads it after us) and decide
+        pending = []
+        body = b""
+        while True:
+            msg = await receive()
+            pending.append(msg)
+            if msg["type"] == "http.request":
+                body += msg.get("body", b"") or b""
+            if not msg.get("more_body"):
+                break
+
+        request_id = None
+        needs_auth = False
+        try:
+            payload = json.loads(body or b"{}")
+            request_id = payload.get("id")
+            if payload.get("method") == "tools/call":
+                name = (payload.get("params") or {}).get("name")
+                needs_auth = name in _PERSONAL_TOOLS
+        except ValueError:
+            pass
+
+        token = _bearer_from_scope(scope) or os.environ.get(
+            "LINKVERSITY_API_TOKEN", ""
+        )
+        if needs_auth and (not token or not _token_is_valid(token)):
+            await self._challenge(request_id, send)
+            return
+
+        async def replay():
+            if pending:
+                return pending.pop(0)
+            while True:  # park until the client disconnects
+                msg = await receive()
+                if msg["type"] == "http.disconnect":
+                    return msg
+
+        await self.app(scope, replay, send)
+
+    @staticmethod
+    async def _challenge(request_id, send):
+        body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "error": {
+                    "code": -32001,
+                    "message": (
+                        "authorization required: connect your Linkversity "
+                        "account (OAuth). Public tools work without a token."
+                    ),
+                },
+            }
+        ).encode()
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 401,
+                "headers": [
+                    (b"content-type", b"application/json"),
+                    (
+                        b"www-authenticate",
+                        (
+                            'Bearer resource_metadata="'
+                            f"{API_BASE_URL}/.well-known/"
+                            'oauth-protected-resource"'
+                        ).encode(),
+                    ),
+                ],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    import uvicorn
+
+    # uvicorn runs the Starlette app directly so the auth gate wraps the
+    # streamable-http transport (mcp.run() would hide the app from us)
+    app = mcp.streamable_http_app()
+    app.add_middleware(_AuthGate)
+    uvicorn.run(
+        app,
+        host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
+        port=int(os.environ.get("LINKVERSITY_MCP_PORT", "8001")),
+    )

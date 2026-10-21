@@ -45,10 +45,17 @@ Environment="LINKVERSITY_MCP_ALLOWED_HOST=linkversity.lol"
 
 - **Public tools** (`search_public_collections`, `get_public_collection`,
   `get_collection_links` on a public collection) need no auth.
-- **Personal tools** (`list_my_collections` on your own
-  collections): if the incoming MCP request carries `Authorization: Bearer
-  <token>`, it is forwarded to the Flask API. OAuth access tokens issued by
-  the app (`/oauth/*`) work out of the box - the API resolves them directly.
+- **Personal tools** (`list_my_collections`, `save_link_to_collection`,
+  `create_collection`, `save_link`): if the incoming MCP request carries
+  `Authorization: Bearer <token>`, it is forwarded to the Flask API. OAuth
+  access tokens issued by the app (`/oauth/*`) work out of the box - the
+  API resolves them directly.
+- A personal tool call **without a valid token is answered with HTTP 401**
+  and `WWW-Authenticate: Bearer resource_metadata="<api>/.well-known/oauth-protected-resource"`.
+  MCP clients need that challenge to start their OAuth flow; without it they
+  treat the anonymous transport connection as "connected" and every personal
+  tool fails with an in-band error. The token is checked against
+  `/oauth/userinfo` (cached 60s); public tools stay anonymous.
 - For local testing without OAuth you can set `LINKVERSITY_API_TOKEN` to one of
   your account's API tokens; it is used only when no header is present.
 
