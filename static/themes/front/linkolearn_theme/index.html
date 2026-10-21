@@ -505,129 +505,6 @@
   color: #222222;
 }
 
-/* how to add MCP */
-.lv-steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 16px;
-}
-.lv-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: #fff;
-  border: 1px solid #EBEBEB;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-}
-.lv-step-num {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: #FF385C;
-  color: #fff;
-  font-size: 14.5px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  margin-top: 2px;
-}
-.lv-step-body { min-width: 0; flex: 1; }
-.lv-step-body h3 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #222222;
-  margin: 2px 0 6px;
-}
-.lv-step-body p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #6A6A6A;
-  margin: 0 0 10px;
-}
-.lv-step-body p:last-child { margin-bottom: 0; }
-.lv-step-body p code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12.5px;
-  color: #4A4778;
-  background: #F7F7F7;
-  border: 1px solid #EBEBEB;
-  border-radius: 7px;
-  padding: 1px 6px;
-}
-.lv-code {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #F7F7F7;
-  border: 1px solid #EBEBEB;
-  border-radius: 12px;
-  padding: 9px 10px 9px 13px;
-}
-.lv-code code {
-  flex: 1;
-  min-width: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13.5px;
-  color: #222222;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-.lv-copy {
-  flex: none;
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #222222;
-  background: #fff;
-  border: 1px solid #DDDDDD;
-  border-radius: 999px;
-  padding: 5px 13px;
-  cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, color .15s ease;
-}
-.lv-copy:hover { background: #F7F7F7; border-color: #CFCFCF; }
-.lv-copy.done { color: #B01E44; background: #FFF0F3; border-color: #FFD4DC; }
-.lv-code-more { margin-top: 8px; }
-.lv-code-more summary {
-  font-size: 13px;
-  color: #6A6A6A;
-  cursor: pointer;
-  user-select: none;
-}
-.lv-code-more summary:hover { color: #222222; }
-.lv-code-more pre {
-  margin: 8px 0 0;
-  padding: 14px;
-  background: #F7F7F7;
-  border: 1px solid #EBEBEB;
-  border-radius: 12px;
-  overflow-x: auto;
-}
-.lv-code-more pre code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: #222222;
-  white-space: pre;
-}
-.lv-step-quote {
-  margin: 0;
-  font-size: 14px;
-  font-style: italic;
-  line-height: 1.6;
-  color: #222222;
-  background: #FFF7F8;
-  border: 1px solid #FFE3E8;
-  border-left: 3px solid #FF385C;
-  border-radius: 12px;
-  padding: 12px 15px;
-}
-
 @media (prefers-color-scheme: dark) {
   .lv-hero-copy h1 { color: #f6f6f7; }
   .lv-hero-sub { color: #9ca3af; }
@@ -657,20 +534,6 @@
   .slide-title { color: #f6f6f7; }
   .slide-sub { color: #9ca3af; }
   .slide-dots span { background: rgba(255,255,255,.14); }
-  .lv-step { background: #16191e; border-color: #262b36; box-shadow: none; }
-  .lv-step-body h3 { color: #f3f4f6; }
-  .lv-step-body p { color: #9ca3af; }
-  .lv-step-body p code { background: #1c2027; border-color: #262b36; color: #a5a2d4; }
-  .lv-code { background: #101318; border-color: #262b36; }
-  .lv-code code { color: #e5e7eb; }
-  .lv-copy { background: #1c2027; border-color: #37404f; color: #e5e7eb; }
-  .lv-copy:hover { background: #222732; }
-  .lv-copy.done { background: #2a1b20; border-color: #4a2a30; color: #ff9d9d; }
-  .lv-code-more summary { color: #9ca3af; }
-  .lv-code-more summary:hover { color: #e5e7eb; }
-  .lv-code-more pre { background: #101318; border-color: #262b36; }
-  .lv-code-more pre code { color: #d1d5db; }
-  .lv-step-quote { background: #20161a; border-color: #4a2a30; border-left-color: #FF385C; color: #f3f4f6; }
 }
   </style>
 
@@ -718,6 +581,9 @@
                 <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#FF385C] hover:bg-[#E01A45] shadow-sm hover:shadow-md transition-all duration-200">
                     <i class="fas fa-download"></i> Install app
                 </button>
+                <a href="{{ url_for('www.agents') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#222222] bg-white border border-[#DDDDDD] hover:bg-[#F7F7F7] rounded-full shadow-sm hover:shadow-md transition-all duration-200 dark:bg-[#16191e] dark:text-[#e5e7eb] dark:border-[#262b36] dark:hover:bg-[#1c2027]">
+                    <i class="fas fa-robot"></i> Connect agents
+                </a>
             </div>
         </div>
 
@@ -829,89 +695,6 @@
         {%endfor%}
     </div>
 </section>
-
-<!-- ============ how to add MCP ============ -->
-<section class="lv-section">
-    <div class="lv-section-head">
-        <div>
-            <span class="lv-eyebrow"><i class="fas fa-plug"></i> Model Context Protocol</span>
-            <h2>How to add Linkversity MCP</h2>
-            <p>Two minutes to wire your AI chat into your collections — add the server, connect your account, then just ask.</p>
-        </div>
-    </div>
-
-    <ol class="lv-steps">
-        <li class="lv-step">
-            <span class="lv-step-num">1</span>
-            <div class="lv-step-body">
-                <h3>Add the server</h3>
-                <p>In your MCP client's settings (Claude, Cursor, ChatGPT — anything that speaks MCP), add a <b>streamable-HTTP</b> server with this URL:</p>
-                <div class="lv-code">
-                    <code>https://linkversity.lol/mcp</code>
-                    <button type="button" class="lv-copy" data-copy="https://linkversity.lol/mcp" aria-label="Copy MCP endpoint">
-                        <i class="far fa-copy"></i> <span>Copy</span>
-                    </button>
-                </div>
-                <details class="lv-code-more">
-                    <summary>Show the JSON config</summary>
-                    <pre><code>{
-  "mcpServers": {
-    "linkversity": {
-      "type": "streamable-http",
-      "url": "https://linkversity.lol/mcp"
-    }
-  }
-}</code></pre>
-                </details>
-            </div>
-        </li>
-
-        <li class="lv-step">
-            <span class="lv-step-num">2</span>
-            <div class="lv-step-body">
-                <h3>Connect your account</h3>
-                <p>Public search works with no sign-in at all. The first time you reach for a personal tool, your client opens Linkversity's consent screen — approve once and it gets <code>collections:read</code> + <code>collections:write</code>.</p>
-            </div>
-        </li>
-
-        <li class="lv-step">
-            <span class="lv-step-num">3</span>
-            <div class="lv-step-body">
-                <h3>Start asking</h3>
-                <p>Natural language is the whole interface:</p>
-                <blockquote class="lv-step-quote">“Find public collections about systems design — and save this article to my Backend collection.”</blockquote>
-            </div>
-        </li>
-    </ol>
-</section>
-
-<script>
-// copy the MCP endpoint; the clipboard API needs a secure context (HTTPS /
-// localhost), so degrade to "Select it" instead of failing silently
-(function () {
-    var btn = document.querySelector('.lv-copy');
-    if (!btn) return;
-    var label = btn.querySelector('span');
-    function done(ok) {
-        if (!label) return;
-        label.textContent = ok ? 'Copied!' : 'Select it';
-        btn.classList.toggle('done', ok);
-        setTimeout(function () {
-            label.textContent = 'Copy';
-            btn.classList.remove('done');
-        }, 1600);
-    }
-    btn.addEventListener('click', function () {
-        var text = btn.getAttribute('data-copy') || '';
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function () { done(true); },
-                                                     function () { done(false); });
-        } else {
-            done(false);
-        }
-    });
-})();
-</script>
 
 <!-- ============ testimonials ============ -->
 <section class="lv-section">

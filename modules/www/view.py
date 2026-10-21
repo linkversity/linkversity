@@ -30,6 +30,8 @@ from modules.box__linkolearn.linkolearn.models import Link
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
+from flask import send_file
+from flask import current_app
 from init import db, csrf
 
 dirpath = os.path.dirname(os.path.abspath(__file__))
@@ -282,6 +284,22 @@ def terms():
 @module_blueprint.route("/about")
 def about():
     return render_template("linkolearn_theme/templates/info/about.html")
+
+
+# NOTE: static rules outrank /<username> and /<username>/<path_slug> in
+# Werkzeug's matcher, so "/agents" and "/agents/skill" resolve here instead
+# of the profile/path pages (same mechanism as /org/<slug>). "agents" is
+# therefore a reserved username.
+@module_blueprint.route("/agents")
+def agents():
+    return render_template("linkolearn_theme/templates/agents.html")
+
+
+@module_blueprint.route("/agents/skill")
+def agent_skill():
+    """Raw Linkversity Agent Skill (SKILL.md) - agents can load it directly."""
+    skill_path = os.path.join(current_app.root_path, "agents", "SKILL.md")
+    return send_file(skill_path, mimetype="text/markdown")
 
 
 @module_blueprint.route("/info")
