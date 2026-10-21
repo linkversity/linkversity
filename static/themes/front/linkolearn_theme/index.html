@@ -337,6 +337,7 @@
   flex-wrap: wrap;
   margin-bottom: 20px;
 }
+.lv-section-head .lv-eyebrow { margin-bottom: 10px; }
 .lv-section-head h2 {
   font-size: 26px;
   font-weight: 800;
@@ -347,7 +348,7 @@
 .lv-section-head p {
   font-size: 14px;
   color: #6A6A6A;
-  margin: 0;
+  margin: 4px 0 0;
 }
 
 /* explore grid — Airbnb-style listing cards */
@@ -372,36 +373,111 @@
   box-shadow: 0 12px 32px -18px rgba(0,0,0,.4);
 }
 .lv-card-cover {
-  height: 108px;
+  height: 116px;
+  position: relative;
   display: grid;
   place-items: center;
-  color: #fff;
-  font-size: 30px;
+  overflow: hidden;
 }
-.lv-card:nth-child(4n+1) .lv-card-cover { background: linear-gradient(135deg,#FF385C,#FF5A5F 60%,#FF8A5B); }
-.lv-card:nth-child(4n+2) .lv-card-cover { background: linear-gradient(135deg,#2C5C80,#4A88AC 60%,#79B7D6); }
-.lv-card:nth-child(4n+3) .lv-card-cover { background: linear-gradient(135deg,#2F6B45,#4A8F62 60%,#82BB92); }
-.lv-card:nth-child(4n+4) .lv-card-cover { background: linear-gradient(135deg,#8A6220,#B5862F 60%,#DDB567); }
-.lv-card-body {
-  display: flex;
+.lv-card-cover .mono {
+  position: absolute;
+  right: -6px;
+  bottom: -28px;
+  font-size: 110px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255,255,255,.22);
+  user-select: none;
+  transition: transform .25s ease;
+}
+.lv-card:hover .lv-card-cover .mono { transform: scale(1.08) rotate(-4deg); }
+.lv-card-cover .glyph {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+}
+.lv-card-cover .count-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.lv-card-cover .lock-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+.lv-card-body {
+  display: block;
   padding: 14px 16px 16px;
 }
 .lv-card-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   color: #222222;
   line-height: 1.3;
+  letter-spacing: -.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lv-card-owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #6A6A6A;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.lv-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.lv-card-chips .chip {
+  background: #F7F7F7;
+  border: 1px solid #EBEBEB;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6A6A6A;
+  max-width: 130px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.lv-card-sub {
-  font-size: 12.5px;
-  color: #6A6A6A;
-  margin-top: 1px;
-}
+.lv-card-chips .chip.more { background: transparent; border-style: dashed; }
+/* crown/ent badges are fixed 24-26px SVGs - shrink to fit the compact avatar */
+.lv-card-owner .crown { width: 16px; height: 16px; top: -9px; right: -7px; }
+.lv-card-owner .ent-badge { width: 15px; height: 15px; top: -8px; right: -7px; }
 
 /* testimonials */
 .lv-quotes {
@@ -441,7 +517,9 @@
   .lv-section-head p { color: #9ca3af; }
   .lv-card { background: #16191e; border-color: #262b36; box-shadow: none; }
   .lv-card-title { color: #f3f4f6; }
-  .lv-card-sub { color: #9ca3af; }
+  .lv-card-owner { color: #9ca3af; }
+  .lv-card-chips .chip { background: #1c2027; border-color: #262b36; color: #9ca3af; }
+  .lv-card-chips .chip.more { background: transparent; }
   .lv-quote { background: #16191e; border-color: #262b36; box-shadow: none; }
   .lv-quote p { color: #d1d5db; }
   .lv-quote .who { color: #f3f4f6; }
@@ -560,36 +638,55 @@
 <section class="lv-section">
     <div class="lv-section-head">
         <div>
+            <span class="lv-eyebrow"><i class="fas fa-compass"></i> Fresh from the community</span>
             <h2>Explore latest</h2>
-            <p>Fresh paths created by the community</p>
+            <p>Open paths you can bookmark, fork and share</p>
         </div>
     </div>
     <div class="lv-grid">
-        {%for path in get_last_5()%}
-        <a class="lv-card" href="{{path.get_url()}}">
-            <div class="lv-card-cover"><i class="fas fa-route"></i></div>
+        {%for card in get_explore_cards()%}
+        <a class="lv-card" href="{{card.url}}">
+            <div class="lv-card-cover" style="background: {{card.grad}}">
+                <span class="mono">{{card.monogram}}</span>
+                <span class="glyph"><i class="fas {{card.icon}}"></i></span>
+                <span class="count-pill"><i class="fas fa-link"></i> {{card.n_links}}</span>
+                {% if card.protected %}
+                <span class="lock-pill" title="Password protected"><i class="fas fa-lock"></i></span>
+                {% endif %}
+            </div>
             <div class="lv-card-body">
-                <span class="relative inline-block flex-none">
-                    {% set org = path.get_org() %}
-                    {% if org %}
-                    {% if org.logo_url %}
-                    <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-white">
-                    {% else %}
-                    <span class="w-10 h-10 rounded-full bg-gray-100 ring-2 ring-white inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
-                    {% endif %}
-                    {% else %}
-                    {% if path.path_user.is_enterprise() %}
-                    {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
-                    {% elif path.path_user.is_pro() %}
-                    {% include 'linkolearn_theme/templates/blocks/crown.html' %}
-                    {% endif %}
-                    <i class="em {{path.path_user.emoji_class}} w-10 h-10 p-1 rounded-full ring-2 ring-white"></i>
-                    {% endif %}
-                </span>
-                <div class="min-w-0">
-                    <div class="lv-card-title">{{ path.slug }}</div>
-                    <div class="lv-card-sub">{% if org %}{{ org.name }}{% else %}{{path.path_user.username}}{% endif %}</div>
+                <div class="lv-card-title">{{card.title}}</div>
+                <div class="lv-card-owner">
+                    <span class="relative inline-block flex-none">
+                        {% if card.org %}
+                        {% if card.org.logo_url %}
+                        <img src="{{ card.org.logo_url }}" alt="{{ card.org.name }} logo" class="w-6 h-6 rounded-full object-cover">
+                        {% else %}
+                        <span class="w-6 h-6 rounded-full bg-gray-100 inline-flex items-center justify-center text-gray-400 text-[10px]"><i class="fas fa-building"></i></span>
+                        {% endif %}
+                        {% else %}
+                        {% if card.user.is_enterprise() %}
+                        {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                        {% elif card.user.is_pro() %}
+                        {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                        {% endif %}
+                        <i class="em {{card.user.emoji_class}} w-6 h-6 p-0.5 rounded-full"></i>
+                        {% endif %}
+                    </span>
+                    <span class="truncate">{{card.owner}}</span>
                 </div>
+                {% if card.section_titles or card.n_sections > 0 %}
+                <div class="lv-card-chips">
+                    {% for t in card.section_titles[:2] %}
+                    <span class="chip">{{t}}</span>
+                    {% endfor %}
+                    {% if card.n_sections > 2 %}
+                    <span class="chip more">+{{card.n_sections - 2}} more</span>
+                    {% elif card.n_sections == 0 %}
+                    <span class="chip more">no sections yet</span>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </a>
         {%endfor%}
@@ -600,6 +697,7 @@
 <section class="lv-section">
     <div class="lv-section-head">
         <div>
+            <span class="lv-eyebrow"><i class="fas fa-heart"></i> Loved by learners</span>
             <h2>What people say</h2>
             <p>From students, teachers and open-source maintainers</p>
         </div>
