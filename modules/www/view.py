@@ -71,7 +71,59 @@ def index():
         except:
             return []
 
-    context = {"get_last_5": get_last_5, "current_user": current_user}
+    def get_explore_cards():
+        """Landing-page cards: real titles, counts and a stable per-path look.
+
+        Cover gradient/icon/monogram come from Path.cover_style() - the same
+        source the path profile header uses, so a path looks identical on both.
+        """
+        cards = []
+        try:
+            # newest first, capped at 8 (2 clean rows of 4).
+            # get_last_5's paths[-11:-1] slice drops the *newest* path -
+            # wrong for a section titled "Explore latest".
+            latest = (
+                Path.query.filter_by(is_visible=True)
+                .order_by(Path.id.desc())
+                .limit(8)
+                .all()
+            )
+        except Exception:
+            latest = []
+
+        for p in latest:
+            try:
+                sections = p.sections
+                grad, icon, monogram = p.cover_style()
+
+                title = (p.title or p.slug or "").strip() or p.slug
+                org = p.get_org()
+
+                cards.append(
+                    {
+                        "url": p.get_url(),
+                        "title": title,
+                        "monogram": monogram,
+                        "owner": org.name if org else p.path_user.username,
+                        "org": org,
+                        "user": p.path_user,
+                        "n_links": sum(len(s.links) for s in sections),
+                        "n_sections": len(sections),
+                        "section_titles": [s.title for s in sections[:3] if s.title],
+                        "protected": p.is_password_protected,
+                        "grad": grad,
+                        "icon": icon,
+                    }
+                )
+            except Exception:
+                continue
+        return cards
+
+    context = {
+        "get_last_5": get_last_5,
+        "get_explore_cards": get_explore_cards,
+        "current_user": current_user,
+    }
 
     return render_template("linkolearn_theme/index.html", **context)
 

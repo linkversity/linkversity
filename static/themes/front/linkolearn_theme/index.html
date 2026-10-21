@@ -12,6 +12,8 @@
   margin: 0 auto;
   position: relative;
   overflow: hidden;
+  background: #fff;
+  border-radius: 14px;
 }
 
 .slides {
@@ -24,12 +26,108 @@
 .slide {
   width: 33.333%; /* Desktop slides fit */
   height: 100%;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2.25rem 1.75rem 3rem;
   box-sizing: border-box;
 }
+
+/* soft tinted backdrop per slide */
+.slide-coral { background: radial-gradient(125% 100% at 50% 0%, #FFE1E8 0%, #FFF0F3 52%, #FFFFFF 100%); }
+.slide-blue  { background: radial-gradient(125% 100% at 50% 0%, #DCEAF6 0%, #EFF6FC 52%, #FFFFFF 100%); }
+.slide-green { background: radial-gradient(125% 100% at 50% 0%, #DFF0E4 0%, #F0F8F2 52%, #FFFFFF 100%); }
+
+.slide-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* illustrations are wide — contain them instead of cropping to a circle */
+.slide-illo {
+  height: 150px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: 1.25rem;
+  filter: drop-shadow(0 14px 22px rgba(0,0,0,.12));
+}
+
+.slide-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(34,34,34,.07);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  backdrop-filter: blur(4px);
+}
+.slide-coral .slide-step { color: #B01E44; }
+.slide-blue  .slide-step { color: #2C5C80; }
+.slide-green .slide-step { color: #2F6B45; }
+
+.slide-title {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: #222222;
+  margin: 0 0 8px;
+}
+.slide-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #6A6A6A;
+  margin: 0;
+}
+
+/* story-style progress dots, synced to the 12s slideshow */
+.slide-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 2;
+}
+.slide-dots span {
+  width: 26px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(34,34,34,.12);
+  overflow: hidden;
+  position: relative;
+}
+.slide-dots span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #FF385C;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: dot-on 12s ease infinite;
+}
+.slide-dots span:nth-child(1)::after { animation-name: dot-on-1; }
+.slide-dots span:nth-child(2)::after { animation-name: dot-on-2; }
+.slide-dots span:nth-child(3)::after { animation-name: dot-on-3; }
+
+@keyframes dot-on-1 { 0% { transform: scaleX(0); opacity: 1; } 26% { transform: scaleX(1); } 30% { opacity: 1; } 33% { transform: scaleX(1); opacity: 0; } 33.01%, 100% { transform: scaleX(0); opacity: 1; } }
+@keyframes dot-on-2 { 0%, 33% { transform: scaleX(0); } 59% { transform: scaleX(1); } 62% { opacity: 1; } 66% { transform: scaleX(1); opacity: 0; } 66.01%, 100% { transform: scaleX(0); opacity: 1; } }
+@keyframes dot-on-3 { 0%, 66% { transform: scaleX(0); } 92% { transform: scaleX(1); } 95% { opacity: 1; } 99% { transform: scaleX(1); opacity: 0; } 99.01%, 100% { transform: scaleX(0); opacity: 1; } }
 
 /* Slideshow animation for desktop */
 @keyframes slideshow {
@@ -48,11 +146,12 @@
 }
 
 /* Pause animation on hover */
-.carousel:hover .slides {
+.carousel:hover .slides,
+.carousel:hover .slide-dots span::after {
   animation-play-state: paused;
 }
 
-/* Mobile-specific fixes */
+/* Mobile: stack slides, no autoplay, no dots */
 @media (max-width: 768px) {
   .slides {
     width: 100%; /* Ensure slides take full width */
@@ -62,10 +161,380 @@
 
   .slide {
     width: 100%;
-    padding: 1rem;
+    min-height: 0;
+    padding: 1.75rem 1.25rem;
   }
+
+  .slide-dots { display: none; }
 }
 
+/* ============ Airbnb-inspired hero ============ */
+.lv-hero {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 44px 24px 28px;
+}
+.lv-hero-inner {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 48px;
+  align-items: center;
+}
+@media (max-width: 1020px) {
+  .lv-hero-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.lv-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF0F3;
+  color: #B01E44;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.lv-hero-copy h1 {
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.08;
+  color: #222222;
+  margin: 0 0 16px;
+}
+.lv-hero-copy h1 em {
+  font-style: normal;
+  color: #FF385C;
+}
+
+.lv-hero-sub {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: #6A6A6A;
+  max-width: 54ch;
+  margin: 0 0 24px;
+}
+
+.lv-hero-points {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.lv-hero-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.lv-hero-points .ico {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #F7F7F7;
+  border: 1px solid #EBEBEB;
+  display: grid;
+  place-items: center;
+  color: #FF385C;
+  font-size: 15px;
+}
+.lv-hero-points b {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #222222;
+  line-height: 1.3;
+}
+.lv-hero-points span {
+  display: block;
+  font-size: 13px;
+  color: #6A6A6A;
+  margin-top: 1px;
+}
+
+.lv-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* side panel: register card or carousel card */
+.lv-hero-side .lv-side-card {
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.04);
+  padding: 26px;
+}
+.lv-side-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #222222;
+  margin: 0 0 4px;
+}
+.lv-side-card .side-sub {
+  font-size: 13.5px;
+  color: #6A6A6A;
+  margin: 0 0 18px;
+}
+
+/* register form restyle (inputs come from auth/blocks/register_form.html) */
+.lv-register .mb-4 > div {
+  border-color: #DDDDDD;
+  border-radius: 12px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.lv-register .mb-4 > div:focus-within {
+  border-color: #222222;
+  box-shadow: 0 0 0 3px rgba(34,34,34,.08);
+}
+.lv-register .form-control {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14.5px;
+  color: #222222;
+}
+.lv-register .form-control::placeholder { color: #9A9A9A; }
+
+.lv-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #FF385C;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(255,56,92,.28);
+  transition: background .15s ease, transform .06s ease;
+}
+.lv-btn-primary:hover { background: #E01A45; }
+.lv-btn-primary:active { transform: translateY(1px); }
+
+/* ============ sections ============ */
+.lv-section {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 30px 24px;
+}
+.lv-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.lv-section-head .lv-eyebrow { margin-bottom: 10px; }
+.lv-section-head h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #222222;
+  margin: 0;
+}
+.lv-section-head p {
+  font-size: 14px;
+  color: #6A6A6A;
+  margin: 4px 0 0;
+}
+
+/* explore grid — Airbnb-style listing cards */
+.lv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+}
+.lv-card {
+  display: block;
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.lv-card:hover {
+  transform: translateY(-3px);
+  border-color: #DDDDDD;
+  box-shadow: 0 12px 32px -18px rgba(0,0,0,.4);
+}
+.lv-card-cover {
+  height: 116px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.lv-card-cover .mono {
+  position: absolute;
+  right: -6px;
+  bottom: -28px;
+  font-size: 110px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255,255,255,.22);
+  user-select: none;
+  transition: transform .25s ease;
+}
+.lv-card:hover .lv-card-cover .mono { transform: scale(1.08) rotate(-4deg); }
+.lv-card-cover .glyph {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+}
+.lv-card-cover .count-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.lv-card-cover .lock-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+.lv-card-body {
+  display: block;
+  padding: 14px 16px 16px;
+}
+.lv-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #222222;
+  line-height: 1.3;
+  letter-spacing: -.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lv-card-owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #6A6A6A;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.lv-card-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.lv-card-chips .chip {
+  background: #F7F7F7;
+  border: 1px solid #EBEBEB;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6A6A6A;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lv-card-chips .chip.more { background: transparent; border-style: dashed; }
+/* crown/ent badges are fixed 24-26px SVGs - shrink to fit the compact avatar */
+.lv-card-owner .crown { width: 16px; height: 16px; top: -9px; right: -7px; }
+.lv-card-owner .ent-badge { width: 15px; height: 15px; top: -8px; right: -7px; }
+
+/* testimonials */
+.lv-quotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.lv-quote {
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+.lv-quote i.fa-quote-left { color: #FF385C; font-size: 20px; }
+.lv-quote p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #222222;
+  margin: 10px 0 14px;
+}
+.lv-quote .who {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lv-hero-copy h1 { color: #f6f6f7; }
+  .lv-hero-sub { color: #9ca3af; }
+  .lv-hero-points b { color: #f3f4f6; }
+  .lv-hero-points span { color: #9ca3af; }
+  .lv-hero-points .ico { background: #16191e; border-color: #262b36; }
+  .lv-side-card { background: #111318 !important; border-color: #1f2430 !important; }
+  .lv-side-card h3 { color: #f3f4f6; }
+  .lv-section-head h2 { color: #f6f6f7; }
+  .lv-section-head p { color: #9ca3af; }
+  .lv-card { background: #16191e; border-color: #262b36; box-shadow: none; }
+  .lv-card-title { color: #f3f4f6; }
+  .lv-card-owner { color: #9ca3af; }
+  .lv-card-chips .chip { background: #1c2027; border-color: #262b36; color: #9ca3af; }
+  .lv-card-chips .chip.more { background: transparent; }
+  .lv-quote { background: #16191e; border-color: #262b36; box-shadow: none; }
+  .lv-quote p { color: #d1d5db; }
+  .lv-quote .who { color: #f3f4f6; }
+  .carousel { background: #14171c; }
+  .slide-coral { background: radial-gradient(125% 100% at 50% 0%, #2a1b20 0%, #1a1418 55%, #14171c 100%); }
+  .slide-blue  { background: radial-gradient(125% 100% at 50% 0%, #17222c 0%, #141a21 55%, #14171c 100%); }
+  .slide-green { background: radial-gradient(125% 100% at 50% 0%, #16241a 0%, #141c17 55%, #14171c 100%); }
+  .slide-step { background: rgba(20,23,28,.7); border-color: rgba(255,255,255,.08); }
+  .slide-coral .slide-step { color: #ff9d9d; }
+  .slide-blue  .slide-step { color: #8ec2e6; }
+  .slide-green .slide-step { color: #86c79a; }
+  .slide-title { color: #f6f6f7; }
+  .slide-sub { color: #9ca3af; }
+  .slide-dots span { background: rgba(255,255,255,.14); }
+}
   </style>
 
 <style>
@@ -75,174 +544,189 @@
 </style>
 {%endblock%}
 {%block body%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="flex flex-col md:flex-row items-center justify-between">
-        <div class="text-left md:w-1/2">
+
+<!-- ============ hero ============ -->
+<section class="lv-hero">
+    <div class="lv-hero-inner">
+        <div class="lv-hero-copy">
+            <span class="lv-eyebrow"><i class="fas fa-link"></i> Open source · free for everyone</span>
+            <h1>Turn scattered links into <em>structured courses</em></h1>
+            <p class="lv-hero-sub">
+                Want to send preparation materials to someone? Gather your links once,
+                organize them into a path, and share a single URL — no more email threads.
+                Perfect for the <strong>Education</strong> sector, <strong>OpenSource</strong> onboarding,
+                team knowledge bases, and research bookmarking.
+            </p>
+            <ul class="lv-hero-points">
+                <li>
+                    <span class="ico"><i class="fas fa-compass"></i></span>
+                    <div><b>Discover useful collections</b><span>Browse what people have created and bookmark the best ones</span></div>
+                </li>
+                <li>
+                    <span class="ico"><i class="fas fa-user-friends"></i></span>
+                    <div><b>Collaborate with teams</b><span>Allow friends and colleagues to add links to shared collections</span></div>
+                </li>
+                <li>
+                    <span class="ico"><i class="fas fa-shield-alt"></i></span>
+                    <div><b>Protect your links</b><span>Varying visibility levels and optional password protection</span></div>
+                </li>
+            </ul>
+            <div class="lv-hero-ctas">
+                <a href="{{ url_for('slack.install') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4A154B] hover:bg-[#3a1039] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fab fa-slack"></i> Connect to Slack
+                </a>
+                <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4285F4] hover:bg-[#3b78e7] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fab fa-chrome"></i> Add to Chrome
+                </a>
+                <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#FF385C] hover:bg-[#E01A45] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fas fa-download"></i> Install app
+                </button>
+            </div>
+        </div>
+
+        <div class="lv-hero-side">
             {% if current_user.is_authenticated %}
-            <!-- You ARE LOGGED IN!!!<br>Enjoy! -->
- <div class="carousel bg-white hidden sm:block">
-    <div class="slides">
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Discover useful collections</p>
-          <p class="text-sm md:text-base text-center">Discover what people have created and bookmark them!</p>
-        </div>
-      </div>
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Collaborate with teams</p>
-          <p class="text-sm md:text-base text-center">Allow your friends to add links to collections for serious works</p>
-        </div>
-      </div>
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Protect your links</p>
-          <p class="text-sm md:text-base text-center">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
-        </div>
-      </div>
-    </div>
-  </div>
+            <div class="lv-side-card">
+                <div class="carousel">
+                    <div class="slides">
+                      <div class="slide slide-coral">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Discover collections" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-compass"></i> Step 1</span>
+                          <p class="slide-title">Discover useful collections</p>
+                          <p class="slide-sub">Browse what the community has built and bookmark the paths you love</p>
+                        </div>
+                      </div>
+                      <div class="slide slide-blue">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Collaborate with teams" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-user-friends"></i> Step 2</span>
+                          <p class="slide-title">Collaborate with teams</p>
+                          <p class="slide-sub">Invite friends and colleagues to add links to shared collections</p>
+                        </div>
+                      </div>
+                      <div class="slide slide-green">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Protect your links" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-shield-alt"></i> Step 3</span>
+                          <p class="slide-title">Protect your links</p>
+                          <p class="slide-sub">Set visibility levels and password-protect sensitive collections</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="slide-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                </div>
+            </div>
             {% else %}
-            <form id="reg-form" action="{{ url_for('auth.register') }}" method="post" class="flex flex-col md:flex-row items-center justify-center space-x-6 md:space-x-4 space-y-6 md:space-y-0">
-                <div class="flex-1 max-w-lg space-y-6">
-                    <!-- Register Form -->
+            <div class="lv-side-card lv-register">
+                <h3>Create your free account</h3>
+                <p class="side-sub">One minute to your first shared path.</p>
+                <form id="reg-form" action="{{ url_for('auth.register') }}" method="post">
                     {% include 'auth/blocks/register_form.html' %}
                     <span id="message" class="text-red-500"></span>
-                    <button type="submit" class="bg-red-600 text-white py-3 px-6 rounded-lg w-full hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-300 mt-4">
-                        Register </button>
-                </div> <!-- Illustration Section -->
-            </form>
+                    <button type="submit" class="lv-btn-primary w-full mt-4">
+                        Sign up <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+            </div>
             {% endif %}
         </div>
-        <div class="flex justify-center w-full md:w-1/2 mt-8 md:mt-0">
-            <p class="text-xl">
-                <span class="text-3xl font-bold">Linkversity allows people to create courses from links around the internet. </span><br><br>
-                Want to send preparation materials to someone? Take a few minutes, gather your links and send the person the course's content.<br><br>
-                It is particularly useful for the <span class="bg-yellow-200">Education</span>
-                sector and <span class="bg-yellow-200">OpenSource</span> projects to get
-                contributors started quickly. It can be used as a
-                <span class="bg-yellow-200">knowledge base</span>. It was inspired by works done on
-                <a href="/appinv/lumosql" class="underline">LumoSQL</a><br><br>
-                It can also be used as a research bookmark manager!<br><br>
-                - Emails no longer needed!<br>
-                - It is <a href="https://github.com/linkversity/linkversity" class="underline">OpenSource</a><br><br>
-                <a href="https://www.producthunt.com/posts/contriblearn?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light&t=1738394199733" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-                <br>
-    <a href="{{ url_for('slack.install') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4A154B] hover:bg-[#3a1039] shadow-sm hover:shadow-md transition-all duration-200">
-        <i class="fab fa-slack"></i> Connect to Slack
-    </a>
-    <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4285F4] hover:bg-[#3b78e7] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
-        <i class="fab fa-chrome"></i> Add to Chrome
-    </a>
-    <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#eb6864] hover:bg-[#e05551] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
-        <i class="fas fa-download"></i> Install app
-    </button>
-            </p>
-        </div>
     </div>
-</div>
+</section>
 
-{% if not current_user.is_authenticated %}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="flex flex-col md:flex-row justify-between gap-8">
-        <!-- Item 1 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Discover useful collections</p>
-            <p class="text-base">Discover what people have created and bookmark them!</p>
-        </div>
-        <!-- Item 2 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Collaborate with teams</p>
-            <p class="text-base">Allow your friends to add links to collections for serious works</p>
-        </div>
-        <!-- Item 3 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Protect your links</p>
-            <p class="text-base">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
+<!-- ============ explore latest ============ -->
+<section class="lv-section">
+    <div class="lv-section-head">
+        <div>
+            <span class="lv-eyebrow"><i class="fas fa-compass"></i> Fresh from the community</span>
+            <h2>Explore latest</h2>
+            <p>Open paths you can bookmark, fork and share</p>
         </div>
     </div>
-</div>
-{%endif%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="text-center py-12">
-        <h2 class="text-4xl font-bold text-gray-800 m-4">
-            Explore latest
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {%for path in get_last_5()%}
-            <a href="{{path.get_url()}}">
-                <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                    <div class="flex items-center gap-4 relative">
-                        {% set org = path.get_org() %}
-                        <span class="relative inline-block">
-                            {% if org %}
-                            {% if org.logo_url %}
-                            <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-300 dark:ring-gray-500">
-                            {% else %}
-                            <span class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 ring-2 ring-gray-300 dark:ring-gray-500 inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
-                            {% endif %}
-                            {% else %}
-                            {% if path.path_user.is_enterprise() %}
-                            {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
-                            {% elif path.path_user.is_pro() %}
-                            {% include 'linkolearn_theme/templates/blocks/crown.html' %}
-                            {% endif %}
-                            <i class="em {{path.path_user.emoji_class}} w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"></i>
-                            {% endif %}
-                        </span>
-                        <div class="font-medium dark:text-white">
-                            <div class="text-left w-40 overflow-hidden whitespace-nowrap text-ellipsis">{{ path.slug }}</div>
-                            <div class="text-left text-sm text-gray-500 dark:text-gray-400">{% if org %}{{ org.name }}{% else %}{{path.path_user.username}}{% endif %}</div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-            {%endfor%}
-        </div>
-    </div>
-</div>
-<div class="max-w-4xl mx-auto px-6 py-10 text-gray-900">
-    <h2 class="text-center text-4xl font-bold mb-12 tracking-tight">What People Say</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-12">
-        <!-- Testimonial 1 -->
-        <div class="relative">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “Linkversity.xyz is incredibly useful! It allows me to store all my important links in one place, making it super easy to access them whenever I need. I also love the option to share my links with others. This site has definitely made my life more organized! Highly recommend!”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- Ouwesh Seeroo</span>
+    <div class="lv-grid">
+        {%for card in get_explore_cards()%}
+        <a class="lv-card" href="{{card.url}}">
+            <div class="lv-card-cover" style="background: {{card.grad}}">
+                <span class="mono">{{card.monogram}}</span>
+                <span class="glyph"><i class="fas {{card.icon}}"></i></span>
+                <span class="count-pill"><i class="fas fa-link"></i> {{card.n_links}}</span>
+                {% if card.protected %}
+                <span class="lock-pill" title="Password protected"><i class="fas fa-lock"></i></span>
+                {% endif %}
             </div>
+            <div class="lv-card-body">
+                <div class="lv-card-title">{{card.title}}</div>
+                <div class="lv-card-owner">
+                    <span class="relative inline-block flex-none">
+                        {% if card.org %}
+                        {% if card.org.logo_url %}
+                        <img src="{{ card.org.logo_url }}" alt="{{ card.org.name }} logo" class="w-6 h-6 rounded-full object-cover">
+                        {% else %}
+                        <span class="w-6 h-6 rounded-full bg-gray-100 inline-flex items-center justify-center text-gray-400 text-[10px]"><i class="fas fa-building"></i></span>
+                        {% endif %}
+                        {% else %}
+                        {% if card.user.is_enterprise() %}
+                        {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                        {% elif card.user.is_pro() %}
+                        {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                        {% endif %}
+                        <i class="em {{card.user.emoji_class}} w-6 h-6 p-0.5 rounded-full"></i>
+                        {% endif %}
+                    </span>
+                    <span class="truncate">{{card.owner}}</span>
+                </div>
+                {% if card.section_titles or card.n_sections > 0 %}
+                <div class="lv-card-chips">
+                    {% for t in card.section_titles[:2] %}
+                    <span class="chip">{{t}}</span>
+                    {% endfor %}
+                    {% if card.n_sections > 2 %}
+                    <span class="chip more">+{{card.n_sections - 2}} more</span>
+                    {% elif card.n_sections == 0 %}
+                    <span class="chip more">no sections yet</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {%endfor%}
+    </div>
+</section>
+
+<!-- ============ testimonials ============ -->
+<section class="lv-section">
+    <div class="lv-section-head">
+        <div>
+            <span class="lv-eyebrow"><i class="fas fa-heart"></i> Loved by learners</span>
+            <h2>What people say</h2>
+            <p>From students, teachers and open-source maintainers</p>
+        </div>
+    </div>
+    <div class="lv-quotes">
+        <!-- Testimonial 1 -->
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“Linkversity.xyz is incredibly useful! It allows me to store all my important links in one place, making it super easy to access them whenever I need. I also love the option to share my links with others. This site has definitely made my life more organized! Highly recommend!”</p>
+            <span class="who">Ouwesh Seeroo</span>
         </div>
         <!-- Testimonial 2 -->
-        <div class="relative">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “Very useful
-                It helps me to save my links in one place which makes it easier for me to find them anytime. Im also happy to be able to share my links with others also. I ❤ this app”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- SSidd</span>
-            </div>
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“Very useful. It helps me to save my links in one place which makes it easier for me to find them anytime. Im also happy to be able to share my links with others also. I ❤ this app”</p>
+            <span class="who">SSidd</span>
         </div>
         <!-- Testimonial 3 -->
-        <div class="relative sm:col-span-2">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “A very useful app.”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- Randy Duodu</span>
-            </div>
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“A very useful app.”</p>
+            <span class="who">Randy Duodu</span>
         </div>
     </div>
-</div>
+    <div class="mt-10 flex justify-center">
+        <a href="https://www.producthunt.com/posts/contriblearn?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light&t=1738394199733" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+    </div>
+</section>
+
 {% if not current_user.is_authenticated %}
 <script>
 const form = document.getElementById('reg-form');

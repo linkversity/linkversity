@@ -58,11 +58,13 @@ def _bearer_token():
     return request.headers.get("X-API-Token") or request.args.get("token")
 
 
-def _user_from_token(token):
+def _user_from_token(token, scope="collections:read"):
     """Resolve a user from a raw token. Never trusts a supplied user id.
 
     Accepts OAuth access tokens (ChatGPT connected account), the legacy
     ``api_token`` column and hashed ``UserToken`` rows (personal API keys).
+    OAuth tokens must carry the requested scope; legacy personal-API tokens
+    are full-access (owner-controlled, equivalent to a password).
     """
     if not token:
         return None
@@ -71,7 +73,7 @@ def _user_from_token(token):
 
     user, scopes = resolve_oauth_token(token)
     if user is not None:
-        if "collections:read" not in (scopes or "").split():
+        if scope not in (scopes or "").split():
             return None  # valid token, insufficient scope
         return user
     # legacy single api_token column
@@ -85,10 +87,27 @@ def _user_from_token(token):
         return None
 
 
-def _require_user():
-    """Return (user, None) when the token is valid, else (None, error_response)."""
-    user = _user_from_token(_bearer_token())
+def _require_user(scope="collections:read"):
+    """Return (user, None) when the token grants `scope`, else (None, error)."""
+    user = _user_from_token(_bearer_token(), scope)
     if user is None:
+        # distinguish bad token from missing scope on OAuth tokens
+        from modules.box__linkolearn.apiv1.oauth import resolve_oauth_token
+
+        tok = _bearer_token()
+        if tok:
+            holder, scopes = resolve_oauth_token(tok)
+            if holder is not None:
+                return None, (
+                    jsonify(
+                        {
+                            "error": "insufficient_scope",
+                            "required_scope": scope,
+                            "granted_scopes": (scopes or "").split(),
+                        }
+                    ),
+                    403,
+                )
         return None, (jsonify({"error": "invalid or missing access token"}), 401)
     return user, None
 
@@ -463,6 +482,136 @@ def me_study_plan(collection_id):
             "note": "resources only; no changes were made to the collection",
         }
     )
+
+
+# --------------------------------------------------------------------------
+# write endpoints (connected account, collections:write scope)
+# --------------------------------------------------------------------------
+
+
+@apiv1_blueprint.route("/me/collections", methods=["POST"])
+@csrf.exempt
+def me_create_collection():
+    """Create a new personal collection (write tool: create_collection)."""
+    limited = _enforce_rate_limit()
+    if limited:
+        return limited
+
+    user, err = _require_user("collections:write")
+    if err:
+        return err
+
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title") or "").strip()
+    if not title or len(title) > 200:
+        return jsonify({"error": "title is required (max 200 chars)"}), 400
+
+    # unique slug: base, then -2, -3, ...
+    base = Path.slugify(title) or "collection"
+    slug = base
+    n = 2
+    while Path.query.filter_by(user_id=user.id, slug=slug).first() is not None:
+        slug = f"{base}-{n}"
+        n += 1
+
+    path = Path(
+        title=title,
+        slug=slug,
+        user_id=user.id,
+        # private by default; the user controls visibility on the site
+        is_visible=bool(data.get("is_public", False)),
+    )
+    if data.get("section_title"):
+        path.sections.append(Section(title=str(data["section_title"]).strip()[:200]))
+    db.session.add(path)
+    db.session.commit()
+
+    resp = _public(path)
+    resp["section"] = "created"
+    return jsonify(resp), 201
+
+
+@apiv1_blueprint.route(
+    "/me/collections/<int:collection_id>/links", methods=["POST"]
+)
+@csrf.exempt
+def me_save_link(collection_id):
+    """Save a link into one of the user's collections (write: save_link).
+
+    Body: {url, section_title?} - section created if it doesn't exist;
+    defaults to the collection's first section.
+    """
+    import validators
+
+    limited = _enforce_rate_limit()
+    if limited:
+        return limited
+
+    user, err = _require_user("collections:write")
+    if err:
+        return err
+
+    path = Path.query.get(collection_id)
+    if path is None:
+        return jsonify({"error": "collection not found"}), 404
+    if not path.can_edit(user):
+        return jsonify({"error": "access denied"}), 403
+
+    data = request.get_json(silent=True) or {}
+    url = str(data.get("url") or "").strip()
+    if not url or not validators.url(url):
+        return jsonify({"error": "url is required and must be a valid URL"}), 400
+    if len(url) > 500:
+        return jsonify({"error": "url too long (max 500)"}), 400
+
+    # resolve section: by title (create on demand), else first section
+    section = None
+    section_title = str(data.get("section_title") or "").strip()
+    if section_title:
+        section = next(
+            (s for s in path.sections if (s.title or "").lower() == section_title.lower()),
+            None,
+        )
+        if section is None:
+            section = Section(title=section_title[:200], path_id=path.id)
+            db.session.add(section)
+            db.session.flush()
+    if section is None:
+        section = next((s for s in path.sections), None)
+    if section is None:
+        return jsonify({"error": "collection has no section; pass section_title"}), 400
+
+    # de-dup: same URL already in this collection?
+    existing = Link.query.filter_by(section_id=section.id, url=url).first()
+    if existing is None:
+        for s in path.sections:  # also check sibling sections
+            for l in s.links:
+                if l.url == url:
+                    existing = l
+                    break
+            if existing:
+                break
+    if existing is not None:
+        return (
+            jsonify(
+                {
+                    "link": _link_resource(existing),
+                    "note": "already in this collection",
+                }
+            ),
+            200,
+        )
+
+    link = Link(
+        url=url,
+        section_id=section.id,
+        title=(str(data.get("title") or "").strip()[:500] or None),
+        description=(str(data.get("description") or "").strip() or None),
+    )
+    db.session.add(link)
+    db.session.commit()
+
+    return jsonify({"link": _link_resource(link), "note": "saved"}), 201
 
 
 # --------------------------------------------------------------------------

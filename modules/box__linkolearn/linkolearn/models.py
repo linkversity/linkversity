@@ -33,11 +33,54 @@ path_editor_bridge = db.Table(
 )
 
 
+# User-pickable cover icons for paths (Font Awesome 5 free solid classes).
+# Whitelist: anything stored here is later echoed into a `fas {{icon}}`
+# class attribute, so the backend must only ever persist values from this
+# list - never a raw client string. "" means "auto" (crc32-derived pick).
+PATH_ICONS = [
+    ("", "Auto"),
+    ("fa-route", "Route"),
+    ("fa-book-open", "Book"),
+    ("fa-graduation-cap", "Study"),
+    ("fa-code", "Code"),
+    ("fa-palette", "Design"),
+    ("fa-flask", "Science"),
+    ("fa-lightbulb", "Ideas"),
+    ("fa-rocket", "Launch"),
+    ("fa-globe", "World"),
+    ("fa-microscope", "Research"),
+    ("fa-calculator", "Numbers"),
+    ("fa-language", "Language"),
+    ("fa-briefcase", "Business"),
+    ("fa-heartbeat", "Health"),
+    ("fa-camera", "Photo"),
+    ("fa-compass", "Explore"),
+    ("fa-laptop-code", "DevOps"),
+    ("fa-trophy", "Goals"),
+]
+PATH_ICON_CLASSES = {cls for cls, _ in PATH_ICONS}
+
+# (gradient start, gradient end, FA5 icon) - auto rotation used when the path
+# has no user-chosen cover_icon. fa-music deliberately replaced by fa-rocket.
+COVER_TINTS = [
+    ("#FF385C", "#FF8A5B", "fa-route"),
+    ("#2C5C80", "#79B7D6", "fa-code"),
+    ("#2F6B45", "#82BB92", "fa-book-open"),
+    ("#8A6220", "#DDB567", "fa-palette"),
+    ("#4A4778", "#A5A2D4", "fa-flask"),
+    ("#8C3B57", "#D899B0", "fa-rocket"),
+    ("#96432A", "#E5A07F", "fa-graduation-cap"),
+    ("#3E6E7E", "#8FC0CC", "fa-lightbulb"),
+]
+
+
 class Path(PkModel):
     __tablename__ = "paths"
 
     slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
+    # chosen cover icon (FA5 class from PATH_ICONS); NULL/"" = auto-derived
+    cover_icon = db.Column(db.String(50), nullable=True)
     sections = db.relationship(
         "Section", backref="section_path", lazy=True, cascade="all, delete-orphan"
     )
@@ -153,6 +196,35 @@ class Path(PkModel):
         return url_for(
             "www.path", username=self.path_user.username, path_slug=self.slug
         )
+
+    def cover_style(self):
+        """(gradient_css, icon_class, monogram) for this path's cover.
+
+        Single source of truth shared by the landing cards and the path
+        profile header, so a path always looks the same everywhere.
+
+        The user-chosen cover_icon wins; otherwise crc32(slug) picks from
+        COVER_TINTS. crc32, not hash() - hash() is salted per process and
+        would reshuffle colors on every restart.
+        """
+        import zlib
+
+        seed = zlib.crc32((self.slug or str(self.id)).encode("utf-8"))
+        c1, c2, icon = COVER_TINTS[seed % len(COVER_TINTS)]
+
+        chosen = (self.cover_icon or "").strip()
+        if chosen and chosen in PATH_ICON_CLASSES:
+            icon = chosen
+
+        title = (self.title or self.slug or "").strip() or (self.slug or "?")
+        monogram = next((c.upper() for c in title if c.isalnum()), "?")
+
+        grad = "linear-gradient(135deg, {}, {} 75%)".format(c1, c2)
+        return grad, icon, monogram
+
+    def cover_link_count(self):
+        """Total links across all sections (for the cover count pill)."""
+        return sum(len(s.links) for s in self.sections)
 
     def is_valid_markdown_link(self, string):
         pattern = r"^\[([^\]]+)\]\((https?:\/\/[^\s\)]+|[^\s\)]+)\)$"

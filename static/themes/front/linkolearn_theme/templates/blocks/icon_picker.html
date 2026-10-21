@@ -1,0 +1,83 @@
+{# Cover icon picker. Expects PATH_ICONS in context (list of (class, label)).
+   `path` is optional (create page has none) - defaults to Auto.
+   Emits a hidden #path-icon input + tiles; "Auto" is the empty class. #}
+{% set selected_icon = (path.cover_icon or '') if (path is defined and path) else '' %}
+<label class="path-label">Cover icon</label>
+<div class="icon-grid" id="icon-grid">
+    {% for cls, label in PATH_ICONS %}
+    <button type="button" class="icon-tile {% if selected_icon == cls %}on{% endif %}"
+            data-icon="{{ cls }}" title="{{ label }}" aria-pressed="{% if selected_icon == cls %}true{% else %}false{% endif %}">
+        {% if cls %}
+        <i class="fas {{ cls }}"></i>
+        {% else %}
+        <i class="fas fa-dice"></i>
+        {% endif %}
+        <span>{{ label }}</span>
+    </button>
+    {% endfor %}
+</div>
+<input type="hidden" id="path-icon" value="{{ selected_icon }}">
+
+<style>
+    .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+        gap: 8px;
+    }
+    .icon-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        padding: 10px 4px 7px;
+        border: 1px solid #DDDDDD;
+        border-radius: 12px;
+        background: #fff;
+        color: #6A6A6A;
+        font-family: inherit;
+        cursor: pointer;
+        transition: border-color .15s ease, background .15s ease, color .15s ease, transform .06s ease;
+    }
+    .icon-tile i { font-size: 17px; }
+    .icon-tile span {
+        font-size: 10px;
+        font-weight: 600;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .icon-tile:hover { border-color: #CFCFCF; background: #F7F7F7; color: #222222; }
+    .icon-tile:active { transform: translateY(1px); }
+    .icon-tile.on {
+        border-color: #FF385C;
+        background: #FFF0F3;
+        color: #B01E44;
+        box-shadow: 0 0 0 3px rgba(255, 56, 92, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+        .icon-tile { background: #16191e; border-color: #262b36; color: #9ca3af; }
+        .icon-tile:hover { background: #1c2027; border-color: #4b3436; color: #e5e7eb; }
+        .icon-tile.on { background: #2a1b1c; border-color: #FF385C; color: #ff9d9d; }
+    }
+</style>
+
+<script>
+// wire tiles -> hidden input (works on both create and edit pages)
+(function () {
+    var grid = document.getElementById('icon-grid');
+    var input = document.getElementById('path-icon');
+    if (!grid || !input) return;
+    grid.addEventListener('click', function (e) {
+        var tile = e.target.closest('.icon-tile');
+        if (!tile) return;
+        grid.querySelectorAll('.icon-tile').forEach(function (t) {
+            t.classList.remove('on');
+            t.setAttribute('aria-pressed', 'false');
+        });
+        tile.classList.add('on');
+        tile.setAttribute('aria-pressed', 'true');
+        input.value = tile.getAttribute('data-icon') || '';
+    });
+})();
+</script>

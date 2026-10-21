@@ -6,7 +6,7 @@ plugin**. The plugin connects to the Linkversity MCP server and lets ChatGPT:
 - search public Linkversity collections by topic
 - read the links inside a collection (with source URLs)
 - list your own collections after you connect your account
-- turn a collection into a personalized study plan
+- save links and create collections from the chat
 
 ## Contents
 
@@ -43,8 +43,8 @@ Auth is declared in `mcp.json` under the server's
 `extensions["com.openai"].auth` (field names are case-sensitive camelCase):
 
 - `type: "mixed"` - the public tools work without signing in; the personal
-  tools (`list_my_collections`, `create_study_plan` on your own collections)
-  trigger OAuth
+  tools (`list_my_collections`, `save_link_to_collection` on your own
+  collections) trigger OAuth
 - `client.mode: "dcr"` - ChatGPT registers itself through our RFC 7591
   dynamic client registration (`POST /oauth/register`); no client credentials
   in the package

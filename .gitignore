@@ -143,3 +143,6 @@ config.json
 linkversity.db
 # uploaded org logos
 static/uploads/
+
+# plugin / release zips (built for upload, never committed)
+*.zip

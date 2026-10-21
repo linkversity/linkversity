@@ -1,30 +1,31 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "linkversity",
-  "version": "0.3.0",
-  "description": "Discover Linkversity collections, access your saved learning resources, and generate study plans from ChatGPT.",
+  "version": "0.6.1",
+  "description": "Discover Linkversity collections, access your saved learning resources, and save new links from ChatGPT.",
   "author": {
     "name": "Linkversity"
   },
   "homepage": "https://linkversity.lol",
   "license": "MIT",
-  "keywords": ["learning", "collections", "study plans", "links", "education"],
+  "keywords": ["learning", "collections", "links", "bookmarks", "education"],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Linkversity",
-        "shortDescription": "Collections and study plans",
-        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, and turn a collection into a personalized study plan sequenced for your experience level and available time. Every result links back to the original resource on Linkversity. The plugin only reads your data - it never changes your collections.",
+        "shortDescription": "Collections and links",
+        "longDescription": "Search public Linkversity collections by topic, open the links inside a collection, connect your own Linkversity account to retrieve your saved collections, and save new links or create new collections straight from the chat - just name the collection and it is created automatically if it does not exist yet. Every result links back to the original resource on Linkversity. Linkversity is a link manager: collections of saved links grouped into sections.",
         "developerName": "Linkversity",
         "category": "Education & Research",
-        "capabilities": ["Search collections", "Read collections", "Build study plans"],
+        "capabilities": ["Search collections", "Read collections", "Save links", "Create collections"],
         "websiteURL": "https://linkversity.lol",
         "supportURL": "https://linkversity.lol/contact",
         "privacyPolicyURL": "https://linkversity.lol/privacy-policy",
         "termsOfServiceURL": "https://linkversity.lol/terms",
         "defaultPrompt": [
           "Find public Linkversity collections about machine learning",
-          "Turn this Linkversity collection into a study plan for a beginner with 3 hours a week"
+          "Save this article to my Linkversity collection",
+          "List my Linkversity collections"
         ],
         "brandColor": "#eb6864",
         "composerIcon": "./assets/icon.png",

@@ -63,6 +63,10 @@ crossorigin="anonymous"></script>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">This becomes your path URL and must be unique.</p>
         </div>
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            {% include 'linkolearn_theme/templates/blocks/icon_picker.html' %}
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Shown on the explore cards. Auto picks one that fits your path.</p>
+        </div>
     </div>
 
     <!-- sections -->
@@ -186,6 +190,9 @@ $("#submit-button").click(function(){
     }
 
     json_submit['path_link'] = path_link;
+
+    var pathIconEl = document.getElementById('path-icon');
+    json_submit['path_icon'] = pathIconEl ? pathIconEl.value : '';
 
     $('#submit-button').prop('disabled', true).html('Saving…');
 

@@ -1,3 +1,60 @@
+## 1.8.0
+
+### Front theme
+
+- Airbnb-inspired redesign of the front theme: Rausch coral `#FF385C`
+  primary, ink `#222222` / muted `#6A6A6A` text, `#EBEBEB`/`#DDDDDD`
+  hairlines and `#F7F7F7` page background; 16px radii, layered soft
+  shadows and Inter throughout
+- Sticky, blurred topbar with pill-style navigation; every existing route,
+  script (GA, service worker, PWA install, password-match JS) and
+  integration (Slack, Chrome, Product Hunt) is preserved
+- The retuned `path-*` design system lives in `blocks/brand.html` and is
+  inherited by all 13 front templates with unchanged class names, so the
+  new look reaches every page at once
+
+### Homepage
+
+- New hero: an Airbnb-style split pairing the register card with a
+  carousel card
+- Carousel slides get per-slide radial tints, uncropped illustrations
+  (`object-fit: contain` in place of a circular crop), step chips and
+  story-style progress dots synced to the 12s animation; hovering pauses
+  it and mobile stacks the slides
+- "Explore latest" cards rebuilt: real titles (slug fallback), link and
+  section counts, owner or org identity, section chips, a lock badge for
+  protected paths and a 2-line title clamp; section headers gain coral
+  eyebrow chips
+
+### Path covers
+
+- Paths get a **cover icon** chosen by the user: a new `Path.cover_icon`
+  column (migration `71f72b1115f6`) plus a `PATH_ICONS` catalogue of 18
+  labelled Font Awesome 5 icons with an "Auto" default
+- Create and edit pages share `blocks/icon_picker.html` — a tile grid with
+  the selection glowing coral, dark-mode styled and `aria-pressed` for
+  assistive tech; the choice rides the existing JSON payload as `path_icon`
+- The backend whitelists against the catalogue and falls back to "Auto" for
+  anything else, since the stored value is echoed into a
+  `fas {{icon}}` class attribute
+- `Path.cover_style()` is now the single source of truth for a path's
+  gradient, icon and monogram — crc32-derived (stable across restarts) with
+  a chosen `cover_icon` overriding the icon; the landing cards and the new
+  path-profile cover band both draw from it, so a path looks identical
+  everywhere it appears
+- The path profile header gets the cover band: a bleeding gradient banner
+  with an oversized translucent monogram, a white glyph tile hanging off
+  the edge, a link-count pill and a lock pill when the path is protected
+- `fa-music` leaves the auto rotation, replaced by `fa-rocket`
+
+### Bug fixes
+
+- The path-profile glyph tile was clipped in half: it hung past the banner
+  edge (`bottom: -20px`) inside a parent that had `overflow: hidden`. The
+  cover no longer clips — the gradient stays rounded via `border-radius` —
+  the monogram is contained by its own `.mono-clip` wrapper, and the band's
+  bottom margin was increased so the hanging tile clears the breadcrumb nav
+
 ## 1.7.0
 
 ### ChatGPT integration
