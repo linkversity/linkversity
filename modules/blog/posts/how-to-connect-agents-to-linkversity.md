@@ -14,7 +14,11 @@ That is the gap this closes. Linkversity speaks MCP, the open protocol ChatGPT, 
 
 ## Step 1: Add the MCP server
 
-In your agent's settings, add a **streamable-HTTP** server with one URL:
+In your agent's settings, add a **streamable-HTTP** server with this URL:
+
+`https://linkversity.lol/mcp`
+
+Or, if the client wants JSON config:
 
 ```json
 {
