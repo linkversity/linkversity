@@ -120,6 +120,15 @@
 
     <!-- ============ hero ============ -->
     <header class="path-card">
+        {% set cover_grad, cover_icon_cls, cover_mono = path.cover_style() %}
+        <div class="path-cover" style="background: {{ cover_grad }}">
+            <span class="mono-clip"><span class="mono">{{ cover_mono }}</span></span>
+            <span class="glyph"><i class="fas {{ cover_icon_cls }}"></i></span>
+            <span class="count-pill"><i class="fas fa-link"></i> {{ path.cover_link_count() }}</span>
+            {% if path.is_password_protected %}
+            <span class="lock-pill" title="Password protected"><i class="fas fa-lock"></i></span>
+            {% endif %}
+        </div>
         <nav class="text-xs text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1.5">
             <a href="{{ url_for('www.index') }}" class="hover:text-gray-900 dark:hover:text-gray-100">Home</a>
             <span class="text-gray-300 dark:text-gray-600">›</span>

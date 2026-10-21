@@ -336,6 +336,82 @@
 
     textarea.path-input { resize: vertical; min-height: 90px; }
 
+    /* ---- path profile cover band (same identity as the landing card) ---- */
+    .path-cover {
+        position: relative;
+        height: 132px;
+        margin: -22px -22px 28px;   /* bleed to card edges; extra bottom room
+                                       so the hanging glyph clears the nav */
+        border-radius: 15px 15px 0 0;
+        /* NOT overflow:hidden - the glyph deliberately hangs past the band.
+           border-radius still clips the gradient background itself, and the
+           oversized monogram is contained by its own .mono-clip wrapper. */
+    }
+    .path-cover .mono-clip {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 15px 15px 0 0;
+        pointer-events: none;
+    }
+    .path-cover .mono {
+        position: absolute;
+        right: 14px;
+        bottom: -30px;
+        font-size: 118px;
+        font-weight: 800;
+        line-height: 1;
+        color: rgba(255,255,255,.22);
+        user-select: none;
+    }
+    .path-cover .glyph {
+        position: absolute;
+        left: 20px;
+        bottom: -20px;
+        z-index: 2;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.92);
+        display: grid;
+        place-items: center;
+        font-size: 19px;
+        color: #222222;
+        box-shadow: 0 6px 16px rgba(0,0,0,.2);
+    }
+    .path-cover .count-pill {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(0,0,0,.28);
+        backdrop-filter: blur(4px);
+        color: #fff;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+    .path-cover .lock-pill {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: rgba(0,0,0,.28);
+        backdrop-filter: blur(4px);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+    }
+    @media (prefers-color-scheme: dark) {
+        .path-cover .glyph { background: rgba(30,33,40,.92); color: #e5e7eb; }
+    }
+
     @media (prefers-color-scheme: dark) {
         .path-label { color: #9ca3af; }
         .path-stat { background: #16191e; border-color: #262b36; color: #d1d5db; }
