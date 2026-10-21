@@ -70,10 +70,29 @@
         line-height: 1.55; color: #222; white-space: pre;
     }
     .lv-step-quote {
-        margin: 0; font-size: 14px; font-style: italic; line-height: 1.6; color: #222;
-        background: #FFF7F8; border: 1px solid #FFE3E8; border-left: 3px solid #FF385C;
-        border-radius: 12px; padding: 12px 15px;
+        position: relative;
+        margin: 0;
+        padding: 18px 22px 18px 48px;
+        font-size: 15px;
+        line-height: 1.65;
+        color: #222;
+        background: linear-gradient(135deg, #FFF9FA 0%, #FFF0F3 100%);
+        border: 1px solid #FFE3E8;
+        border-left: 3px solid #FF385C;
+        border-radius: 18px;
+        border-top-left-radius: 6px;
+        box-shadow: 0 8px 24px rgba(255,56,92,.10), 0 1px 2px rgba(0,0,0,.03);
     }
+    .lv-step-quote i {
+        position: absolute;
+        left: 19px;
+        top: 20px;
+        font-style: normal;
+        color: #FF385C;
+        font-size: 15px;
+        opacity: .85;
+    }
+    .lv-step-quote p { margin: 0; font-style: italic; }
     .lv-skill-points { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
     .lv-skill-points li { display: flex; gap: 9px; font-size: 14px; line-height: 1.55; color: #6A6A6A; }
     .lv-skill-points i { color: #FF385C; margin-top: 4px; font-size: 11px; flex: none; }
@@ -94,7 +113,12 @@
         .lv-code-more summary { color: #9ca3af; }
         .lv-code-more pre { background: #101318; border-color: #262b36; }
         .lv-code-more pre code { color: #d1d5db; }
-        .lv-step-quote { background: #20161a; border-color: #4a2a30; border-left-color: #FF385C; color: #f3f4f6; }
+        .lv-step-quote {
+            background: linear-gradient(135deg, #241a1e 0%, #1d1418 100%);
+            border-color: #4a2a30; border-left-color: #FF385C;
+            box-shadow: none; color: #f3f4f6;
+        }
+        .lv-step-quote i { color: #ff9d9d; }
         .lv-skill-points li { color: #9ca3af; }
     }
 </style>
@@ -105,7 +129,7 @@
     <div class="lv-section-head">
         <span class="lv-eyebrow"><i class="fas fa-robot"></i> For agents</span>
         <h1>Connect your agents to Linkversity</h1>
-        <p>One MCP endpoint for ChatGPT, Claude, Cursor — plus a skill file so your agent knows what to do once it's connected.</p>
+        <p>One MCP endpoint for ChatGPT, Claude, Cursor, plus a skill file so your agent knows what to do once it's connected.</p>
     </div>
 </section>
 
@@ -114,7 +138,7 @@
         <div>
             <span class="lv-eyebrow"><i class="fas fa-plug"></i> Model Context Protocol</span>
             <h2>How to add Linkversity MCP</h2>
-            <p>Two minutes — add the server, connect your account, then just ask.</p>
+            <p>Two minutes: add the server, connect your account, then just ask.</p>
         </div>
     </div>
 
@@ -123,7 +147,7 @@
             <span class="lv-step-num">1</span>
             <div class="lv-step-body">
                 <h3>Add the server</h3>
-                <p>In your MCP client's settings (Claude, Cursor, ChatGPT — anything that speaks MCP), add a <b>streamable-HTTP</b> server with this URL:</p>
+                <p>In your MCP client's settings (Claude, Cursor, ChatGPT, anything that speaks MCP), add a <b>streamable-HTTP</b> server with this URL:</p>
                 <div class="lv-code">
                     <code>https://linkversity.lol/mcp</code>
                     <button type="button" class="lv-copy" data-copy="https://linkversity.lol/mcp" aria-label="Copy MCP endpoint">
@@ -148,7 +172,7 @@
             <span class="lv-step-num">2</span>
             <div class="lv-step-body">
                 <h3>Connect your account</h3>
-                <p>Public search works with no sign-in at all. The first time you reach for a personal tool, your client opens Linkversity's consent screen — approve once and it gets <code>collections:read</code> + <code>collections:write</code>.</p>
+                <p>Public search works with no sign-in at all. The first time you reach for a personal tool, your client opens Linkversity's consent screen: approve once and it gets <code>collections:read</code> + <code>collections:write</code>.</p>
             </div>
         </li>
 
@@ -157,7 +181,10 @@
             <div class="lv-step-body">
                 <h3>Start asking</h3>
                 <p>Natural language is the whole interface:</p>
-                <blockquote class="lv-step-quote">“Find public collections about systems design — and save this article to my Backend collection.”</blockquote>
+                <blockquote class="lv-step-quote">
+                    <i class="fas fa-quote-left"></i>
+                    <p>“Find public collections about systems design, then save this article to my Backend collection.”</p>
+                </blockquote>
             </div>
         </li>
     </ol>
@@ -168,7 +195,7 @@
         <div>
             <span class="lv-eyebrow"><i class="fas fa-book-open"></i> Agent skill</span>
             <h2>Give your agent the Linkversity skill</h2>
-            <p>One <code>SKILL.md</code> — endpoint, all 7 tools with their scopes, the save-by-name workflow and the guardrails. Point your agent's skill loader at it, or drop the markdown into its skills folder as <code>SKILL.md</code>.</p>
+            <p>One <code>SKILL.md</code>: endpoint, all 7 tools with their scopes, the save-by-name workflow and the guardrails. Point your agent's skill loader at it, or drop the markdown into its skills folder as <code>SKILL.md</code>.</p>
         </div>
     </div>
 
@@ -184,7 +211,7 @@
                     </button>
                 </div>
                 <ul class="lv-skill-points">
-                    <li><i class="fas fa-circle"></i><span>All 7 tools — what each does, and which of <code>collections:read</code> / <code>collections:write</code> it needs</span></li>
+                    <li><i class="fas fa-circle"></i><span>All 7 tools: what each does, and which of <code>collections:read</code> / <code>collections:write</code> it needs</span></li>
                     <li><i class="fas fa-circle"></i><span>When to save by name (<code>save_link_to_collection</code>) vs by ID (<code>save_link</code>)</span></li>
                     <li><i class="fas fa-circle"></i><span>Guardrails: never invent IDs, idempotent saves, ownership enforced server-side</span></li>
                     <li><i class="fas fa-circle"></i><span>REST fallback under <code>/api/v1</code> with the 120 req/min limit</span></li>
