@@ -66,6 +66,284 @@
   }
 }
 
+/* ============ Airbnb-inspired hero ============ */
+.lv-hero {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 44px 24px 28px;
+}
+.lv-hero-inner {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 48px;
+  align-items: center;
+}
+@media (max-width: 1020px) {
+  .lv-hero-inner { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.lv-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF0F3;
+  color: #B01E44;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.lv-hero-copy h1 {
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.08;
+  color: #222222;
+  margin: 0 0 16px;
+}
+.lv-hero-copy h1 em {
+  font-style: normal;
+  color: #FF385C;
+}
+
+.lv-hero-sub {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: #6A6A6A;
+  max-width: 54ch;
+  margin: 0 0 24px;
+}
+
+.lv-hero-points {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.lv-hero-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.lv-hero-points .ico {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #F7F7F7;
+  border: 1px solid #EBEBEB;
+  display: grid;
+  place-items: center;
+  color: #FF385C;
+  font-size: 15px;
+}
+.lv-hero-points b {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #222222;
+  line-height: 1.3;
+}
+.lv-hero-points span {
+  display: block;
+  font-size: 13px;
+  color: #6A6A6A;
+  margin-top: 1px;
+}
+
+.lv-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* side panel: register card or carousel card */
+.lv-hero-side .lv-side-card {
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.04);
+  padding: 26px;
+}
+.lv-side-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #222222;
+  margin: 0 0 4px;
+}
+.lv-side-card .side-sub {
+  font-size: 13.5px;
+  color: #6A6A6A;
+  margin: 0 0 18px;
+}
+
+/* register form restyle (inputs come from auth/blocks/register_form.html) */
+.lv-register .mb-4 > div {
+  border-color: #DDDDDD;
+  border-radius: 12px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.lv-register .mb-4 > div:focus-within {
+  border-color: #222222;
+  box-shadow: 0 0 0 3px rgba(34,34,34,.08);
+}
+.lv-register .form-control {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14.5px;
+  color: #222222;
+}
+.lv-register .form-control::placeholder { color: #9A9A9A; }
+
+.lv-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #FF385C;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(255,56,92,.28);
+  transition: background .15s ease, transform .06s ease;
+}
+.lv-btn-primary:hover { background: #E01A45; }
+.lv-btn-primary:active { transform: translateY(1px); }
+
+/* ============ sections ============ */
+.lv-section {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 30px 24px;
+}
+.lv-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.lv-section-head h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #222222;
+  margin: 0;
+}
+.lv-section-head p {
+  font-size: 14px;
+  color: #6A6A6A;
+  margin: 0;
+}
+
+/* explore grid — Airbnb-style listing cards */
+.lv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+}
+.lv-card {
+  display: block;
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.lv-card:hover {
+  transform: translateY(-3px);
+  border-color: #DDDDDD;
+  box-shadow: 0 12px 32px -18px rgba(0,0,0,.4);
+}
+.lv-card-cover {
+  height: 108px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 30px;
+}
+.lv-card:nth-child(4n+1) .lv-card-cover { background: linear-gradient(135deg,#FF385C,#FF5A5F 60%,#FF8A5B); }
+.lv-card:nth-child(4n+2) .lv-card-cover { background: linear-gradient(135deg,#2C5C80,#4A88AC 60%,#79B7D6); }
+.lv-card:nth-child(4n+3) .lv-card-cover { background: linear-gradient(135deg,#2F6B45,#4A8F62 60%,#82BB92); }
+.lv-card:nth-child(4n+4) .lv-card-cover { background: linear-gradient(135deg,#8A6220,#B5862F 60%,#DDB567); }
+.lv-card-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+.lv-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #222222;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lv-card-sub {
+  font-size: 12.5px;
+  color: #6A6A6A;
+  margin-top: 1px;
+}
+
+/* testimonials */
+.lv-quotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+.lv-quote {
+  background: #fff;
+  border: 1px solid #EBEBEB;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+}
+.lv-quote i.fa-quote-left { color: #FF385C; font-size: 20px; }
+.lv-quote p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #222222;
+  margin: 10px 0 14px;
+}
+.lv-quote .who {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #222222;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lv-hero-copy h1 { color: #f6f6f7; }
+  .lv-hero-sub { color: #9ca3af; }
+  .lv-hero-points b { color: #f3f4f6; }
+  .lv-hero-points span { color: #9ca3af; }
+  .lv-hero-points .ico { background: #16191e; border-color: #262b36; }
+  .lv-side-card { background: #111318 !important; border-color: #1f2430 !important; }
+  .lv-side-card h3 { color: #f3f4f6; }
+  .lv-section-head h2 { color: #f6f6f7; }
+  .lv-section-head p { color: #9ca3af; }
+  .lv-card { background: #16191e; border-color: #262b36; box-shadow: none; }
+  .lv-card-title { color: #f3f4f6; }
+  .lv-card-sub { color: #9ca3af; }
+  .lv-quote { background: #16191e; border-color: #262b36; box-shadow: none; }
+  .lv-quote p { color: #d1d5db; }
+  .lv-quote .who { color: #f3f4f6; }
+}
   </style>
 
 <style>
@@ -75,174 +353,165 @@
 </style>
 {%endblock%}
 {%block body%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="flex flex-col md:flex-row items-center justify-between">
-        <div class="text-left md:w-1/2">
-            {% if current_user.is_authenticated %}
-            <!-- You ARE LOGGED IN!!!<br>Enjoy! -->
- <div class="carousel bg-white hidden sm:block">
-    <div class="slides">
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Discover useful collections</p>
-          <p class="text-sm md:text-base text-center">Discover what people have created and bookmark them!</p>
-        </div>
-      </div>
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Collaborate with teams</p>
-          <p class="text-sm md:text-base text-center">Allow your friends to add links to collections for serious works</p>
-        </div>
-      </div>
-      <div class="slide">
-        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
-          <p class="text-xl md:text-2xl font-semibold text-center m-4">Protect your links</p>
-          <p class="text-sm md:text-base text-center">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
-        </div>
-      </div>
-    </div>
-  </div>
-            {% else %}
-            <form id="reg-form" action="{{ url_for('auth.register') }}" method="post" class="flex flex-col md:flex-row items-center justify-center space-x-6 md:space-x-4 space-y-6 md:space-y-0">
-                <div class="flex-1 max-w-lg space-y-6">
-                    <!-- Register Form -->
-                    {% include 'auth/blocks/register_form.html' %}
-                    <span id="message" class="text-red-500"></span>
-                    <button type="submit" class="bg-red-600 text-white py-3 px-6 rounded-lg w-full hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-300 mt-4">
-                        Register </button>
-                </div> <!-- Illustration Section -->
-            </form>
-            {% endif %}
-        </div>
-        <div class="flex justify-center w-full md:w-1/2 mt-8 md:mt-0">
-            <p class="text-xl">
-                <span class="text-3xl font-bold">Linkversity allows people to create courses from links around the internet. </span><br><br>
-                Want to send preparation materials to someone? Take a few minutes, gather your links and send the person the course's content.<br><br>
-                It is particularly useful for the <span class="bg-yellow-200">Education</span>
-                sector and <span class="bg-yellow-200">OpenSource</span> projects to get
-                contributors started quickly. It can be used as a
-                <span class="bg-yellow-200">knowledge base</span>. It was inspired by works done on
-                <a href="/appinv/lumosql" class="underline">LumoSQL</a><br><br>
-                It can also be used as a research bookmark manager!<br><br>
-                - Emails no longer needed!<br>
-                - It is <a href="https://github.com/linkversity/linkversity" class="underline">OpenSource</a><br><br>
-                <a href="https://www.producthunt.com/posts/contriblearn?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light&t=1738394199733" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-                <br>
-    <a href="{{ url_for('slack.install') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4A154B] hover:bg-[#3a1039] shadow-sm hover:shadow-md transition-all duration-200">
-        <i class="fab fa-slack"></i> Connect to Slack
-    </a>
-    <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4285F4] hover:bg-[#3b78e7] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
-        <i class="fab fa-chrome"></i> Add to Chrome
-    </a>
-    <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#eb6864] hover:bg-[#e05551] shadow-sm hover:shadow-md transition-all duration-200 ml-2">
-        <i class="fas fa-download"></i> Install app
-    </button>
-            </p>
-        </div>
-    </div>
-</div>
 
-{% if not current_user.is_authenticated %}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="flex flex-col md:flex-row justify-between gap-8">
-        <!-- Item 1 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Discover useful collections</p>
-            <p class="text-base">Discover what people have created and bookmark them!</p>
+<!-- ============ hero ============ -->
+<section class="lv-hero">
+    <div class="lv-hero-inner">
+        <div class="lv-hero-copy">
+            <span class="lv-eyebrow"><i class="fas fa-link"></i> Open source · free for everyone</span>
+            <h1>Turn scattered links into <em>structured courses</em></h1>
+            <p class="lv-hero-sub">
+                Want to send preparation materials to someone? Gather your links once,
+                organize them into a path, and share a single URL — no more email threads.
+                Perfect for the <strong>Education</strong> sector, <strong>OpenSource</strong> onboarding,
+                team knowledge bases, and research bookmarking.
+            </p>
+            <ul class="lv-hero-points">
+                <li>
+                    <span class="ico"><i class="fas fa-compass"></i></span>
+                    <div><b>Discover useful collections</b><span>Browse what people have created and bookmark the best ones</span></div>
+                </li>
+                <li>
+                    <span class="ico"><i class="fas fa-user-friends"></i></span>
+                    <div><b>Collaborate with teams</b><span>Allow friends and colleagues to add links to shared collections</span></div>
+                </li>
+                <li>
+                    <span class="ico"><i class="fas fa-shield-alt"></i></span>
+                    <div><b>Protect your links</b><span>Varying visibility levels and optional password protection</span></div>
+                </li>
+            </ul>
+            <div class="lv-hero-ctas">
+                <a href="{{ url_for('slack.install') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4A154B] hover:bg-[#3a1039] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fab fa-slack"></i> Connect to Slack
+                </a>
+                <a href="https://chromewebstore.google.com/detail/linkversity-saver/iddoooldffhnlgbdcebkhgckgpchkmmj?hl=en" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#4285F4] hover:bg-[#3b78e7] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fab fa-chrome"></i> Add to Chrome
+                </a>
+                <button id="pwa-install-btn" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-full bg-[#FF385C] hover:bg-[#E01A45] shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="fas fa-download"></i> Install app
+                </button>
+            </div>
         </div>
-        <!-- Item 2 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Collaborate with teams</p>
-            <p class="text-base">Allow your friends to add links to collections for serious works</p>
-        </div>
-        <!-- Item 3 -->
-        <div class="flex flex-col items-center w-full md:w-1/3">
-            <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
-            <p class="text-2xl font-semibold m-4">Protect your links</p>
-            <p class="text-base">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
-        </div>
-    </div>
-</div>
-{%endif%}
-<div class="max-w-screen-xl mx-auto px-4 p-8">
-    <div class="text-center py-12">
-        <h2 class="text-4xl font-bold text-gray-800 m-4">
-            Explore latest
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {%for path in get_last_5()%}
-            <a href="{{path.get_url()}}">
-                <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                    <div class="flex items-center gap-4 relative">
-                        {% set org = path.get_org() %}
-                        <span class="relative inline-block">
-                            {% if org %}
-                            {% if org.logo_url %}
-                            <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-300 dark:ring-gray-500">
-                            {% else %}
-                            <span class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 ring-2 ring-gray-300 dark:ring-gray-500 inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
-                            {% endif %}
-                            {% else %}
-                            {% if path.path_user.is_enterprise() %}
-                            {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
-                            {% elif path.path_user.is_pro() %}
-                            {% include 'linkolearn_theme/templates/blocks/crown.html' %}
-                            {% endif %}
-                            <i class="em {{path.path_user.emoji_class}} w-10 h-10 p-1 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"></i>
-                            {% endif %}
-                        </span>
-                        <div class="font-medium dark:text-white">
-                            <div class="text-left w-40 overflow-hidden whitespace-nowrap text-ellipsis">{{ path.slug }}</div>
-                            <div class="text-left text-sm text-gray-500 dark:text-gray-400">{% if org %}{{ org.name }}{% else %}{{path.path_user.username}}{% endif %}</div>
+
+        <div class="lv-hero-side">
+            {% if current_user.is_authenticated %}
+            <div class="lv-side-card">
+                <div class="carousel bg-white hidden sm:block">
+                    <div class="slides">
+                      <div class="slide">
+                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
+                          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
+                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Discover useful collections</p>
+                          <p class="text-sm md:text-base text-center">Discover what people have created and bookmark them!</p>
                         </div>
+                      </div>
+                      <div class="slide">
+                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
+                          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
+                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Collaborate with teams</p>
+                          <p class="text-sm md:text-base text-center">Allow your friends to add links to collections for serious works</p>
+                        </div>
+                      </div>
+                      <div class="slide">
+                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
+                          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
+                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Protect your links</p>
+                          <p class="text-sm md:text-base text-center">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
+                        </div>
+                      </div>
                     </div>
                 </div>
-            </a>
-            {%endfor%}
+            </div>
+            {% else %}
+            <div class="lv-side-card lv-register">
+                <h3>Create your free account</h3>
+                <p class="side-sub">One minute to your first shared path.</p>
+                <form id="reg-form" action="{{ url_for('auth.register') }}" method="post">
+                    {% include 'auth/blocks/register_form.html' %}
+                    <span id="message" class="text-red-500"></span>
+                    <button type="submit" class="lv-btn-primary w-full mt-4">
+                        Sign up <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         </div>
     </div>
-</div>
-<div class="max-w-4xl mx-auto px-6 py-10 text-gray-900">
-    <h2 class="text-center text-4xl font-bold mb-12 tracking-tight">What People Say</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-12">
-        <!-- Testimonial 1 -->
-        <div class="relative">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “Linkversity.xyz is incredibly useful! It allows me to store all my important links in one place, making it super easy to access them whenever I need. I also love the option to share my links with others. This site has definitely made my life more organized! Highly recommend!”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- Ouwesh Seeroo</span>
+</section>
+
+<!-- ============ explore latest ============ -->
+<section class="lv-section">
+    <div class="lv-section-head">
+        <div>
+            <h2>Explore latest</h2>
+            <p>Fresh paths created by the community</p>
+        </div>
+    </div>
+    <div class="lv-grid">
+        {%for path in get_last_5()%}
+        <a class="lv-card" href="{{path.get_url()}}">
+            <div class="lv-card-cover"><i class="fas fa-route"></i></div>
+            <div class="lv-card-body">
+                <span class="relative inline-block flex-none">
+                    {% set org = path.get_org() %}
+                    {% if org %}
+                    {% if org.logo_url %}
+                    <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-white">
+                    {% else %}
+                    <span class="w-10 h-10 rounded-full bg-gray-100 ring-2 ring-white inline-flex items-center justify-center text-gray-400"><i class="fas fa-building"></i></span>
+                    {% endif %}
+                    {% else %}
+                    {% if path.path_user.is_enterprise() %}
+                    {% include 'linkolearn_theme/templates/blocks/ent-badge.html' %}
+                    {% elif path.path_user.is_pro() %}
+                    {% include 'linkolearn_theme/templates/blocks/crown.html' %}
+                    {% endif %}
+                    <i class="em {{path.path_user.emoji_class}} w-10 h-10 p-1 rounded-full ring-2 ring-white"></i>
+                    {% endif %}
+                </span>
+                <div class="min-w-0">
+                    <div class="lv-card-title">{{ path.slug }}</div>
+                    <div class="lv-card-sub">{% if org %}{{ org.name }}{% else %}{{path.path_user.username}}{% endif %}</div>
+                </div>
             </div>
+        </a>
+        {%endfor%}
+    </div>
+</section>
+
+<!-- ============ testimonials ============ -->
+<section class="lv-section">
+    <div class="lv-section-head">
+        <div>
+            <h2>What people say</h2>
+            <p>From students, teachers and open-source maintainers</p>
+        </div>
+    </div>
+    <div class="lv-quotes">
+        <!-- Testimonial 1 -->
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“Linkversity.xyz is incredibly useful! It allows me to store all my important links in one place, making it super easy to access them whenever I need. I also love the option to share my links with others. This site has definitely made my life more organized! Highly recommend!”</p>
+            <span class="who">Ouwesh Seeroo</span>
         </div>
         <!-- Testimonial 2 -->
-        <div class="relative">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “Very useful
-                It helps me to save my links in one place which makes it easier for me to find them anytime. Im also happy to be able to share my links with others also. I ❤ this app”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- SSidd</span>
-            </div>
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“Very useful. It helps me to save my links in one place which makes it easier for me to find them anytime. Im also happy to be able to share my links with others also. I ❤ this app”</p>
+            <span class="who">SSidd</span>
         </div>
         <!-- Testimonial 3 -->
-        <div class="relative sm:col-span-2">
-            <i class="fas fa-quote-left text-3xl text-blue-500 absolute -top-2 -left-4"></i>
-            <p class="text-lg text-gray-800 leading-relaxed pl-6">
-                “A very useful app.”
-            </p>
-            <div class="mt-4 pl-6">
-                <span class="block font-semibold text-blue-600 text-lg">-- Randy Duodu</span>
-            </div>
+        <div class="lv-quote">
+            <i class="fas fa-quote-left"></i>
+            <p>“A very useful app.”</p>
+            <span class="who">Randy Duodu</span>
         </div>
     </div>
-</div>
+    <div class="mt-10 flex justify-center">
+        <a href="https://www.producthunt.com/posts/contriblearn?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light&t=1738394199733" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+    </div>
+</section>
+
 {% if not current_user.is_authenticated %}
 <script>
 const form = document.getElementById('reg-form');

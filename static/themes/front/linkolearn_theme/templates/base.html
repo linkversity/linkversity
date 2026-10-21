@@ -9,6 +9,9 @@
     <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
     <link href="https://emoji-css.afeld.me/emoji.css" rel="stylesheet">
 
@@ -25,7 +28,7 @@
 
 
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#eb6864">
+    <meta name="theme-color" content="#FF385C">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -41,6 +44,22 @@
     </script>
 
     <style type="text/css">
+        /* ---------- Airbnb-inspired design tokens ---------- */
+        :root {
+          --coral: #FF385C;
+          --coral-dark: #E01A45;
+          --ink: #222222;
+          --muted: #6A6A6A;
+          --line: #EBEBEB;
+          --line-strong: #DDDDDD;
+          --bg: #F7F7F7;
+          --card: #FFFFFF;
+          --radius: 16px;
+          --shadow: 0 6px 20px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+          --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+          --font: Inter, "Circular", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+        }
+
         html {
           overflow: auto;
           -ms-overflow-style: none;  /* Hide scrollbar in IE and Edge */
@@ -51,33 +70,101 @@
         html::-webkit-scrollbar {
           display: none;
         }
-    </style>
 
-    <style>
+        body {
+          font-family: var(--font);
+          background: var(--bg);
+          color: var(--ink);
+          -webkit-font-smoothing: antialiased;
+        }
+
         .relative {
             position: relative;
         }
+
+        /* ---------- topbar ---------- */
+        .lv-nav {
+          position: sticky; top: 0; z-index: 30;
+          background: rgba(255,255,255,.88);
+          backdrop-filter: saturate(180%) blur(14px);
+          -webkit-backdrop-filter: saturate(180%) blur(14px);
+          border-bottom: 1px solid var(--line);
+        }
+        .lv-nav-inner {
+          max-width: 1500px; margin: 0 auto; padding: 12px 24px;
+          display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .lv-brand {
+          display: inline-flex; align-items: center; gap: 10px;
+          text-decoration: none; flex: none;
+        }
+        .lv-logo {
+          width: 34px; height: 34px; border-radius: 11px; flex: none;
+          background: linear-gradient(135deg, #FF385C, #FF5A5F 60%, #FF8A5B);
+          display: grid; place-items: center; overflow: hidden;
+          box-shadow: 0 4px 12px rgba(255,56,92,.35);
+        }
+        .lv-logo img { width: 24px; height: 24px; object-fit: contain; }
+        .lv-brand-name { font-weight: 700; font-size: 17px; letter-spacing: -.2px; color: var(--ink); }
+        .lv-brand-sub { color: var(--muted); font-weight: 500; }
+        @media (max-width: 480px) { .lv-brand-sub { display: none; } }
+
+        .lv-menu {
+          display: flex; align-items: center; gap: 4px; list-style: none; margin: 0; padding: 0;
+        }
+        .lv-link {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 9px 14px; border-radius: 999px;
+          font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none;
+          transition: background .15s ease, border-color .15s ease, color .15s ease;
+          white-space: nowrap;
+        }
+        .lv-link:hover { background: var(--bg); }
+        .lv-link.active { color: var(--coral); }
+        .lv-link-ghost {
+          border: 1px solid var(--line-strong); background: #fff;
+        }
+        .lv-link-ghost:hover { background: var(--bg); border-color: #CFCFCF; }
+        .lv-link-primary {
+          background: var(--coral); color: #fff;
+          box-shadow: 0 6px 16px rgba(255,56,92,.28);
+        }
+        .lv-link-primary:hover { background: var(--coral-dark); }
+        .lv-menu .spacer { flex: 1; }
+        @media (max-width: 767px) {
+          .lv-menu { flex-direction: column; align-items: stretch; width: 100%;
+                     background: #fff; border: 1px solid var(--line); border-radius: 16px;
+                     box-shadow: var(--shadow); padding: 8px; margin-top: 12px; }
+          .lv-menu .spacer { display: none; }
+          .lv-link { justify-content: flex-start; }
+          .lv-link-primary { justify-content: center; }
+        }
+
+        /* burger reuses Tailwind's hidden toggle on #navbar-default */
+        #burger-menu.lv-burger {
+          display: inline-flex; align-items: center; justify-content: center;
+          margin-left: auto;
+          width: 42px; height: 42px; border-radius: 12px;
+          border: 1px solid var(--line-strong); background: #fff;
+          color: var(--ink); cursor: pointer;
+        }
+        #burger-menu.lv-burger:hover { background: var(--bg); }
+        @media (min-width: 768px) { #burger-menu.lv-burger { display: none; } }
     </style>
+
     {%block head%}{%endblock%}
 </head>
 
 <body >
-    <nav class="bg-white border-gray-200 dark:bg-gray-900 {%if active_page=='home'%}p-8{%endif%}">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        {%if active_page=='home'%}
-        <!-- Hide Product Hunt on mobile screens -->
-<!--         <a href="https://www.producthunt.com/posts/contriblearn?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-contriblearn" target="_blank" class="hidden md:block">
-            <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=412345&theme=light" alt="Contriblearn - Onboard&#0032;people&#0032;to&#0032;codebases&#0032;quickly | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" />
-        </a> -->
-        <a></a>
-        {%else%}
-        <a href="/" class="w-10 h-10">
-            <img src="{{url_for('static', filename='linkversity.png')}}">
+    <nav class="lv-nav">
+      <div class="lv-nav-inner">
+        <a href="{{ url_for('www.index') }}" class="lv-brand" title="Linkversity home">
+          <span class="lv-logo"><img src="{{url_for('static', filename='linkversity.png')}}" alt="Linkversity"></span>
+          <span class="lv-brand-name">Linkversity<span class="lv-brand-sub"> · learn by links</span></span>
         </a>
-        {%endif%}
-        
+
         <!-- Hamburger Button -->
-        <button id="burger-menu" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false">
+        <button id="burger-menu" type="button" class="lv-burger" aria-controls="navbar-default" aria-expanded="false">
             <span class="sr-only">Open main menu</span>
             <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15" />
@@ -86,64 +173,45 @@
 
         <!-- Menu -->
         <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul class="lv-menu">
                 {% if current_user.is_authenticated %}
                 {% if current_user.is_enterprise() %}
                 <li>
-                    <a href="{{ url_for('linkolearn.enterprise_dashboard') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'enterprise' %}text-red-500{% endif %}
-                    ">Enterprise</a>
+                    <a href="{{ url_for('linkolearn.enterprise_dashboard') }}" class="lv-link {% if active_page == 'enterprise' %}active{% endif %}">Enterprise</a>
                 </li>
                 {% endif %}
                 <li>
-                    <a href="{{ url_for('www.activate') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'activate' %}text-red-500{% endif %}
-                    ">Go premium</a>
+                    <a href="{{ url_for('www.activate') }}" class="lv-link {% if active_page == 'activate' %}active{% endif %}"><i class="fas fa-crown text-yellow-500"></i> Go premium</a>
                 </li>
                 <li>
-                    <a href="{{ url_for('new.index') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'new' %}text-red-500{% endif %}
-                    ">Create</a>
+                    <a href="{{ url_for('new.index') }}" class="lv-link lv-link-primary"><i class="fa fa-plus text-[10px]"></i> Create</a>
                 </li>
                 <li>
-                    <a href="{{ url_for('linkolearn.bookmarks') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'bookmarks' %}text-red-500{% endif %}
-                    ">Bookmarks</a>
+                    <a href="{{ url_for('linkolearn.bookmarks') }}" class="lv-link {% if active_page == 'bookmarks' %}active{% endif %}"><i class="far fa-heart"></i> Bookmarks</a>
                 </li>
                 <li>
-                    <a href="{{ url_for('www.user_profile', username=current_user.username) }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'profile' %}text-red-500{% endif %}
-                    ">Profile</a>
+                    <a href="{{ url_for('www.user_profile', username=current_user.username) }}" class="lv-link {% if active_page == 'profile' %}active{% endif %}">Profile</a>
                 </li>
                 <li>
-                    <a href="{{ url_for('blog.index') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                        {% if active_page == 'blog' %}text-red-500{% endif %}
-                    ">Blog</a>
+                    <a href="{{ url_for('blog.index') }}" class="lv-link {% if active_page == 'blog' %}active{% endif %}">Blog</a>
                 </li>
+                <li class="spacer"></li>
                 <li>
-                    <a href="{{url_for('auth.logout')}}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Sign out</a>
+                    <a href="{{url_for('auth.logout')}}" class="lv-link">Sign out</a>
                 </li>
                 {% else %}
                 <li>
-                    <a href="{{ url_for('www.activate') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                    {% if active_page == 'activate' %}text-red-500{% endif %}
-                    "><i class="fas fa-crown mr-1 text-yellow-500"></i>Buy Premium</a>
+                    <a href="{{ url_for('www.activate') }}" class="lv-link {% if active_page == 'activate' %}active{% endif %}"><i class="fas fa-crown text-yellow-500"></i> Buy Premium</a>
                 </li>
                 <li>
-                    <a href="{{ url_for('blog.index') }}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent
-
-                        {% if active_page == 'blog' %}text-red-500{% endif %}
-                    ">Blog</a>
+                    <a href="{{ url_for('blog.index') }}" class="lv-link {% if active_page == 'blog' %}active{% endif %}">Blog</a>
+                </li>
+                <li class="spacer"></li>
+                <li>
+                    <a href="{{url_for('auth.login')}}" class="lv-link lv-link-ghost">Sign in</a>
                 </li>
                 <li>
-                    <a href="{{url_for('auth.login')}}" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Sign in</a>
+                    <a href="{{ url_for('auth.register') }}" class="lv-link lv-link-primary">Sign up</a>
                 </li>
                 {% endif %}
             </ul>
@@ -176,4 +244,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
-
