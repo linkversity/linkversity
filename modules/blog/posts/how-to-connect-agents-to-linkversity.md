@@ -42,6 +42,12 @@ Public search works with no sign-in at all. The first time you reach for a perso
 
 A read-only token that tries to write gets a clean `403`. Nothing fails silently.
 
+## Where the token comes from
+
+You never mint one by hand. Your client registers itself (`POST /oauth/register`), sends you to the consent screen (`/oauth/authorize`), then swaps the approval code at `/oauth/token` for a Bearer token that lasts 7 days, plus a 90-day refresh token it rotates on every use. You never see either string.
+
+Scripts can run the same PKCE dance, and everything is described in the discovery document at `/.well-known/oauth-authorization-server`. Nothing to paste into a settings page.
+
 ## Step 3: Just ask
 
 Natural language is the whole interface now:
