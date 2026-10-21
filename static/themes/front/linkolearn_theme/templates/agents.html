@@ -156,7 +156,7 @@
             <span class="lv-step-num">2</span>
             <div class="lv-step-body">
                 <h3>Connect your account</h3>
-                <p>Public search works with no sign-in at all. The first time you reach for a personal tool, your client opens Linkversity's consent screen: approve once and it gets <code>collections:read</code> + <code>collections:write</code>. Your client fetches and refreshes the token itself (7-day access, 90-day refresh), so you never handle credentials.</p>
+                <p>The first time you use a Linkversity tool, your client hits the server's sign-in challenge (HTTP 401) and opens the consent screen: approve once and it gets <code>collections:read</code> + <code>collections:write</code>. Your client fetches and refreshes the token itself (7-day access, 90-day refresh), so you never handle credentials. Public search stays open on the website, no account needed there.</p>
             </div>
         </li>
 

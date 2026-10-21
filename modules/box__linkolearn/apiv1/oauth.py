@@ -188,7 +188,14 @@ def protected_resource_metadata():
     base = _base_url()
     return jsonify(
         {
-            "resource": f"{base}/api/v1",
+            # The resource this document describes is the MCP endpoint:
+            # clients validate the indicator against the URL they are
+            # accessing (https://linkversity.lol/mcp) and reject a
+            # mismatch. The REST API under /api/v1 accepts the same
+            # bearer tokens but does not serve 401 challenges; if it ever
+            # needs its own discovery, add a per-path
+            # /.well-known/oauth-protected-resource under /api/v1.
+            "resource": f"{base}/mcp",
             "authorization_servers": [base],
             "scopes_supported": SCOPE_SUPPORTED,
             "bearer_methods_supported": ["header"],

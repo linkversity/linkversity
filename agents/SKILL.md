@@ -13,11 +13,15 @@ sections. Talk to it through the MCP server (streamable-HTTP).
 - Type: `streamable-http`
 - URL: `https://linkversity.lol/mcp`
 
-Public tools need no authentication. Personal tools forward the incoming
-`Authorization: Bearer <token>` to the API; the OAuth consent screen grants
+Every MCP call needs a connected account: the server answers HTTP 401
+with a `WWW-Authenticate` challenge until a valid token arrives, which is
+what triggers the client's OAuth sign-in. The incoming
+`Authorization: Bearer <token>` is forwarded to the API; consent grants
 `collections:read` (search / list / open) and `collections:write`
 (save / create). A valid token without the right scope returns
 `403 insufficient_scope` — do not retry writes with a read-scoped token.
+Public collection search stays anonymous on the website and the
+`/api/v1/public/*` REST endpoints, outside MCP.
 
 Tokens come from the OAuth dance (`/oauth/register`, `/oauth/authorize`,
 `/oauth/token`): access tokens last 7 days, refresh tokens 90 and rotate on
