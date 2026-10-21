@@ -35,7 +35,7 @@ Some clients offer a "connect" button or ask you to paste a URL instead of filli
 
 ## Step 2: Connect your account
 
-Public search works with no sign-in at all. The first time you reach for a personal tool (anything with *my* in its name), your client opens Linkversity's consent screen. Approve it once and your agent gets two scopes:
+The first time your agent reaches for any Linkversity tool, its client hits the server's sign-in challenge (an HTTP 401 with a Bearer `WWW-Authenticate` header, the spec way MCP servers ask for OAuth) and opens Linkversity's consent screen. Approve it once and your agent gets two scopes:
 
 - **collections:read**: search, list, open
 - **collections:write**: save links, create collections
