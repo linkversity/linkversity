@@ -19,6 +19,10 @@ Public tools need no authentication. Personal tools forward the incoming
 (save / create). A valid token without the right scope returns
 `403 insufficient_scope` — do not retry writes with a read-scoped token.
 
+Tokens come from the OAuth dance (`/oauth/register`, `/oauth/authorize`,
+`/oauth/token`): access tokens last 7 days, refresh tokens 90 and rotate on
+use. Clients handle this themselves — never ask the user to paste a token.
+
 ## Tools
 
 | Tool | Does | Scope |
