@@ -12,6 +12,8 @@
   margin: 0 auto;
   position: relative;
   overflow: hidden;
+  background: #fff;
+  border-radius: 14px;
 }
 
 .slides {
@@ -24,12 +26,108 @@
 .slide {
   width: 33.333%; /* Desktop slides fit */
   height: 100%;
+  min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2.25rem 1.75rem 3rem;
   box-sizing: border-box;
 }
+
+/* soft tinted backdrop per slide */
+.slide-coral { background: radial-gradient(125% 100% at 50% 0%, #FFE1E8 0%, #FFF0F3 52%, #FFFFFF 100%); }
+.slide-blue  { background: radial-gradient(125% 100% at 50% 0%, #DCEAF6 0%, #EFF6FC 52%, #FFFFFF 100%); }
+.slide-green { background: radial-gradient(125% 100% at 50% 0%, #DFF0E4 0%, #F0F8F2 52%, #FFFFFF 100%); }
+
+.slide-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* illustrations are wide — contain them instead of cropping to a circle */
+.slide-illo {
+  height: 150px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: 1.25rem;
+  filter: drop-shadow(0 14px 22px rgba(0,0,0,.12));
+}
+
+.slide-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.75);
+  border: 1px solid rgba(34,34,34,.07);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  backdrop-filter: blur(4px);
+}
+.slide-coral .slide-step { color: #B01E44; }
+.slide-blue  .slide-step { color: #2C5C80; }
+.slide-green .slide-step { color: #2F6B45; }
+
+.slide-title {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: #222222;
+  margin: 0 0 8px;
+}
+.slide-sub {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #6A6A6A;
+  margin: 0;
+}
+
+/* story-style progress dots, synced to the 12s slideshow */
+.slide-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 2;
+}
+.slide-dots span {
+  width: 26px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(34,34,34,.12);
+  overflow: hidden;
+  position: relative;
+}
+.slide-dots span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #FF385C;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: dot-on 12s ease infinite;
+}
+.slide-dots span:nth-child(1)::after { animation-name: dot-on-1; }
+.slide-dots span:nth-child(2)::after { animation-name: dot-on-2; }
+.slide-dots span:nth-child(3)::after { animation-name: dot-on-3; }
+
+@keyframes dot-on-1 { 0% { transform: scaleX(0); opacity: 1; } 26% { transform: scaleX(1); } 30% { opacity: 1; } 33% { transform: scaleX(1); opacity: 0; } 33.01%, 100% { transform: scaleX(0); opacity: 1; } }
+@keyframes dot-on-2 { 0%, 33% { transform: scaleX(0); } 59% { transform: scaleX(1); } 62% { opacity: 1; } 66% { transform: scaleX(1); opacity: 0; } 66.01%, 100% { transform: scaleX(0); opacity: 1; } }
+@keyframes dot-on-3 { 0%, 66% { transform: scaleX(0); } 92% { transform: scaleX(1); } 95% { opacity: 1; } 99% { transform: scaleX(1); opacity: 0; } 99.01%, 100% { transform: scaleX(0); opacity: 1; } }
 
 /* Slideshow animation for desktop */
 @keyframes slideshow {
@@ -48,11 +146,12 @@
 }
 
 /* Pause animation on hover */
-.carousel:hover .slides {
+.carousel:hover .slides,
+.carousel:hover .slide-dots span::after {
   animation-play-state: paused;
 }
 
-/* Mobile-specific fixes */
+/* Mobile: stack slides, no autoplay, no dots */
 @media (max-width: 768px) {
   .slides {
     width: 100%; /* Ensure slides take full width */
@@ -62,8 +161,11 @@
 
   .slide {
     width: 100%;
-    padding: 1rem;
+    min-height: 0;
+    padding: 1.75rem 1.25rem;
   }
+
+  .slide-dots { display: none; }
 }
 
 /* ============ Airbnb-inspired hero ============ */
@@ -343,6 +445,17 @@
   .lv-quote { background: #16191e; border-color: #262b36; box-shadow: none; }
   .lv-quote p { color: #d1d5db; }
   .lv-quote .who { color: #f3f4f6; }
+  .carousel { background: #14171c; }
+  .slide-coral { background: radial-gradient(125% 100% at 50% 0%, #2a1b20 0%, #1a1418 55%, #14171c 100%); }
+  .slide-blue  { background: radial-gradient(125% 100% at 50% 0%, #17222c 0%, #141a21 55%, #14171c 100%); }
+  .slide-green { background: radial-gradient(125% 100% at 50% 0%, #16241a 0%, #141c17 55%, #14171c 100%); }
+  .slide-step { background: rgba(20,23,28,.7); border-color: rgba(255,255,255,.08); }
+  .slide-coral .slide-step { color: #ff9d9d; }
+  .slide-blue  .slide-step { color: #8ec2e6; }
+  .slide-green .slide-step { color: #86c79a; }
+  .slide-title { color: #f6f6f7; }
+  .slide-sub { color: #9ca3af; }
+  .slide-dots span { background: rgba(255,255,255,.14); }
 }
   </style>
 
@@ -396,30 +509,34 @@
         <div class="lv-hero-side">
             {% if current_user.is_authenticated %}
             <div class="lv-side-card">
-                <div class="carousel bg-white hidden sm:block">
+                <div class="carousel">
                     <div class="slides">
-                      <div class="slide">
-                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-                          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Image 1" class="w-32 h-32 rounded-full mb-4">
-                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Discover useful collections</p>
-                          <p class="text-sm md:text-base text-center">Discover what people have created and bookmark them!</p>
+                      <div class="slide slide-coral">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='discover_linkversity.svg')}}" alt="Discover collections" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-compass"></i> Step 1</span>
+                          <p class="slide-title">Discover useful collections</p>
+                          <p class="slide-sub">Browse what the community has built and bookmark the paths you love</p>
                         </div>
                       </div>
-                      <div class="slide">
-                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-                          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Image 2" class="w-32 h-32 rounded-full mb-4">
-                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Collaborate with teams</p>
-                          <p class="text-sm md:text-base text-center">Allow your friends to add links to collections for serious works</p>
+                      <div class="slide slide-blue">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='collab_linkversity.svg')}}" alt="Collaborate with teams" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-user-friends"></i> Step 2</span>
+                          <p class="slide-title">Collaborate with teams</p>
+                          <p class="slide-sub">Invite friends and colleagues to add links to shared collections</p>
                         </div>
                       </div>
-                      <div class="slide">
-                        <div class="flex flex-col items-center w-full max-w-md mx-auto px-4">
-                          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Image 3" class="w-32 h-32 rounded-full mb-4">
-                          <p class="text-xl md:text-2xl font-semibold text-center m-4">Protect your links</p>
-                          <p class="text-sm md:text-base text-center">With varying levels of privacy, you can restrict access. Set visibility and password-protect collections</p>
+                      <div class="slide slide-green">
+                        <div class="slide-body">
+                          <img src="{{url_for('static', filename='security_linkversity.svg')}}" alt="Protect your links" class="slide-illo">
+                          <span class="slide-step"><i class="fas fa-shield-alt"></i> Step 3</span>
+                          <p class="slide-title">Protect your links</p>
+                          <p class="slide-sub">Set visibility levels and password-protect sensitive collections</p>
                         </div>
                       </div>
                     </div>
+                    <div class="slide-dots" aria-hidden="true"><span></span><span></span><span></span></div>
                 </div>
             </div>
             {% else %}
