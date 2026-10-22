@@ -1,5 +1,10 @@
+import hashlib
+import hmac
 import json
+import os
 import re
+import time
+
 import requests
 import traceback
 from flask import request
@@ -90,9 +95,40 @@ def oauth_callback():
 def connected():
     return render_template("linkolearn_theme/templates/connected.html")
 
+def verify_slack_signature() -> bool:
+    """Verify X-Slack-Signature per Slack's signed-requests spec.
+
+    Fails closed: without SLACK_SIGNING_SECRET (or with a missing/stale
+    header, or a replay older than 5 minutes) every request is rejected,
+    so webhook payloads can never be forged. The secret is the app's
+    Signing Secret from api.slack.com (Basic Information page).
+    """
+    secret = os.environ.get("SLACK_SIGNING_SECRET", "")
+    if not secret:
+        return False
+    timestamp = request.headers.get("X-Slack-Request-Timestamp", "")
+    signature = request.headers.get("X-Slack-Signature", "")
+    if not timestamp or not signature:
+        return False
+    try:
+        if abs(time.time() - float(timestamp)) > 300:
+            return False  # replay window
+    except ValueError:
+        return False
+    # raw body must be read before form parsing
+    raw = request.get_data(cache=True)
+    base = b"v0:" + timestamp.encode() + b":" + raw
+    expected = "v0=" + hmac.new(
+        secret.encode(), base, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+
 @module_blueprint.route("/payload", methods=["POST"])
 @csrf.exempt
 def payload():
+    if not verify_slack_signature():
+        return jsonify({"error": "invalid request signature"}), 401
     try:
         payload_raw = request.form.get("payload")
         if not payload_raw:
@@ -172,6 +208,26 @@ def payload():
 
                 url = view.get("private_metadata")
                 if section_id and url:
+                    # the modal was opened for one linked Slack user - only
+                    # sections owned by that user's Linkversity account
+                    # accept the write (defense in depth on top of the
+                    # signature check: a tampered select value must not
+                    # reach someone else's collection)
+                    slack_user = SlackUser.query.filter_by(
+                        slack_user_id=slack_user_id
+                    ).first()
+                    section = Section.query.get(int(section_id))
+                    if (
+                        not slack_user
+                        or not section
+                        or section.section_path.user_id != slack_user.user_id
+                    ):
+                        return jsonify({
+                            "response_action": "errors",
+                            "errors": {
+                                "section_block": "That section is not yours."
+                            },
+                        })
                     new_link = Link(url=url, section_id=int(section_id))
                     db.session.add(new_link)
                     db.session.commit()
@@ -252,6 +308,8 @@ def open_save_modal(trigger_id, user, link_to_save, bot_token):
 @module_blueprint.route("/options", methods=["POST"])
 @csrf.exempt
 def options():
+    if not verify_slack_signature():
+        return jsonify({"error": "invalid request signature"}), 401
     payload_raw = request.form.get("payload")
     data = json.loads(payload_raw)
     if data.get("type") == "block_suggestion":
