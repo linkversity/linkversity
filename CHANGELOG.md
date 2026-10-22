@@ -1,3 +1,47 @@
+## 1.9.0
+
+### MCP server (auth)
+
+- Every unauthenticated `/mcp` request is now answered with **HTTP 401** and
+  `WWW-Authenticate: Bearer resource_metadata=...` instead of an in-band
+  JSON-RPC error: MCP clients decide "needs OAuth?" at handshake time, so
+  an anonymous 200 on `initialize` suppressed their sign-in flow entirely
+  (TUIs showed "connected" while every personal tool failed). The gate
+  validates tokens against `/oauth/userinfo` (cached 60s), fails closed
+  without a token, and lets CORS preflights through
+- `/.well-known/oauth-protected-resource` now advertises
+  `resource: <host>/mcp` (was `/api/v1`); resource-indicator-validating
+  clients rejected the mismatch. Per-path metadata is noted for `/api/v1`
+  if it ever needs its own discovery
+- Public search stays anonymous on the website and `/api/v1/public/*`;
+  only the MCP transport is gated
+
+### Agents & docs
+
+- New `/agents` page: the "How to add Linkversity MCP" guide moved off the
+  landing page, plus a skill section pointing at `/agents/skill`
+- New `/agents/skill`: `agents/SKILL.md` served as `text/markdown` -
+  Agent Skill frontmatter, all 7 MCP tools with scopes, save-by-name
+  workflow, guardrails, REST fallback and token guidance
+- Landing hero gains a "Connect agents" pill -> `/agents`
+- New blog post "How to Connect Agents to Linkversity" (MCP setup, OAuth
+  token lifecycle, skill, guardrails); `/blog` posts de-first-personed to
+  second person (quoted speech kept)
+
+### Security
+
+- Slack webhook payloads (`/slack/payload`, `/slack/options`) now require
+  a valid `X-Slack-Signature` (HMAC-SHA256 `v0`, 5-minute replay window,
+  constant-time compare, fail-closed when `SLACK_SIGNING_SECRET` is unset)
+- `save_link_modal` submissions enforce section ownership: the target
+  section must belong to the account linked to the submitting Slack user
+  (previously an unsigned request with an existing workspace + section ID
+  could write links into anyone's collection)
+
+### Misc
+
+- Subtle "Open source on GitHub" footer link on all pages
+
 ## 1.8.0
 
 ### Front theme
