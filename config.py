@@ -23,6 +23,8 @@ class BaseConfig:
     """Parent configuration class."""
 
     DEBUG = False
+    # Bound raw request buffering, including Slack signature verification (1 MiB).
+    MAX_CONTENT_LENGTH = 1024 * 1024
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BASE_DIR = base_path
     STATIC = os.path.join(base_path, "static")
