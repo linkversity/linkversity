@@ -15,6 +15,21 @@
                 <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="path-link break-all" data-link-id="{{ link.id }}">{{ link.url }}</a>
             {% endif %}
         </div>
+        {% if can_check %}
+        <div class="flex items-center gap-2 shrink-0 pt-0.5">
+            {% if is_team_admin %}
+            <span id="chips-{{ link.id }}" class="flex -space-x-1.5 items-center">
+                {% for u in check_map.get(link.id, []) %}
+                <i class="em {{ u.emoji_class }} w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic" title="{{ u.username }} checked this link"></i>
+                {% endfor %}
+            </span>
+            {% endif %}
+            <input type="checkbox" title="Mark as read" data-link-id="{{ link.id }}"
+                   class="link-check w-[18px] h-[18px] rounded-[6px] cursor-pointer accent-[#FF385C] border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#FF385C]/40 transition"
+                   {% if link.id in my_checked %}checked{% endif %}
+                   onchange="toggleLinkCheck(this)">
+        </div>
+        {% endif %}
         {% if can_edit %}
         <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button class="path-tool" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="Move link">
@@ -497,6 +512,42 @@ function addLinkToSection(sectionId) {
     .catch((error) => {
         console.error("Error:", error);
         alert("An error occurred while adding the link.");
+    });
+}
+
+// ---- inline read-check (team paths) ----
+function toggleLinkCheck(el) {
+    const linkId = el.dataset.linkId;
+    const fd = new FormData();
+    fd.append("link_id", linkId);
+    fd.append("csrf_token", '{{ csrf_token() }}');
+
+    fetch(`{{ url_for('linkolearn.check_link') }}`, {
+        method: "POST",
+        headers: { "X-CSRFToken": '{{ csrf_token() }}' },
+        body: fd,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (!data.success) {
+            el.checked = !el.checked;
+            alert(data.error || "Could not save the check.");
+            return;
+        }
+        // admins: refresh the round avatar chips without a page reload
+        const box = document.getElementById("chips-" + linkId);
+        if (box && Array.isArray(data.checkers)) {
+            box.innerHTML = data.checkers.map((u) =>
+                '<i class="em ' + u.emoji_class +
+                ' w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic"' +
+                ' title="' + u.username + ' checked this link"></i>'
+            ).join("");
+        }
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+        el.checked = !el.checked;
+        alert("An error occurred while saving the check.");
     });
 }
 

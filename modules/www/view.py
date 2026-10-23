@@ -27,6 +27,7 @@ from sqlalchemy import func
 
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Link
+from modules.box__linkolearn.linkolearn.models import LinkCheck
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
@@ -220,6 +221,37 @@ def _render_path(path):
             "path": path,
             "has_entered_password": has_entered_password,
             "session": session,
+        }
+    )
+
+    # read-checks: everyone on a team path checks each link, admins also
+    # get per-link checker avatars (round chips next to the link)
+    can_check = bool(path.team_id and current_user.is_authenticated)
+    my_checked, check_map, is_team_admin = set(), {}, False
+    if can_check:
+        is_team_admin = path.is_team_admin(current_user)
+        link_ids = [l.id for s in path.sections for l in s.links]
+        if link_ids:
+            checks = LinkCheck.query.filter(LinkCheck.link_id.in_(link_ids)).all()
+            uids = {c.user_id for c in checks}
+            users = (
+                {u.id: u for u in User.query.filter(User.id.in_(uids)).all()}
+                if uids
+                else {}
+            )
+            for c in checks:
+                u = users.get(c.user_id)
+                if u is None:
+                    continue
+                check_map.setdefault(c.link_id, []).append(u)
+                if u.id == current_user.id:
+                    my_checked.add(c.link_id)
+    context.update(
+        {
+            "can_check": can_check,
+            "my_checked": my_checked,
+            "check_map": check_map,
+            "is_team_admin": is_team_admin,
         }
     )
     return render_template("linkolearn_theme/templates/path.html", **context)

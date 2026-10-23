@@ -1,5 +1,15 @@
 ## Unreleased
 
+### Team read checks
+
+- Sleek round checkbox beside every link on team paths: each member
+  marks links as read (one row per link + user, toggles off again)
+- Org admins (owner or admin role) additionally see round avatar chips
+  of exactly who completed each link, refreshed live on check - regular
+  members only ever see their own checkbox
+- New `link_checks` table (migration `45c0384abf41`), new
+  `POST /linkolearn/check_link` toggle; personal paths unaffected
+
 ### Links
 
 - Inline "Add link" on the path page now stores markdown input

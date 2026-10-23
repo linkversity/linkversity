@@ -21,6 +21,7 @@ from modules.box__default.auth.models import User
 from modules.box__linkolearn.linkolearn.models import Path
 from modules.box__linkolearn.linkolearn.models import Section
 from modules.box__linkolearn.linkolearn.models import Link
+from modules.box__linkolearn.linkolearn.models import LinkCheck
 from modules.box__linkolearn.linkolearn.models import LikeList
 from modules.box__linkolearn.linkolearn.models import BookmarkList
 from modules.box__linkolearn.linkolearn.models import Emoji
@@ -471,6 +472,47 @@ def add_link():
     db.session.commit()
 
     return jsonify({"success": True})
+
+
+@module_blueprint.route("/check_link", methods=["POST"])
+@login_required
+def check_link():
+    """Toggle the current member's read-check on a link (team paths).
+
+    Everyone on the team reads and checks each link; org admins get the
+    checker list back to render round avatar chips, regular members just
+    their own checkbox state.
+    """
+    link = Link.query.get(request.form.get("link_id"))
+    if not link:
+        return jsonify({"success": False, "error": "Link not found"})
+
+    path = link.link_section.section_path
+    if not path.team_id:
+        return jsonify(
+            {"success": False, "error": "Checks are only available on team paths"}
+        )
+
+    existing = LinkCheck.query.filter_by(
+        link_id=link.id, user_id=current_user.id
+    ).first()
+    if existing:
+        db.session.delete(existing)
+        checked = False
+    else:
+        db.session.add(LinkCheck(link_id=link.id, user_id=current_user.id))
+        checked = True
+    db.session.commit()
+
+    payload = {"success": True, "checked": checked}
+    if path.is_team_admin(current_user):
+        users = User.query.join(
+            LinkCheck, LinkCheck.user_id == User.id
+        ).filter(LinkCheck.link_id == link.id).all()
+        payload["checkers"] = [
+            {"username": u.username, "emoji_class": u.emoji_class} for u in users
+        ]
+    return jsonify(payload)
 
 
 @module_blueprint.route("/move_link", methods=["POST"])
