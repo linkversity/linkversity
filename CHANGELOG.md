@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Links
+
+- Inline "Add link" on the path page now stores markdown input
+  (`[Description](url)`) raw, exactly like the edit-page textarea, so it
+  renders `<a href="url">Description</a>` instead of unwrapping to
+  `<a href="url">url</a>` (raw URL as the link text)
+
 ### Pricing
 
 - `/activate` card prices aligned with the live Dodo products: Pro is
