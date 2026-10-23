@@ -315,7 +315,6 @@ def edit_path(path_id):
         path_link = json_submit["path_link"]
         path_link = Path.slugify(path_link)
         sections = json_submit["sections"]
-        path.sections = []
         # path.title = path_title
         path.slug = path_link
         # cover icon: whitelist only, never a raw client string (it is echoed
@@ -327,28 +326,93 @@ def edit_path(path_id):
         path_desc = (json_submit.get("path_description") or "").strip()
         path.description = path_desc[:500] or None
 
-        for sec in sections:
-            section = Section()
-            sec_title = sec["section_title"]
-            section.title = sec_title
+        # Rebuild sections/links WITHOUT recreating unchanged rows: wiping
+        # and re-inserting cascaded delete-orphan into Link.checks and wiped
+        # every user's read progress on each save (even description-only).
+        # Match old rows first (title, then shared link targets); leftovers
+        # are dropped below, which still cascades checks for links the
+        # user actually removed.
+        def target_of(raw):
+            """URL behind a raw form value, whether markdown or plain."""
+            raw = (raw or "").strip()
+            if raw.startswith("[") and path.is_valid_markdown_link(raw):
+                return raw[raw.index("](") + 2 : -1]
+            return raw
+
+        def incoming_urls(sec):
+            """Validate textarea lines exactly like the previous rebuild."""
+            raw_text = sec.get("section_links") or ""
+            result = []
+            if raw_text.strip() == "":
+                return result
+            for u in raw_text.split("\n"):
+                if u.startswith("["):
+                    if path.is_valid_markdown_link(u):
+                        result.append(u)
+                elif validators.url(u):
+                    result.append(u)
+            return result
+
+        old_sections = list(path.sections)
+        matches = {}  # sections-index -> existing Section to reuse
+        unused = list(old_sections)
+
+        # pass 1: exact title keeps a later section from stealing an
+        # earlier one's row (added/renamed sections shift positions)
+        for i, sec in enumerate(sections):
+            title = (sec.get("section_title") or "").strip()
+            if not title:
+                continue
+            for old in unused:
+                if (old.title or "").strip() == title:
+                    matches[i] = old
+                    unused.remove(old)
+                    break
+
+        # pass 2: renamed sections: reuse the old row with the most link
+        # targets in common, so their LinkCheck rows (read progress) survive
+        for i, sec in enumerate(sections):
+            if i in matches:
+                continue
+            want = {target_of(u) for u in incoming_urls(sec)}
+            if not want:
+                continue
+            best, best_n = None, 0
+            for old in unused:
+                n = len(want & {target_of(l.url) for l in old.links})
+                if n > best_n:
+                    best, best_n = old, n
+            if best is not None:
+                matches[i] = best
+                unused.remove(best)
+
+        kept_sections = []
+        for i, sec in enumerate(sections):
+            section = matches.get(i)
+            if section is None:
+                section = Section()
+            section.title = sec["section_title"]
             sec_desc = (sec.get("section_description") or "").strip()
             section.description = sec_desc[:500] or None
-            sec_links = sec["section_links"]
-            print(sec_links)
-            if sec_links.strip() != "":
-                urls_ = sec_links.split("\n")
-                urls = []
-                for u in urls_:
-                    if u.startswith("["):
-                        if path.is_valid_markdown_link(u):
-                            urls.append(u)
-                    elif validators.url(u):
-                        urls.append(u)
-                    else:
-                        pass
-                section.links = list((Link(url=url) for url in urls))
 
-            path.sections.append(section)
+            old_links = list(section.links)
+            kept_links = []
+            for raw in incoming_urls(sec):
+                t = target_of(raw)
+                m = next(
+                    (l for l in old_links if l not in kept_links and target_of(l.url) == t),
+                    None,
+                )
+                if m is not None:
+                    if m.url != raw:
+                        m.url = raw  # textarea text edited, URL unchanged
+                    kept_links.append(m)
+                else:
+                    kept_links.append(Link(url=raw))
+            section.links = kept_links  # drops removed links (+ their checks)
+            kept_sections.append(section)
+
+        path.sections = kept_sections  # drops sections removed in the form
         path.save()
 
         next_url = path.get_url()

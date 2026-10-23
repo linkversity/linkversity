@@ -24,6 +24,12 @@
   on hover
 - New `link_checks` table (migration `45c0384abf41`), new
   `POST /linkolearn/check_link` toggle
+- Saving the edit page no longer wipes everyone's read progress:
+  the rebuild now reuses existing section/link rows (matched by title,
+  then shared link targets) instead of deleting and re-creating them,
+  which had cascaded `Link.checks` away on every save - even a
+  description-only change. Checks still die when a link or section is
+  genuinely removed from the form
 
 ### Links
 
