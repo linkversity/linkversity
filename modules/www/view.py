@@ -224,12 +224,13 @@ def _render_path(path):
         }
     )
 
-    # read-checks: everyone on a team path checks each link, admins also
-    # get per-link checker avatars (round chips next to the link)
-    can_check = bool(path.team_id and current_user.is_authenticated)
-    my_checked, check_map, is_team_admin = set(), {}, False
+    # read-checks: EVERY logged-in user can check links on any path
+    # (team or personal); chips (who completed) go to org admins and the
+    # path owner
+    can_check = bool(current_user.is_authenticated)
+    my_checked, check_map, show_chips = set(), {}, False
     if can_check:
-        is_team_admin = path.is_team_admin(current_user)
+        show_chips = path.is_team_admin(current_user) or path.path_user == current_user
         link_ids = [l.id for s in path.sections for l in s.links]
         if link_ids:
             checks = LinkCheck.query.filter(LinkCheck.link_id.in_(link_ids)).all()
@@ -252,7 +253,7 @@ def _render_path(path):
             "can_check": can_check,
             "my_checked": my_checked,
             "check_map": check_map,
-            "is_team_admin": is_team_admin,
+            "show_chips": show_chips,
         }
     )
     return render_template("linkolearn_theme/templates/path.html", **context)

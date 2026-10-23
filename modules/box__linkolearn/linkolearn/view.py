@@ -477,21 +477,17 @@ def add_link():
 @module_blueprint.route("/check_link", methods=["POST"])
 @login_required
 def check_link():
-    """Toggle the current member's read-check on a link (team paths).
+    """Toggle the current user's read-check on a link.
 
-    Everyone on the team reads and checks each link; org admins get the
-    checker list back to render round avatar chips, regular members just
-    their own checkbox state.
+    Available to every logged-in user on any path. Org admins and the
+    path owner get the checker list back to render round avatar chips,
+    everyone else just their own checkbox state.
     """
     link = Link.query.get(request.form.get("link_id"))
     if not link:
         return jsonify({"success": False, "error": "Link not found"})
 
     path = link.link_section.section_path
-    if not path.team_id:
-        return jsonify(
-            {"success": False, "error": "Checks are only available on team paths"}
-        )
 
     existing = LinkCheck.query.filter_by(
         link_id=link.id, user_id=current_user.id
@@ -505,7 +501,7 @@ def check_link():
     db.session.commit()
 
     payload = {"success": True, "checked": checked}
-    if path.is_team_admin(current_user):
+    if path.is_team_admin(current_user) or path.path_user == current_user:
         users = User.query.join(
             LinkCheck, LinkCheck.user_id == User.id
         ).filter(LinkCheck.link_id == link.id).order_by(

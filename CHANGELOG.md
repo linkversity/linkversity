@@ -2,14 +2,15 @@
 
 ### Team read checks
 
-- Sleek round checkbox beside every link on team paths: each member
-  marks links as read (one row per link + user, toggles off again)
-- Org admins (owner or admin role) additionally see round avatar chips
-  of exactly who completed each link, refreshed live on check - regular
-  members only ever see their own checkbox. Chips stack compact: first
-  3 avatars plus a "+N" badge, the rest revealed on hover
+- Sleek round checkbox beside every link on any path: every logged-in
+  user marks links as read (one row per link + user, toggles off again)
+- Org admins (owner or admin role) and the path owner additionally see
+  round avatar chips of exactly who completed each link, refreshed live
+  on check - regular members only ever see their own checkbox. Chips
+  stack compact: first 3 avatars plus a "+N" badge, the rest revealed
+  on hover
 - New `link_checks` table (migration `45c0384abf41`), new
-  `POST /linkolearn/check_link` toggle; personal paths unaffected
+  `POST /linkolearn/check_link` toggle
 
 ### Links
 

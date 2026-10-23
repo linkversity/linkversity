@@ -17,7 +17,7 @@
         </div>
         {% if can_check %}
         <div class="flex items-center gap-2 shrink-0 pt-0.5">
-            {% if is_team_admin %}
+            {% if show_chips %}
             {% set checkers = check_map.get(link.id, []) %}
             <span id="chips-{{ link.id }}" class="group/chips flex -space-x-1.5 items-center">
                 {% for u in checkers[:3] %}
