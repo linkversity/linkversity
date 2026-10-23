@@ -87,6 +87,9 @@
             <div class="flex items-center justify-between gap-3 mb-1">
                 <div class="min-w-0">
                     <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ section.title or 'Untitled Section' }}</h4>
+                    {% if section.description %}
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{{ section.description }}</p>
+                    {% endif %}
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ section.links|length }} link{{ '' if section.links|length == 1 else 's' }}</p>
                 </div>
                 {% if can_edit %}
@@ -121,6 +124,15 @@
         </section>
     {% endfor %}
 {% endmacro %}
+
+{% block metadesc %}
+{% if path.description %}
+<meta name="description" content="{{ path.description | truncate(160) }}" />
+<meta property="og:description" content="{{ path.description | truncate(160) }}" />
+{% else %}
+<meta name="description" content="{{ path.slug.replace('-', ' ') }} - curated link collection on Linkversity" />
+{% endif %}
+{% endblock %}
 
 {% block head %}
 <title>{{ path.slug.replace('-', ' ') }} · Linkversity</title>
@@ -166,6 +178,9 @@
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 leading-tight break-words">{{ path.slug }}</h1>
+                {% if path.description %}
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 max-w-2xl leading-relaxed">{{ path.description }}</p>
+                {% endif %}
                 <div class="flex items-center flex-wrap gap-2 mt-3">
                     {% if path.team_id and team %}
                     <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" title="{{ team.name }}">

@@ -1,5 +1,18 @@
 ## Unreleased
 
+### Path & section descriptions (SEO)
+
+- Paths and sections gained a fillable `description` (edit + new forms,
+  up to 500 chars; blank saves as NULL), editable by whoever can edit
+  the path
+- The path page shows the path description under the heading and each
+  section description under its title (extra crawlable text)
+- The page `<meta name="description">` now comes from the path
+  description (first 160 chars) plus a matching `og:description`;
+  paths without one fall back to a slug-based default instead of the
+  old hardcoded "Create courses using links" (`metadesc` block in
+  `base.html`)
+
 ### Team read checks
 
 - Sleek round checkbox beside every link on any path: every logged-in

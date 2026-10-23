@@ -79,6 +79,8 @@ class Path(PkModel):
 
     slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
+    # SEO blurb: meta description + visible subtitle on the path page
+    description = db.Column(db.String(500), nullable=True)
     # chosen cover icon (FA5 class from PATH_ICONS); NULL/"" = auto-derived
     cover_icon = db.Column(db.String(50), nullable=True)
     sections = db.relationship(
@@ -334,6 +336,8 @@ class Section(PkModel):
     __tablename__ = "sections"
 
     title = db.Column(db.String(200), nullable=False)
+    # SEO blurb: crawlable text under the section heading
+    description = db.Column(db.String(500), nullable=True)
     links = db.relationship(
         "Link", backref="link_section", lazy=True, cascade="all, delete-orphan"
     )

@@ -64,6 +64,11 @@ crossorigin="anonymous"></script>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">This becomes your path URL and must be unique.</p>
         </div>
         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <label class="path-label" for="path-description">Description</label>
+            <textarea id="path-description" class="path-input" rows="3" maxlength="500" placeholder="What this path covers. Shown under the title and as the search-engine description.">{{ path.description or '' }}</textarea>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Roughly the first 160 characters appear in search results (SEO).</p>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
             {% include 'linkolearn_theme/templates/blocks/icon_picker.html' %}
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Shown on the explore cards. Auto picks one that fits your path.</p>
         </div>
@@ -87,6 +92,7 @@ crossorigin="anonymous"></script>
                     <button id="close-{{ section.id }}" type="button" class="path-tool btn-close-section" title="Remove section">&times;</button>
                 </div>
                 <input id="section-title-{{ section.id }}" type="text" class="section-title path-input mb-2" value="{{ section.title or '' }}" placeholder="Section title (e.g. Getting Started)">
+                <input id="section-description-{{ section.id }}" type="text" class="section-description path-input mb-2" maxlength="500" value="{{ section.description or '' }}" placeholder="Section description (optional, boosts SEO)">
                 <textarea id="section-links-{{ section.id }}" class="section-links path-input" rows="5" placeholder="Enter URLs or markdown links:&#10;http://example.com&#10;[Link Text](http://example.com)">{{ sectionlinks2str(section.links) | safe }}</textarea>
             </div>
             {% set last_id.last_id = section.id %}
@@ -122,6 +128,7 @@ function section(section_id) {
     '<button id="close-' + section_id + '" type="button" class="path-tool btn-close-section" title="Remove section">&times;</button>' +
     '</div>' +
     '<input id="section-title-' + section_id + '" type="text" class="section-title path-input mb-2" placeholder="Section title (e.g. Getting Started)">' +
+    '<input id="section-description-' + section_id + '" type="text" class="section-description path-input mb-2" maxlength="500" placeholder="Section description (optional, boosts SEO)">' +
     '<textarea id="section-links-' + section_id + '" class="section-links path-input" rows="5" placeholder="Enter URLs or markdown links:\nhttp://example.com\n[Link Text](http://example.com)"></textarea>' +
     '</div>';
 }
@@ -173,12 +180,14 @@ $("#submit-button").click(function(){
     var hasLinks = false;
     $( ".section" ).each(function( index ) {
       var section_title = $( this ).find( ".section-title" ).val();
+      var section_description = $( this ).find( ".section-description" ).val();
       var section_links = $( this ).find( ".section-links" ).val();
-      if (section_title || section_links) {
+      if (section_title || section_links || section_description) {
         sectionCount++;
         if (section_links.trim()) hasLinks = true;
         var section = {};
         section['section_title'] = section_title;
+        section['section_description'] = section_description || '';
         section['section_links'] = section_links;
         json_submit['sections'].push(section);
       }
@@ -190,6 +199,7 @@ $("#submit-button").click(function(){
     }
 
     json_submit['path_link'] = path_link;
+    json_submit['path_description'] = $('#path-description').val() || '';
 
     var pathIconEl = document.getElementById('path-icon');
     json_submit['path_icon'] = pathIconEl ? pathIconEl.value : '';

@@ -135,6 +135,9 @@ def add():
     # cover icon: must be one of PATH_ICONS, else auto (crc32-derived)
     path_icon = (json_submit.get("path_icon") or "").strip()
     path.cover_icon = path_icon if path_icon in PATH_ICON_CLASSES else ""
+    # SEO description; blank -> NULL
+    path_desc = (json_submit.get("path_description") or "").strip()
+    path.description = path_desc[:500] or None
     if team_id:
         path.team_id = int(team_id)
 
@@ -144,6 +147,8 @@ def add():
         section = Section()
         sec_title = sec["section_title"]
         section.title = sec_title
+        sec_desc = (sec.get("section_description") or "").strip()
+        section.description = sec_desc[:500] or None
         sec_links = sec["section_links"]
 
         if sec_links.strip() != "":

@@ -322,11 +322,17 @@ def edit_path(path_id):
         # into a `fas {{icon}}` class attribute on the landing cards)
         path_icon = (json_submit.get("path_icon") or "").strip()
         path.cover_icon = path_icon if path_icon in PATH_ICON_CLASSES else ""
+        # SEO description (edit page); blank -> NULL so the meta falls
+        # back to the default
+        path_desc = (json_submit.get("path_description") or "").strip()
+        path.description = path_desc[:500] or None
 
         for sec in sections:
             section = Section()
             sec_title = sec["section_title"]
             section.title = sec_title
+            sec_desc = (sec.get("section_description") or "").strip()
+            section.description = sec_desc[:500] or None
             sec_links = sec["section_links"]
             print(sec_links)
             if sec_links.strip() != "":
