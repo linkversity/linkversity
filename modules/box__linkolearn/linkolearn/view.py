@@ -106,20 +106,35 @@ def toggle_bookmark(path_id):
 @module_blueprint.route("/password/<path_id>", methods=["POST"])
 @login_required
 def toggle_password(path_id):
-    path = Path.query.get(path_id)
+    path = Path.query.get_or_404(path_id)
 
-    if current_user == path.path_user:
-        if path.is_password_protected in [False, None]:
-            path.is_password_protected = True
-            path.password = request.form.get("password")
-            print(request.form.get("password"))
-            path.is_visible = False
-            path.save()
-        elif path.is_password_protected is True:
-            path.remove_password()
-            url = path.get_url().replace("/", "_")
-            session["has_entered_password_{url}"] = False
-            path.save()
+    # owner, editor, org owner or org member - org admins must be able to
+    # protect paths owned by the organization. The old owner-only check
+    # silently skipped while still answering "success", so the password
+    # was never stored: the button said "Password on", a refresh reverted
+    # it, and visitors were bounced off the page instead of seeing the
+    # password form. Error statuses ride on HTTP 200 so the existing JS
+    # (response.ok -> data.status check) shows its alert instead of
+    # dying in .catch().
+    if not path.can_edit(current_user):
+        return jsonify({
+            "status": "error",
+            "error": "insufficient permission",
+        })
+
+    if path.is_password_protected in [False, None]:
+        password = (request.form.get("password") or "").strip()
+        if not password:
+            return jsonify({"status": "error", "error": "password required"})
+        path.password = password
+        path.is_visible = False
+        path.save()
+    else:
+        path.remove_password()
+        path.save()
+        # drop the cached unlock flag so the form reappears on next view
+        url = path.get_url().replace("/", "_")
+        session.pop(f"has_entered_password_{url}", None)
 
     return jsonify({"status": "success"})
 
