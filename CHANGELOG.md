@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Accounts
+
+- New accounts get a random avatar automatically: equal-chance pick from
+  a vehicle pool (23: car, bus, rocket, train...) or a fruit pool
+  (16: apple, mango, watermelon...), replacing the fixed em-airplane
+  default. Profile settings still lets users pick any emoji afterwards
+
 ### Links
 
 - Inline "Add link" on the path page now stores markdown input

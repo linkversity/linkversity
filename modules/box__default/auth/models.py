@@ -7,6 +7,7 @@
 import datetime
 import hashlib
 import logging
+import random
 import secrets
 
 from flask import current_app
@@ -76,8 +77,32 @@ login_manager.anonymous_user = AnonymousUser
 # Extend the shopyo_auth User model with Linkversity-specific fields
 BaseUser.__table_args__ = {"extend_existing": True}
 
+# New accounts get a random vehicle or fruit avatar (users can still pick
+# anything later in profile settings). All entries exist in the
+# emoji_classes table so the sprite renders.
+AVATAR_VEHICLES = [
+    "em-airplane", "em-ambulance", "em-articulated_lorry", "em-bike",
+    "em-bus", "em-car", "em-blue_car", "em-ferry", "em-helicopter",
+    "em-motor_scooter", "em-oncoming_bus", "em-police_car",
+    "em-racing_car", "em-rocket", "em-scooter", "em-ship",
+    "em-small_airplane", "em-steam_locomotive", "em-taxi", "em-tractor",
+    "em-train", "em-tram", "em-truck",
+]
+AVATAR_FRUITS = [
+    "em-apple", "em-avocado", "em-banana", "em-cherries", "em-coconut",
+    "em-grapes", "em-green_apple", "em-kiwifruit", "em-lemon", "em-mango",
+    "em-peach", "em-pear", "em-pineapple", "em-strawberry", "em-tangerine",
+    "em-watermelon",
+]
+
+
+def random_avatar_emoji():
+    """Random vehicle or fruit emoji for a fresh account (50/50 pool)."""
+    return random.choice(random.choice([AVATAR_VEHICLES, AVATAR_FRUITS]))
+
+
 # Add Linkversity specific columns
-BaseUser.emoji_class = db.Column(db.String(100), default="em-airplane")
+BaseUser.emoji_class = db.Column(db.String(100), default=random_avatar_emoji)
 BaseUser.subscription_plan = db.Column(db.Integer, default=0, nullable=True)
 BaseUser.api_token = db.Column(db.String(100), unique=True, nullable=True)
 BaseUser.enterprise_db_name = db.Column(db.String(100), nullable=True)
