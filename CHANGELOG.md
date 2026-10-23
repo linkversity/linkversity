@@ -1,3 +1,11 @@
+## Unreleased
+
+### Pricing
+
+- `/activate` card prices aligned with the live Dodo products: Pro is
+  **$5/year** (was $3), Enterprise is **$15/year** (was $10) - the page
+  previously advertised different amounts than checkout actually charged
+
 ## 1.9.0
 
 ### MCP server (auth)
