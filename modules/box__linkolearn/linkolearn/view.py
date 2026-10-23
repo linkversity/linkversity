@@ -448,16 +448,25 @@ def add_link():
     if not path.can_edit(current_user):
         return jsonify({"success": False, "error": "Permission denied"})
 
-    url, title = raw, None
+    # markdown input: validate the href but STORE THE RAW MARKDOWN, the
+    # same convention as the edit-page textarea. Storing the unwrapped URL
+    # made the row render <a href="url">url</a> (raw URL as link text)
+    # instead of <a href="url">Descrip</a> like edit-saved rows.
     if path.is_valid_markdown_link(raw):
-        extracted = path.extract_link(raw)
-        if extracted.get("href"):
-            url, title = extracted["href"], extracted.get("text")
+        href = (path.extract_link(raw) or {}).get("href")
+        if not href or not validators.url(href):
+            return jsonify(
+                {"success": False, "error": "That doesn't look like a valid URL."}
+            )
+        url = raw
+    else:
+        url = raw
+        if not validators.url(url):
+            return jsonify(
+                {"success": False, "error": "That doesn't look like a valid URL."}
+            )
 
-    if not validators.url(url):
-        return jsonify({"success": False, "error": "That doesn't look like a valid URL."})
-
-    link = Link(url=url, title=title, section_id=section.id)
+    link = Link(url=url, title=None, section_id=section.id)
     db.session.add(link)
     db.session.commit()
 
