@@ -1,4 +1,35 @@
-## Unreleased
+## 1.10.0
+
+### Path & section descriptions (SEO)
+
+- Paths and sections gained a fillable `description` (edit + new forms,
+  up to 500 chars; blank saves as NULL), editable by whoever can edit
+  the path
+- The path page shows the path description under the heading and each
+  section description under its title (extra crawlable text)
+- The page `<meta name="description">` now comes from the path
+  description (first 160 chars) plus a matching `og:description`;
+  paths without one fall back to a slug-based default instead of the
+  old hardcoded "Create courses using links" (`metadesc` block in
+  `base.html`)
+
+### Team read checks
+
+- Sleek round checkbox beside every link on any path: every logged-in
+  user marks links as read (one row per link + user, toggles off again)
+- Org admins (owner or admin role) and the path owner additionally see
+  round avatar chips of exactly who completed each link, refreshed live
+  on check - regular members only ever see their own checkbox. Chips
+  stack compact: first 3 avatars plus a "+N" badge, the rest revealed
+  on hover
+- New `link_checks` table (migration `45c0384abf41`), new
+  `POST /linkolearn/check_link` toggle
+- Saving the edit page no longer wipes everyone's read progress:
+  the rebuild now reuses existing section/link rows (matched by title,
+  then shared link targets) instead of deleting and re-creating them,
+  which had cascaded `Link.checks` away on every save - even a
+  description-only change. Checks still die when a link or section is
+  genuinely removed from the form
 
 ### Links
 

@@ -79,6 +79,8 @@ class Path(PkModel):
 
     slug = db.Column(db.String(200), nullable=False)
     title = db.Column(db.String(200), nullable=False)
+    # SEO blurb: meta description + visible subtitle on the path page
+    description = db.Column(db.String(500), nullable=True)
     # chosen cover icon (FA5 class from PATH_ICONS); NULL/"" = auto-derived
     cover_icon = db.Column(db.String(50), nullable=True)
     sections = db.relationship(
@@ -152,6 +154,24 @@ class Path(PkModel):
             team_id=self.team_id, user_id=user.id
         ).first()
         return member is not None and member.role in ("admin", "member")
+
+    def is_team_admin(self, user):
+        """Stricter than can_edit: org owner or admin role only.
+
+        Gates the per-link avatar chips (who completed what) - regular
+        members only see their own checkbox state.
+        """
+        if not self.team_id or user is None or not getattr(
+            user, "is_authenticated", False
+        ):
+            return False
+        team = EnterpriseTeam.query.get(self.team_id)
+        if team and team.owner_id == user.id:
+            return True
+        member = EnterpriseTeamMember.query.filter_by(
+            team_id=self.team_id, user_id=user.id
+        ).first()
+        return member is not None and member.role == "admin"
 
     def is_team_path(self):
         return self.team_id is not None
@@ -316,6 +336,8 @@ class Section(PkModel):
     __tablename__ = "sections"
 
     title = db.Column(db.String(200), nullable=False)
+    # SEO blurb: crawlable text under the section heading
+    description = db.Column(db.String(500), nullable=True)
     links = db.relationship(
         "Link", backref="link_section", lazy=True, cascade="all, delete-orphan"
     )
@@ -332,6 +354,10 @@ class Link(PkModel):
     section_id = db.Column(db.Integer, db.ForeignKey("sections.id"), nullable=False)
     encrypted_url = db.Column(db.String(1000), nullable=True)
     is_encrypted = db.Column(db.Boolean, default=False)
+    checks = db.relationship(
+        "LinkCheck", backref="checked_link", lazy=True,
+        cascade="all, delete-orphan",
+    )
 
     def get_url(self):
         if self.is_encrypted and self.encrypted_url:
@@ -351,6 +377,36 @@ class Link(PkModel):
 
             return decrypt_url(self.encrypted_url, encryption_key)
         return self.url
+
+
+class LinkCheck(PkModel):
+    """A team member marking a link on a team path as read.
+
+    One row per (link, user): the row existing IS the check. Org admins
+    see round avatar chips of who completed each link on the path page.
+    """
+
+    __tablename__ = "link_checks"
+
+    link_id = db.Column(
+        db.Integer,
+        db.ForeignKey("links.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    checked_at = db.Column(
+        db.DateTime(), nullable=False, default=datetime.datetime.utcnow
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("link_id", "user_id", name="uq_link_check_per_user"),
+    )
 
 
 class Emoji(PkModel):

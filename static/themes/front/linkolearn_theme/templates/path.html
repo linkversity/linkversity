@@ -15,6 +15,28 @@
                 <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="path-link break-all" data-link-id="{{ link.id }}">{{ link.url }}</a>
             {% endif %}
         </div>
+        {% if can_check %}
+        <div class="flex items-center gap-2 shrink-0 pt-0.5">
+            {% if show_chips %}
+            {% set checkers = check_map.get(link.id, []) %}
+            <span id="chips-{{ link.id }}" class="group/chips flex -space-x-1.5 items-center">
+                {% for u in checkers[:3] %}
+                <i class="em {{ u.emoji_class }} w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic" title="{{ u.username }} checked this link"></i>
+                {% endfor %}
+                {% if checkers|length > 3 %}
+                <span class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 ring-2 ring-white dark:ring-gray-900 text-[10px] font-bold text-gray-500 flex items-center justify-center group-hover/chips:hidden select-none" title="Hover to see everyone">+{{ checkers|length - 3 }}</span>
+                {% endif %}
+                {% for u in checkers[3:] %}
+                <i class="em {{ u.emoji_class }} w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic hidden group-hover/chips:inline-block" title="{{ u.username }} checked this link"></i>
+                {% endfor %}
+            </span>
+            {% endif %}
+            <input type="checkbox" title="Mark as read" data-link-id="{{ link.id }}"
+                   class="link-check w-[18px] h-[18px] rounded-[6px] cursor-pointer accent-[#FF385C] border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#FF385C]/40 transition"
+                   {% if link.id in my_checked %}checked{% endif %}
+                   onchange="toggleLinkCheck(this)">
+        </div>
+        {% endif %}
         {% if can_edit %}
         <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button class="path-tool" onclick="openMoveModal('{{ link.id }}', '{{ section.id }}')" title="Move link">
@@ -65,6 +87,9 @@
             <div class="flex items-center justify-between gap-3 mb-1">
                 <div class="min-w-0">
                     <h4 class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ section.title or 'Untitled Section' }}</h4>
+                    {% if section.description %}
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{{ section.description }}</p>
+                    {% endif %}
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ section.links|length }} link{{ '' if section.links|length == 1 else 's' }}</p>
                 </div>
                 {% if can_edit %}
@@ -99,6 +124,15 @@
         </section>
     {% endfor %}
 {% endmacro %}
+
+{% block metadesc %}
+{% if path.description %}
+<meta name="description" content="{{ path.description | truncate(160) }}" />
+<meta property="og:description" content="{{ path.description | truncate(160) }}" />
+{% else %}
+<meta name="description" content="{{ path.slug.replace('-', ' ') }} - curated link collection on Linkversity" />
+{% endif %}
+{% endblock %}
 
 {% block head %}
 <title>{{ path.slug.replace('-', ' ') }} · Linkversity</title>
@@ -144,6 +178,9 @@
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 leading-tight break-words">{{ path.slug }}</h1>
+                {% if path.description %}
+                <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 max-w-2xl leading-relaxed">{{ path.description }}</p>
+                {% endif %}
                 <div class="flex items-center flex-wrap gap-2 mt-3">
                     {% if path.team_id and team %}
                     <a href="{{ url_for('www.org_page', slug=team.slug) if team.slug else url_for('linkolearn.enterprise_dashboard') }}" title="{{ team.name }}">
@@ -498,6 +535,58 @@ function addLinkToSection(sectionId) {
         console.error("Error:", error);
         alert("An error occurred while adding the link.");
     });
+}
+
+// ---- inline read-check (team paths) ----
+function toggleLinkCheck(el) {
+    const linkId = el.dataset.linkId;
+    const fd = new FormData();
+    fd.append("link_id", linkId);
+    fd.append("csrf_token", '{{ csrf_token() }}');
+
+    fetch(`{{ url_for('linkolearn.check_link') }}`, {
+        method: "POST",
+        headers: { "X-CSRFToken": '{{ csrf_token() }}' },
+        body: fd,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (!data.success) {
+            el.checked = !el.checked;
+            alert(data.error || "Could not save the check.");
+            return;
+        }
+        // admins: refresh the round avatar chips without a page reload
+        const box = document.getElementById("chips-" + linkId);
+        if (box && Array.isArray(data.checkers)) {
+            box.innerHTML = chipHTML(data.checkers);
+        }
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+        el.checked = !el.checked;
+        alert("An error occurred while saving the check.");
+    });
+}
+
+// compact chip stack: first 3 + "+N", the rest revealed on hover
+// (mirror of the jinja markup in link_row)
+function chipHTML(checkers) {
+    const av = (u, extra) =>
+        '<i class="em ' + u.emoji_class +
+        ' w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic' +
+        (extra || '') + '" title="' + u.username + ' checked this link"></i>';
+    let html = checkers.slice(0, 3).map((u) => av(u)).join("");
+    if (checkers.length > 3) {
+        html +=
+            '<span class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 ring-2 ring-white dark:ring-gray-900 text-[10px] font-bold text-gray-500 flex items-center justify-center group-hover/chips:hidden select-none" title="Hover to see everyone">+' +
+            (checkers.length - 3) + "</span>";
+        html += checkers
+            .slice(3)
+            .map((u) => av(u, " hidden group-hover/chips:inline-block"))
+            .join("");
+    }
+    return html;
 }
 
 // ---- copy link ----
