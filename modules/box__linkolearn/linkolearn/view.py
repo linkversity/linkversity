@@ -508,7 +508,9 @@ def check_link():
     if path.is_team_admin(current_user):
         users = User.query.join(
             LinkCheck, LinkCheck.user_id == User.id
-        ).filter(LinkCheck.link_id == link.id).all()
+        ).filter(LinkCheck.link_id == link.id).order_by(
+            LinkCheck.checked_at
+        ).all()
         payload["checkers"] = [
             {"username": u.username, "emoji_class": u.emoji_class} for u in users
         ]

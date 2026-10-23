@@ -233,6 +233,7 @@ def _render_path(path):
         link_ids = [l.id for s in path.sections for l in s.links]
         if link_ids:
             checks = LinkCheck.query.filter(LinkCheck.link_id.in_(link_ids)).all()
+            checks.sort(key=lambda c: c.checked_at)  # oldest first, stable chips
             uids = {c.user_id for c in checks}
             users = (
                 {u.id: u for u in User.query.filter(User.id.in_(uids)).all()}
