@@ -1,4 +1,4 @@
-## Unreleased
+## 1.10.0
 
 ### Path & section descriptions (SEO)
 
