@@ -18,9 +18,16 @@
         {% if can_check %}
         <div class="flex items-center gap-2 shrink-0 pt-0.5">
             {% if is_team_admin %}
-            <span id="chips-{{ link.id }}" class="flex -space-x-1.5 items-center">
-                {% for u in check_map.get(link.id, []) %}
+            {% set checkers = check_map.get(link.id, []) %}
+            <span id="chips-{{ link.id }}" class="group/chips flex -space-x-1.5 items-center">
+                {% for u in checkers[:3] %}
                 <i class="em {{ u.emoji_class }} w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic" title="{{ u.username }} checked this link"></i>
+                {% endfor %}
+                {% if checkers|length > 3 %}
+                <span class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 ring-2 ring-white dark:ring-gray-900 text-[10px] font-bold text-gray-500 flex items-center justify-center group-hover/chips:hidden select-none" title="Hover to see everyone">+{{ checkers|length - 3 }}</span>
+                {% endif %}
+                {% for u in checkers[3:] %}
+                <i class="em {{ u.emoji_class }} w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic hidden group-hover/chips:inline-block" title="{{ u.username }} checked this link"></i>
                 {% endfor %}
             </span>
             {% endif %}
@@ -537,11 +544,7 @@ function toggleLinkCheck(el) {
         // admins: refresh the round avatar chips without a page reload
         const box = document.getElementById("chips-" + linkId);
         if (box && Array.isArray(data.checkers)) {
-            box.innerHTML = data.checkers.map((u) =>
-                '<i class="em ' + u.emoji_class +
-                ' w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic"' +
-                ' title="' + u.username + ' checked this link"></i>'
-            ).join("");
+            box.innerHTML = chipHTML(data.checkers);
         }
     })
     .catch((error) => {
@@ -549,6 +552,26 @@ function toggleLinkCheck(el) {
         el.checked = !el.checked;
         alert("An error occurred while saving the check.");
     });
+}
+
+// compact chip stack: first 3 + "+N", the rest revealed on hover
+// (mirror of the jinja markup in link_row)
+function chipHTML(checkers) {
+    const av = (u, extra) =>
+        '<i class="em ' + u.emoji_class +
+        ' w-6 h-6 rounded-full ring-2 ring-white dark:ring-gray-900 not-italic' +
+        (extra || '') + '" title="' + u.username + ' checked this link"></i>';
+    let html = checkers.slice(0, 3).map((u) => av(u)).join("");
+    if (checkers.length > 3) {
+        html +=
+            '<span class="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 ring-2 ring-white dark:ring-gray-900 text-[10px] font-bold text-gray-500 flex items-center justify-center group-hover/chips:hidden select-none" title="Hover to see everyone">+' +
+            (checkers.length - 3) + "</span>";
+        html += checkers
+            .slice(3)
+            .map((u) => av(u, " hidden group-hover/chips:inline-block"))
+            .join("");
+    }
+    return html;
 }
 
 // ---- copy link ----
