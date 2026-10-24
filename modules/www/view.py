@@ -31,6 +31,7 @@ from modules.box__linkolearn.linkolearn.models import LinkCheck
 from modules.box__linkolearn.linkolearn.models import ActivationCode
 from modules.box__default.auth.models import User
 from flask import jsonify
+from flask import Response
 from flask import send_file
 from flask import current_app
 from init import db, csrf
@@ -568,3 +569,84 @@ def dodo_webhook():
         print(f"[dodo webhook] fulfillment error: {e}")
 
     return jsonify({"received": True})
+
+
+@module_blueprint.route("/robots.txt")
+def robots():
+    """Crawler instructions. Static rules outrank /<username>, so
+    "robots.txt" never collides with the profile route."""
+    sitemap_url = request.host_url.rstrip("/") + url_for("www.sitemap")
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /auth/\n"
+        "Disallow: /dodo/\n"
+        "Disallow: /new\n"
+        "Disallow: /org/<slug>/settings\n"
+        "\n"
+        f"Sitemap: {sitemap_url}\n"
+    )
+    return Response(body, mimetype="text/plain")
+
+
+@module_blueprint.route("/sitemap.xml")
+def sitemap():
+    """Public URLs only: static pages, public paths, their owner
+    profiles, orgs and blog posts."""
+    from xml.sax.saxutils import escape
+
+    from modules.blog.models import get_all_posts
+    from modules.box__default.auth.models import EnterpriseTeam
+
+    base = request.host_url.rstrip("/")
+    entries = []  # (loc, lastmod or None)
+
+    for loc in (
+        "/",
+        "/about",
+        "/contact",
+        "/privacy-policy",
+        "/terms",
+        "/blog",
+        "/activate",
+    ):
+        entries.append((f"{base}{loc}", None))
+
+    public_paths = Path.query.filter_by(is_visible=True).all()
+    usernames = set()
+    for p in public_paths:
+        try:
+            entries.append((f"{base}{p.get_url()}", None))
+            usernames.add(p.path_user.username)
+        except Exception:
+            continue
+
+    for username in usernames:
+        entries.append(
+            (f"{base}{url_for('www.user_profile', username=username)}", None)
+        )
+
+    orgs = EnterpriseTeam.query.filter(EnterpriseTeam.slug.isnot(None)).all()
+    for org in orgs:
+        entries.append(
+            (f"{base}{url_for('www.org_page', slug=org.slug)}", None)
+        )
+
+    for post in get_all_posts():
+        entries.append(
+            (f"{base}/blog/{post['slug']}", post.get("date") or None)
+        )
+
+    rows = []
+    for loc, lastmod in entries:
+        last = f"<lastmod>{lastmod}</lastmod>" if lastmod else ""
+        rows.append(f"<url><loc>{escape(loc)}</loc>{last}</url>")
+
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(rows)
+        + "\n</urlset>\n"
+    )
+    return Response(xml, mimetype="application/xml")

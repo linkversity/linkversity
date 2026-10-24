@@ -118,6 +118,12 @@ def create_app(config_name="development"):
     def make_shell_context():
         return {"db": db, "User": User}
 
+    @app.errorhandler(404)
+    def page_not_found(e):
+        from flask import render_template
+
+        return render_template("linkolearn_theme/templates/404.html"), 404
+
     return app
 
 

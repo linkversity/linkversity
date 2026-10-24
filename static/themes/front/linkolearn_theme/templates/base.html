@@ -1,11 +1,13 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="keywords" content="linkolearn, learn links, open source, courses" />
     {% block metadesc %}<meta name="description" content="Create courses using links" />{% endblock %}
+    {% block canonical %}<link rel="canonical" href="{{ request.base_url }}" />{% endblock %}
+    {% block jsonld %}<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "WebSite", "name": "Linkversity", "url": request.host_url, "description": "Turn scattered links into structured courses", "publisher": {"@type": "Organization", "name": "Linkversity", "url": request.host_url}} | tojson }}</script>{% endblock %}
     <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
 
     <script src="https://cdn.tailwindcss.com"></script>

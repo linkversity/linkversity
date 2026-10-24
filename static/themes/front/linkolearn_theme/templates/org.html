@@ -3,6 +3,7 @@
 
 {% block head %}
 <title>{{ org.name }} · {{ APP_NAME }}</title>
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "Organization", "name": org.name, "url": request.host_url.rstrip('/') ~ url_for('www.org_page', slug=org.slug)} | tojson }}</script>
 {% include 'linkolearn_theme/templates/blocks/brand.html' %}
 {% endblock %}
 

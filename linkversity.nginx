@@ -7,9 +7,20 @@ server {
     return 301 https://linkversity.lol$request_uri;
 }
 
+# www -> apex: avoid duplicate content (canonical host only)
 server {
     listen 443 ssl http2;
-    server_name linkversity.lol www.linkversity.lol;
+    server_name www.linkversity.lol;
+
+    ssl_certificate /etc/letsencrypt/live/linkversity.lol/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/linkversity.lol/privkey.pem;
+
+    return 301 https://linkversity.lol$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name linkversity.lol;
 
     # --- SSL ---
     ssl_certificate /etc/letsencrypt/live/linkversity.lol/fullchain.pem;
