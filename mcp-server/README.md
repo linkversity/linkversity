@@ -99,6 +99,8 @@ Then the public MCP URL is `https://linkversity.lol/mcp` and matches
 | `create_collection` | `POST /api/v1/me/collections` | user (write) |
 | `save_link` | `POST /api/v1/me/collections/{id}/links` | user (write) |
 | `save_link_to_collection` | `GET /api/v1/me/collections` + `POST ...` (match by name, create on miss) | user (write) |
+| `set_collection_description` | `PATCH /api/v1/me/collections/{id}` | user (write) |
+| `set_section_description` | `PATCH /api/v1/me/collections/{id}/sections/{sid}` | user (write) |
 
 Read tools require the `collections:read` scope; write tools require
 `collections:write` (both are in `baseScopes` and shown on the consent
