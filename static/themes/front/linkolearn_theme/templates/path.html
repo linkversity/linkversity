@@ -128,18 +128,38 @@
 {% block metadesc %}
 {% if path.description %}
 <meta name="description" content="{{ path.description | truncate(160) }}" />
-<meta property="og:description" content="{{ path.description | truncate(160) }}" />
 {% else %}
 <meta name="description" content="{{ path.slug.replace('-', ' ') }} - curated link collection on Linkversity" />
 {% endif %}
 {% endblock %}
 
+{% block og %}
+{% set path_url = request.host_url.rstrip('/') ~ path.get_url() %}
+{% set path_desc = path.description or (path.slug.replace('-', ' ') ~ ' - curated link collection on Linkversity') %}
+{% set share_img = namespace(img=none) %}
+{% for section in path.sections %}
+  {% for link in section.links %}
+    {% if not share_img.img and link.image_url %}{% set share_img.img = link.image_url %}{% endif %}
+  {% endfor %}
+{% endfor %}
+<meta property="og:site_name" content="Linkversity" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="{{ path.slug.replace('-', ' ').title() }}" />
+<meta property="og:url" content="{{ path_url }}" />
+<meta property="og:description" content="{{ path_desc | truncate(160) }}" />
+<meta property="og:image" content="{{ share_img.img or url_for('static', filename='icon-512.png', _external=True) }}" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ path.slug.replace('-', ' ').title() }}" />
+<meta name="twitter:description" content="{{ path_desc | truncate(160) }}" />
+<meta name="twitter:image" content="{{ share_img.img or url_for('static', filename='icon-512.png', _external=True) }}" />
+{% endblock %}
+
 {% block head %}
 <title>{{ path.slug.replace('-', ' ') }} · Linkversity</title>
-<meta property="og:type" content="website">
-<meta property="og:title" content="{{ path.slug }}">
-<meta property="og:url" content="{{ request.host_url.rstrip('/') ~ path.get_url() }}">
-<meta name="twitter:card" content="summary">
+{% if not path.is_password_protected %}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "Course", "name": path.slug.replace('-', ' ').title(), "description": (path.description or ('Curated learning path: ' ~ path.slug.replace('-', ' '))), "url": request.host_url.rstrip('/') ~ path.get_url(), "provider": {"@type": "Organization", "name": "Linkversity", "url": request.host_url}} | tojson }}</script>
+{% endif %}
 <style>.modal-backdrop { background: rgba(17, 24, 39, .6); }</style>
 {% include 'linkolearn_theme/templates/blocks/brand.html' %}
 {% endblock %}

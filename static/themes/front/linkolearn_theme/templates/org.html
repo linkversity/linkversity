@@ -1,8 +1,10 @@
 {%set active_page='org'%}
 {%extends 'linkolearn_theme/templates/base.html'%}
 
+{% block metadesc %}<meta name="description" content="{{ org.name }} on Linkversity — organization page with shared learning paths and curated link collections." />{% endblock %}
 {% block head %}
 <title>{{ org.name }} · {{ APP_NAME }}</title>
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "Organization", "name": org.name, "url": request.host_url.rstrip('/') ~ url_for('www.org_page', slug=org.slug)} | tojson }}</script>
 {% include 'linkolearn_theme/templates/blocks/brand.html' %}
 {% endblock %}
 

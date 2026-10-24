@@ -1,0 +1,15 @@
+{%extends 'linkolearn_theme/templates/base.html'%}
+{%block head%}
+<title>Page not found · Linkversity</title>
+{%endblock%}
+{%block body%}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-24 text-center">
+    <p class="text-7xl font-extrabold tracking-tight text-[#FF385C]">404</p>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 mt-4">Page not found</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">The link may be broken, private, or the page may have moved.</p>
+    <div class="mt-8 flex items-center justify-center gap-3 flex-wrap">
+        <a href="{{ url_for('www.index') }}" class="path-btn-primary">Back home</a>
+        <a href="{{ url_for('blog.index') }}" class="path-pill">Read the blog</a>
+    </div>
+</div>
+{%endblock%}

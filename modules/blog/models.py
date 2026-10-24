@@ -55,13 +55,16 @@ def parse_markdown_post(filename):
 
     title_raw = fields.get("title", slug.replace("-", " ").title())
 
+    def clean(value):
+        return value.strip('"').strip("'")
+
     return {
         "slug": slug,
-        "title": title_raw.strip('"').strip("'"),
-        "description": fields.get("description", ""),
-        "keywords": fields.get("keywords", ""),
-        "date": fields.get("date", "").strip('"').strip("'"),
-        "author": fields.get("author", ""),
+        "title": clean(title_raw),
+        "description": clean(fields.get("description", "")),
+        "keywords": clean(fields.get("keywords", "")),
+        "date": clean(fields.get("date", "")),
+        "author": clean(fields.get("author", "")),
         "content": html,
         "raw_content": body,
     }
