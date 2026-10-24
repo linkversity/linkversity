@@ -11,6 +11,9 @@ Implements the endpoints the MCP server calls:
     POST /api/v1/me/collections/<id>/study-plan prepare resources for a plan
     GET  /api/v1/integrations/status           integration/connection status
 
+    PATCH /api/v1/me/collections/<id>                   edit path description
+    PATCH /api/v1/me/collections/<id>/sections/<sid>    edit section description
+
 Access rules mirror the web UI (`www._check_path_access`):
 
     public      -> is_visible
@@ -162,7 +165,8 @@ def _public(path):
         "is_password_protected": bool(path.is_password_protected),
         "section_count": len(path.sections),
         "link_count": sum(len(s.links) for s in path.sections),
-        "description": _description(path),
+        # curator-written SEO blurb when set, else derived from section titles
+        "description": path.description or _description(path),
     }
 
 
@@ -172,6 +176,15 @@ def _description(path):
     if not titles:
         return None
     return "Covers " + ", ".join(titles[:6]) + ("..." if len(titles) > 6 else "")
+
+
+def _section_resource(section):
+    """A single section with its (editable) description."""
+    return {
+        "id": section.id,
+        "title": section.title,
+        "description": section.description,
+    }
 
 
 def _link_resource(link):
@@ -298,6 +311,7 @@ def public_collection_links(collection_id):
     return jsonify(
         {
             "items": [_link_resource(l) for l in links],
+            "sections": [_section_resource(s) for s in path.sections],
             "page": page,
             "per_page": per_page,
             "total": total,
@@ -423,6 +437,7 @@ def me_collection_links(collection_id):
     return jsonify(
         {
             "items": [_link_resource(l) for l in links],
+            "sections": [_section_resource(s) for s in path.sections],
             "page": page,
             "per_page": per_page,
             "total": total,
@@ -612,6 +627,81 @@ def me_save_link(collection_id):
     db.session.commit()
 
     return jsonify({"link": _link_resource(link), "note": "saved"}), 201
+
+
+@apiv1_blueprint.route("/me/collections/<int:collection_id>", methods=["PATCH"])
+@csrf.exempt
+def me_update_collection(collection_id):
+    """Edit a collection's (path's) description (write tool:
+    set_collection_description).
+
+    Body: {description} - up to 500 chars; empty string clears it. The
+    description is the SEO meta + visible subtitle on the path page.
+    """
+    limited = _enforce_rate_limit()
+    if limited:
+        return limited
+
+    user, err = _require_user("collections:write")
+    if err:
+        return err
+
+    path = Path.query.get(collection_id)
+    if path is None:
+        return jsonify({"error": "collection not found"}), 404
+    if not path.can_edit(user):
+        return jsonify({"error": "access denied"}), 403
+
+    data = request.get_json(silent=True) or {}
+    description = str(data.get("description") or "").strip()
+    if len(description) > 500:
+        return jsonify({"error": "description too long (max 500 chars)"}), 400
+
+    path.description = description or None
+    db.session.commit()
+
+    return jsonify({"collection": _public(path), "note": "description updated"})
+
+
+@apiv1_blueprint.route(
+    "/me/collections/<int:collection_id>/sections/<int:section_id>",
+    methods=["PATCH"],
+)
+@csrf.exempt
+def me_update_section(collection_id, section_id):
+    """Edit a section's description (write tool: set_section_description).
+
+    Body: {description} - up to 500 chars; empty string clears it. Shown as
+    crawlable text under the section heading on the path page. Sections and
+    their IDs are listed by the links endpoints under `"sections"`.
+    """
+    limited = _enforce_rate_limit()
+    if limited:
+        return limited
+
+    user, err = _require_user("collections:write")
+    if err:
+        return err
+
+    path = Path.query.get(collection_id)
+    if path is None:
+        return jsonify({"error": "collection not found"}), 404
+    if not path.can_edit(user):
+        return jsonify({"error": "access denied"}), 403
+
+    section = Section.query.filter_by(id=section_id, path_id=path.id).first()
+    if section is None:
+        return jsonify({"error": "section not found in this collection"}), 404
+
+    data = request.get_json(silent=True) or {}
+    description = str(data.get("description") or "").strip()
+    if len(description) > 500:
+        return jsonify({"error": "description too long (max 500 chars)"}), 400
+
+    section.description = description or None
+    db.session.commit()
+
+    return jsonify({"section": _section_resource(section), "note": "description updated"})
 
 
 # --------------------------------------------------------------------------

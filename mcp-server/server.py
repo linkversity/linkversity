@@ -72,11 +72,12 @@ mcp = FastMCP(
         "get_collection_links to read their contents. With a connected "
         "account, list_my_collections lists the user's collections, "
         "save_link_to_collection saves a URL by collection name (creating "
-        "the collection or section if it does not exist yet), and "
-        "save_link / create_collection are the lower-level building "
-        "blocks. Every resource includes the Linkversity source URL - cite "
-        "it."
-    ),
+        "the collection or section if it does not exist yet), "
+        "set_collection_description and set_section_description write the "
+        "collection and section descriptions (pass an empty string to "
+        "clear), and save_link / create_collection are the lower-level "
+        "building blocks. Every resource includes the Linkversity source "
+        "URL - cite it."),
     host=os.environ.get("LINKVERSITY_MCP_HOST", "0.0.0.0"),
     port=int(os.environ.get("LINKVERSITY_MCP_PORT", "8001")),
     transport_security=_security,
@@ -139,6 +140,18 @@ def _wrap(r: requests.Response):
         err = body.get("error") if isinstance(body, dict) else None
         return {"error": err or f"API returned HTTP {r.status_code}"}
     return body
+
+
+def _patch(path: str, payload: dict, ctx: Context | None = None):
+    """PATCH a JSON payload to the Flask API (description edits)."""
+    return _wrap(
+        requests.patch(
+            f"{API_BASE_URL}{path}",
+            json=payload,
+            headers=_headers(ctx),
+            timeout=TIMEOUT,
+        )
+    )
 
 
 @mcp.tool(annotations=_READONLY)
@@ -281,6 +294,44 @@ def save_link(
     if title:
         payload["title"] = title
     return _post(f"/api/v1/me/collections/{collection_id}/links", payload, ctx)
+
+
+@mcp.tool(annotations=_WRITE)
+def set_collection_description(
+    collection_id: int, description: str, ctx: Context | None = None
+) -> dict:
+    """Add or edit the description of the connected user's collection (path).
+
+    Requires a connected account with collections:write permission. The
+    description (max 500 chars) is the SEO meta description and the visible
+    subtitle under the collection title on Linkversity. Pass an empty string
+    to clear it. Returns the updated collection.
+    """
+    if len(description.strip()) > 500:
+        return {"error": "description too long (max 500 chars)"}
+    return _patch(
+        f"/api/v1/me/collections/{collection_id}", {"description": description}, ctx
+    )
+
+
+@mcp.tool(annotations=_WRITE)
+def set_section_description(
+    collection_id: int, section_id: int, description: str, ctx: Context | None = None
+) -> dict:
+    """Add or edit the description of one section in a collection.
+
+    Requires a connected account with collections:write permission. The
+    description (max 500 chars) is shown as crawlable text under the section
+    heading on Linkversity. Pass an empty string to clear it. Get the
+    section's ID from the "sections" array of get_collection_links.
+    """
+    if len(description.strip()) > 500:
+        return {"error": "description too long (max 500 chars)"}
+    return _patch(
+        f"/api/v1/me/collections/{collection_id}/sections/{section_id}",
+        {"description": description},
+        ctx,
+    )
 
 
 # --------------------------------------------------------------------------
