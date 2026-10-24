@@ -2,6 +2,10 @@
 {%extends 'linkolearn_theme/templates/base.html'%}
 {% from 'linkolearn_theme/templates/blocks/visibility.html' import vis_switch %}
 
+{%block metadesc%}
+{% set full_name = ((user.get_first_name() ~ ' ' ~ user.get_last_name())|trim) if user.first_name else '' %}
+<meta name="description" content="{% if full_name %}{{ full_name }} ({% endif %}@{{ user.username }}{% if full_name %}){% endif %} on Linkversity — public learning paths and curated link collections." />
+{%endblock%}
 {%block head%}
 <title>{{ user.username }} · Linkversity</title>
 {% include 'linkolearn_theme/templates/blocks/brand.html' %}

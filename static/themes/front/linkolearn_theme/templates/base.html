@@ -7,6 +7,19 @@
     <meta name="keywords" content="linkolearn, learn links, open source, courses" />
     {% block metadesc %}<meta name="description" content="Create courses using links" />{% endblock %}
     {% block canonical %}<link rel="canonical" href="{{ request.base_url }}" />{% endblock %}
+    {% block og %}
+    <meta property="og:site_name" content="Linkversity" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Linkversity · Learn by links" />
+    <meta property="og:url" content="{{ request.base_url }}" />
+    <meta property="og:description" content="Turn scattered links into structured courses. Collect links, organize them into paths, and share one URL." />
+    <meta property="og:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Linkversity · Learn by links" />
+    <meta name="twitter:description" content="Turn scattered links into structured courses. Collect links, organize them into paths, and share one URL." />
+    <meta name="twitter:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}" />
+    {% endblock %}
     {% block jsonld %}<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "WebSite", "name": "Linkversity", "url": request.host_url, "description": "Turn scattered links into structured courses", "publisher": {"@type": "Organization", "name": "Linkversity", "url": request.host_url}} | tojson }}</script>{% endblock %}
     <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
 

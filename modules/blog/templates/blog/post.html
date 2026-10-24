@@ -6,6 +6,17 @@
     <title>{{ post.title }} · Linkversity Blog</title>
     <meta name="description" content="{{ post.description }}">
     <link rel="canonical" href="{{ request.host_url.rstrip('/') ~ url_for('blog.post', slug=post.slug) }}">
+    <meta property="og:site_name" content="Linkversity">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ post.title }}">
+    <meta property="og:url" content="{{ request.host_url.rstrip('/') ~ url_for('blog.post', slug=post.slug) }}">
+    <meta property="og:description" content="{{ post.description }}">
+    <meta property="og:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ post.title }}">
+    <meta name="twitter:description" content="{{ post.description }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}">
     <script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "BlogPosting", "headline": post.title, "description": post.description, "url": request.host_url.rstrip('/') ~ url_for('blog.post', slug=post.slug), "datePublished": post.date, "author": {"@type": "Person", "name": post.author}, "publisher": {"@type": "Organization", "name": "Linkversity", "url": request.host_url}} | tojson }}</script>
     <meta name="keywords" content="{{ post.keywords }}">
     <meta name="author" content="{{ post.author }}">

@@ -6,6 +6,15 @@
     <title>Blog · Linkversity</title>
     <meta name="description" content="Notes on learning systems, curation, and teaching with links, from the Linkversity team.">
     <link rel="canonical" href="{{ request.host_url.rstrip('/') ~ url_for('blog.index') }}">
+    <meta property="og:site_name" content="Linkversity">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Linkversity Blog">
+    <meta property="og:url" content="{{ request.host_url.rstrip('/') ~ url_for('blog.index') }}">
+    <meta property="og:description" content="Notes on learning systems, curation, and teaching with links, from the Linkversity team.">
+    <meta property="og:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="{{ url_for('static', filename='icon-512.png', _external=True) }}">
     <link rel="icon" href="{{url_for('static', filename='linkversity.png')}}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
