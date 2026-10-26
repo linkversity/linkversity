@@ -111,6 +111,7 @@ def create_app(config_name="development"):
     setup_flask_admin(app)
     register_devstatic(app, modules_path)
     load_blueprints(app, config_name, global_template_variables, global_configs)
+    patch_shopyo_auth(app)
     setup_theme_paths(app)
     inject_global_vars(app, global_template_variables)
 
@@ -125,6 +126,28 @@ def create_app(config_name="development"):
         return render_template("linkolearn_theme/templates/404.html"), 404
 
     return app
+
+
+def patch_shopyo_auth(app):
+    """Bridge shopyo auth gaps without editing the shopyo box itself.
+
+    Signup is inline on the landing page, but shopyo's auth.register view
+    still answers GET and has no return for it: the request fell off the
+    end of the function and became TypeError -> 500 for every "Sign up"
+    link, old bookmark and crawler.
+    """
+    from flask import redirect, request, url_for
+
+    register_view = app.view_functions.get("auth.register")
+    if register_view is None:
+        return
+
+    def register_with_get_redirect(*args, **kwargs):
+        if request.method == "GET":
+            return redirect(url_for("www.index"))
+        return register_view(*args, **kwargs)
+
+    app.view_functions["auth.register"] = register_with_get_redirect
 
 
 def load_plugins(app, global_template_variables, global_configs, config_name):
