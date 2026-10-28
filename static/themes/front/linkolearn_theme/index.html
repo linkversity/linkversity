@@ -358,6 +358,34 @@
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 24px;
 }
+/* explore pagination */
+.lv-explore-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 32px;
+}
+.lv-explore-pager .path-pill {
+  min-width: 40px;
+  text-align: center;
+  justify-content: center;
+}
+.lv-explore-pager .path-pill.is-active {
+  background: #222222;
+  border-color: #222222;
+  color: #ffffff;
+}
+.lv-explore-pager .path-pill.is-disabled {
+  opacity: .35;
+  pointer-events: none;
+}
+.lv-explore-count {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #6A6A6A;
+}
 .lv-card {
   display: block;
   background: #fff;
@@ -639,7 +667,7 @@
 </section>
 
 <!-- ============ explore latest ============ -->
-<section class="lv-section">
+<section class="lv-section" id="explore">
     <div class="lv-section-head">
         <div>
             <span class="lv-eyebrow"><i class="fas fa-compass"></i> Fresh from the community</span>
@@ -695,6 +723,33 @@
         </a>
         {%endfor%}
     </div>
+
+    {% if explore_pagination.pages > 1 %}
+    <nav class="lv-explore-pager" aria-label="Explore pages">
+        {% if explore_pagination.has_prev %}
+        <a class="path-pill" href="{{ url_for('www.index', page=explore_pagination.prev_num) }}#explore" rel="prev"><i class="fas fa-chevron-left"></i></a>
+        {% else %}
+        <span class="path-pill is-disabled"><i class="fas fa-chevron-left"></i></span>
+        {% endif %}
+        {% for p in explore_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                {% if p == explore_pagination.page %}
+                <span class="path-pill is-active" aria-current="page">{{ p }}</span>
+                {% else %}
+                <a class="path-pill" href="{{ url_for('www.index', page=p) }}#explore">{{ p }}</a>
+                {% endif %}
+            {% else %}
+            <span class="path-pill is-disabled">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if explore_pagination.has_next %}
+        <a class="path-pill" href="{{ url_for('www.index', page=explore_pagination.next_num) }}#explore" rel="next"><i class="fas fa-chevron-right"></i></a>
+        {% else %}
+        <span class="path-pill is-disabled"><i class="fas fa-chevron-right"></i></span>
+        {% endif %}
+        <span class="lv-explore-count">{{ explore_pagination.total }} public paths</span>
+    </nav>
+    {% endif %}
 </section>
 
 <!-- ============ testimonials ============ -->

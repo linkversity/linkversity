@@ -75,6 +75,28 @@ def index():
         except:
             return []
 
+    # Explore grid pagination: every public path, 8 per page (?page=N)
+    explore_per_page = 8
+    try:
+        explore_page = int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        explore_page = 1
+    explore_pagination = (
+        Path.query.filter_by(is_visible=True)
+        .order_by(Path.id.desc())
+        .paginate(page=max(explore_page, 1), per_page=explore_per_page, error_out=False)
+    )
+    if explore_pagination.pages and explore_page > explore_pagination.pages:
+        explore_pagination = (
+            Path.query.filter_by(is_visible=True)
+            .order_by(Path.id.desc())
+            .paginate(
+                page=explore_pagination.pages,
+                per_page=explore_per_page,
+                error_out=False,
+            )
+        )
+
     def get_explore_cards():
         """Landing-page cards: real titles, counts and a stable per-path look.
 
@@ -83,15 +105,7 @@ def index():
         """
         cards = []
         try:
-            # newest first, capped at 8 (2 clean rows of 4).
-            # get_last_5's paths[-11:-1] slice drops the *newest* path -
-            # wrong for a section titled "Explore latest".
-            latest = (
-                Path.query.filter_by(is_visible=True)
-                .order_by(Path.id.desc())
-                .limit(8)
-                .all()
-            )
+            latest = explore_pagination.items
         except Exception:
             latest = []
 
@@ -126,6 +140,7 @@ def index():
     context = {
         "get_last_5": get_last_5,
         "get_explore_cards": get_explore_cards,
+        "explore_pagination": explore_pagination,
         "current_user": current_user,
     }
 

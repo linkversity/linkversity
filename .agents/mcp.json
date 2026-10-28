@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "linkversity": {
+      "type": "streamable-http",
+      "url": "https://linkversity.lol/mcp"
+    }
+  }
+}
