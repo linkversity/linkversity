@@ -1,3 +1,12 @@
+## Unreleased
+
+### Explore pagination
+
+- The landing "Explore latest" grid now pages through every public path
+  instead of stopping at the 8 newest: 8 per page, `?page=N`, prev/next
+  plus numbered pages, and a total count. Out-of-range or junk `page`
+  values clamp to the first/last page instead of erroring
+
 ## 1.10.0
 
 ### Path & section descriptions (SEO)

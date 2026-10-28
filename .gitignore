@@ -146,3 +146,6 @@ static/uploads/
 
 # plugin / release zips (built for upload, never committed)
 *.zip
+
+# local agent scratch dir
+.agents/
