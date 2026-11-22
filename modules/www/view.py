@@ -369,6 +369,7 @@ def org_page(slug):
 
     can_create = False
     can_manage = False
+    my_private_paths = []
     if current_user.is_authenticated:
         from modules.box__linkolearn.linkolearn.view import (
             _authorized_org,
@@ -378,11 +379,18 @@ def org_page(slug):
         can_create = org.id in [o.id for o in user_organizations(current_user)]
         can_manage = _authorized_org(org.id) is not None
 
+        # private org paths the viewer owns or edits stay reachable here
+        for p in Path.query.filter_by(team_id=org.id, is_visible=False).all():
+            if p.user_id == current_user.id or current_user in p.editors:
+                p.owner = User.query.get(p.user_id)
+                my_private_paths.append(p)
+
     return render_template(
         "linkolearn_theme/templates/org.html",
         org=org,
         owner=owner,
         public_paths=public_paths,
+        my_private_paths=my_private_paths,
         can_create=can_create,
         can_manage=can_manage,
     )
