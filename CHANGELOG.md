@@ -1,5 +1,19 @@
 ## Unreleased
 
+### Path title editing
+
+- The edit page has a Title field again (it only existed when creating):
+  pre-filled, up to 200 chars, saved with the rest of the form. A blank
+  title keeps the current one, since the column is NOT NULL. Titles show
+  on explore cards and in search results
+
+### Org page private paths
+
+- The organization page now shows the viewer's private paths too: any
+  non-public path of that org they own or edit appears under "Your
+  private paths" with a lock, so owners and editors can reach them
+  without a bookmark. Everyone else still sees only the public grid
+
 ### Explore pagination
 
 - The landing "Explore latest" grid now pages through every public path

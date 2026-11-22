@@ -54,6 +54,11 @@ crossorigin="anonymous"></script>
 
     <!-- details -->
     <div class="path-card">
+        <div class="mb-4">
+            <label class="path-label" for="path-title">Title</label>
+            <input type="text" id="path-title" class="path-input" maxlength="200" value="{{ path.title or '' }}" placeholder="e.g. Mastering Advanced English">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Shown on explore cards and in search results.</p>
+        </div>
         <div>
             <label class="path-label" for="path-link">Slug</label>
             <div class="flex items-center gap-2">
@@ -199,6 +204,7 @@ $("#submit-button").click(function(){
     }
 
     json_submit['path_link'] = path_link;
+    json_submit['path_title'] = $('#path-title').val() || '';
     json_submit['path_description'] = $('#path-description').val() || '';
 
     var pathIconEl = document.getElementById('path-icon');

@@ -48,6 +48,28 @@
         </div>
     </header>
 
+    {% if my_private_paths %}
+    <div>
+        <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Your private paths <span class="normal-case font-normal">(only you can see these)</span></h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for path in my_private_paths %}
+            {% set ns = namespace(links=0) %}
+            {% for s in path.sections %}{% set ns.links = ns.links + s.links|length %}{% endfor %}
+            <div class="path-link-card">
+                <div class="min-w-0">
+                    <a href="{{ path.get_url() }}" class="title truncate hover:text-[#cc3f3f]"><i class="fas fa-lock text-[10px] text-gray-400 mr-1"></i>{{ path.slug }}</a>
+                    <div class="sub truncate">by {{ path.owner.username if path.owner else 'Unknown' }}</div>
+                </div>
+                <div class="badges">
+                    <span class="path-badge"><i class="fas fa-list"></i> {{ path.sections|length }} section{{ '' if path.sections|length == 1 else 's' }}</span>
+                    <span class="path-badge"><i class="fas fa-link"></i> {{ ns.links }} link{{ '' if ns.links == 1 else 's' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     {% if public_paths %}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {% for path in public_paths %}
@@ -65,7 +87,7 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
+    {% elif not my_private_paths %}
     <div class="path-card">
         <div class="path-empty">
             <div class="glyph"><i class="fas fa-book-open"></i></div>
