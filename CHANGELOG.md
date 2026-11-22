@@ -1,5 +1,12 @@
 ## Unreleased
 
+### Path title editing
+
+- The edit page has a Title field again (it only existed when creating):
+  pre-filled, up to 200 chars, saved with the rest of the form. A blank
+  title keeps the current one, since the column is NOT NULL. Titles show
+  on explore cards and in search results
+
 ### Explore pagination
 
 - The landing "Explore latest" grid now pages through every public path

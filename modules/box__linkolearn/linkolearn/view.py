@@ -311,11 +311,13 @@ def edit_path(path_id):
         return render_template("linkolearn_theme/templates/edit.html", **context)
     if request.method == "POST":
         json_submit = request.get_json()
-        # path_title = json_submit['path_title']
+        path_title = (json_submit.get("path_title") or "").strip()
         path_link = json_submit["path_link"]
         path_link = Path.slugify(path_link)
         sections = json_submit["sections"]
-        # path.title = path_title
+        # title is NOT NULL: an empty input keeps the current title
+        if path_title:
+            path.title = path_title[:200]
         path.slug = path_link
         # cover icon: whitelist only, never a raw client string (it is echoed
         # into a `fas {{icon}}` class attribute on the landing cards)
